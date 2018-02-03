@@ -36,7 +36,7 @@ Loads and builds the specified URDF robot in THREE.js
 
 _required_
 
-The path representing the `package://` directory to loat `package://` relative files.
+The path representing the `package://` directory to load `package://` relative files.
 
 ##### urdfpath
 
