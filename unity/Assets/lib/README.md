@@ -12,25 +12,32 @@ URDFJointList ujl = URDFParser.BuildRobot(".../package/dir", content);
 ```
 
 ### API
-#### URDFParser
-##### LoadURDFRobot(string package, string urdfpath, loadmeshFunction)
-TODO
+#### URDFParser.LoadURDFRobot(package, urdfpath, loadmeshFunction)
+Reads and processes the urdf at the given path, returning a `URDFJointList` that describes the whole robot.
 
-##### BuildRobot(package, urdfcontent, loadMeshFunction)
-TODO
+##### package
+The path representing the package:// directory to load package:// relative files.
 
-#### URDFJointList
-##### SetAngle(name, rad)
-TODO
+##### urdf
+The path to the URDF file relative to the specified package directory.
 
-##### TrySetAngle
-TODO
+##### loadmeshFunction
+An optional function for loading geometry in a custom way or in unsupported formats. `URDFLoader.LoadMesh` is used by default.
 
-##### GetAnglesAsDictionary()
-TODO
+#### URDFParser.BuildRobot(package, urdfcontent, loadMeshFunction)
+Same function as above, but this function takes the raw contents of the urdf file rather than a path.
 
-##### SetAnglesFromDictionary()
-TODO
+#### URDFJointList.SetAngle(name, rad)
+Sets the angle (in radians) of the joint with the given name. Throws an error if the joint does not exist.
+
+#### URDFJointList.TrySetAngle(name, rad)
+Same as above, but does not throw an error.
+
+#### URDFJointList.GetAnglesAsDictionary()
+Returns a new `Dictionary<string, float>` with the current angle of all the joints on the robot.
+
+#### URDFJointList.SetAnglesFromDictionary(angles)
+Takes a `Dictionary<string, float>` and sets all the angles on the robot that are listed in the dictionary.
 
 # LICENSE
 
