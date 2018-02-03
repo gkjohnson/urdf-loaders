@@ -3,7 +3,7 @@
 
   "version": "0.0.1",
 
-  "description": "URDF Loader for THREE.js",
+  "description": "URDF Loader for THREE.js and webcomponent viewer",
 
   "scripts": {
     "server": "cd .. && static-server",

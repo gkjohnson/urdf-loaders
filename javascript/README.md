@@ -111,7 +111,7 @@ Sets all joint names specified as keys to radian angle value.
 
 The software is available under the [Apache V2.0 license](../LICENSE.txt).
 
-Copyright © 2017 California Institute of Technology. ALL RIGHTS
+Copyright © 2018 California Institute of Technology. ALL RIGHTS
 RESERVED. United States Government Sponsorship Acknowledged. Any 
 commercial use must be negotiated with with Office of Technology 
 Transfer at the California Institute of Technology. This software may 
