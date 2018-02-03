@@ -124,13 +124,12 @@ class URDFLoader {
         const jointType = joint.getAttribute('type')
         const obj = new THREE.Object3D()
         obj.name = joint.getAttribute('name')
-        obj.urdf = { node: joint, type: jointType, angle: 0 }
+        obj.urdf = { node: joint, type: jointType, angle: 0, min: -Infinity, max: Infinity, setAngle: () => {} }
 
         let parent = null
         let child = null
         let xyz = null
         let rpy = null
-        let limit = { min: -Infinity, max: Infinity }
 
         // Extract the attributes
         URDFLoader.forEach(joint.children, n => {
@@ -143,8 +142,8 @@ class URDFLoader {
             } else if(type === 'parent') {
                 parent = linkMap[n.getAttribute('link')]
             } else if(type === 'limit') {
-                limit.min = parseFloat(n.getAttribute('lower') || limit.min)
-                limit.max = parseFloat(n.getAttribute('upper') || limit.max)
+                obj.urdf.min = parseFloat(n.getAttribute('lower') || obj.urdf.min)
+                obj.urdf.max = parseFloat(n.getAttribute('upper') || obj.urdf.max)
             }
         })
 
@@ -164,24 +163,32 @@ class URDFLoader {
             axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2])
         }
 
-        if (jointType === 'revolute') {
-            obj.urdf.min = limit.min
-            obj.urdf.max = limit.max
+        switch (jointType) {
+            case 'fixed': break;
+            case 'continuous':
+                obj.urdf.min = -Infinity
+                obj.urdf.max = Infinity
+            case 'revolute':
+                obj.urdf.setAngle = function(angle = 0) {
+                    if (!axis) return
 
-            obj.urdf.setAngle = angle => {
-                if (!axis) return
+                    angle = Math.min(this.max, angle)
+                    angle = Math.max(this.min, angle)
 
-                angle = Math.min(limit.max, angle)
-                angle = Math.max(limit.min, angle)
+                    // FromAxisAngle seems to rotate the opposite of the
+                    // expected angle for URDF, so negate it here
+                    angle *= -1
 
-                // FromAxisAngle seems to rotate the opposite of the
-                // expected angle for URDF, so negate it here
-                angle *= -1
+                    const delta = new THREE.Quaternion().setFromAxisAngle(axis, angle)
+                    obj.quaternion.multiplyQuaternions(origRot, delta)
+                    this.angle = angle
+                }
+                break;
 
-                const delta = new THREE.Quaternion().setFromAxisAngle(axis, angle)
-                obj.quaternion.multiplyQuaternions(origRot, delta)
-                obj.urdf.angle = angle
-            }
+            case 'floating':
+            case 'prismatic':
+            case 'planar':
+                // TODO: Support these joint types
         }
 
         return obj
