@@ -73,9 +73,14 @@ public class URDFParser : MonoBehaviour {
                         if(matNode != null) {
                             XmlNode colNode = GetXmlNodeChildByName(matNode, "color");
                             if (colNode != null) col = TupleToColor(colNode.Attributes["rgba"].Value);
+
+                            // TODO: Load the textures
+                            XmlNode texNode = GetXmlNodeChildByName(matNode, "texture");
+                            if (texNode != null) { }
                         }
 
                         // Get the mesh and the origin nodes
+                        // TODO: Handle boxes, spheres, and cylinders here
                         XmlNode meshNode = GetXmlNodeChildByName(geomNode, "mesh");
                         XmlNode visOriginNode = GetXmlNodeChildByName(vn, "origin");
                         
