@@ -1,0 +1,37 @@
+{
+  "name": "urdf-loader",
+  
+  "version": "0.0.1",
+
+  "description": "URDF Loader for THREE.js",
+
+  "scripts": {
+    "server": "cd .. && static-server",
+    "build": "cd example && webpack"
+  },
+
+  "license": "Apache-2.0",
+
+  "keywords": [
+    "unity",
+    "javascript",
+    "threejs",
+    "graphics",
+    "robotics",
+    "urdf",
+    "urdf-models",
+    "webcomponents"
+  ],
+
+  "peerDependencies": {
+    "three": "^0.89.0"
+  },
+
+  "devDependencies": {
+    "@webcomponents/webcomponentsjs": "^1.0.7",
+    "static-server": "^3.0.0",
+    "script-loader": "^0.7.0",
+    "wc-loader": "^1.1.12",
+    "webpack": "^3.5.3"
+  }
+}

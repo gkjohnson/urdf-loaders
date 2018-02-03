@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
+        <title>URDF Viewer Example</title>
+    
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100" rel="stylesheet">
+        <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
+
+        <script src="../node_modules/three/build/three.js"></script>
+        <script src="../node_modules/three/examples/js/controls/OrbitControls.js"></script>
+        <script src="../node_modules/three/examples/js/loaders/STLLoader.js"></script>
+        <script src="../node_modules/three/examples/js/loaders/ColladaLoader.js"></script>
+        <script src="../URDFLoader.js"></script>
+        <script src="../urdf-viewer-element.js"></script>
+        <script>
+            customElements.define('urdf-viewer', URDFViewer)
+        </script>
+
+        <style type="text/css">
+            html, body, urdf-viewer {
+                padding: 0;
+                margin: 0;
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+            }
+
+            body {
+                font-family: "Roboto", helvetica, arial, sans-serif;
+                animation: fade 3s ease;
+                color: white;
+                user-select: none;
+            }
+
+            ul {
+                list-style: none;
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 0;
+                margin: 20px;
+                font-size: 30px;
+            }
+
+            li {
+                cursor: pointer;
+                opacity: 0.4;
+            }
+
+            li:hover {
+                opacity: 0.75;
+            }
+
+            @keyframes fade {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        </style>
+    </head>
+    <body>
+        <ul id="urdf-options">
+            <li urdf="T12/urdf/T12.URDF" color="#E91E63">ATHLETE</li>
+            <li urdf="TriATHLETE/urdf/TriATHLETE.URDF" color="#009688">TriATHLETE</li>
+            <li urdf="TriATHLETE_Climbing/urdf/TriATHLETE.URDF" color="#FFB300">TriATHLETE Climbing</li>
+        </ul>
+
+        <urdf-viewer package="../../urdf" up="+Z" display-shadow></urdf-viewer>
+
+        <script>
+            const vw = document.querySelector('urdf-viewer')
+            const DEG2RAD = Math.PI / 180
+
+            const lerp = (from, to, ratio) => from + (to - from) * ratio
+
+            const updateAngles = () => {
+                if (!vw.setAngle) return
+
+                const time = Date.now() / 3e2
+                for(let i = 1; i <= 6; i ++) {
+                    const offset = i * Math.PI / 3
+                    const ratio = Math.max(0, Math.sin(time + offset))
+
+                    vw.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD)
+                    vw.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD)
+                    vw.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD)
+                }
+
+                const ratio = Math.sin(time) / 2 + 0.5
+            }
+
+            const _do = () => {
+                updateAngles()
+                requestAnimationFrame(_do)
+            }
+
+            document.querySelectorAll('li[urdf]').forEach(el => {
+                el.addEventListener('click', e => {
+                    const urdf = e.target.getAttribute('urdf')
+                    const color = e.target.getAttribute('color')
+
+                    vw.urdf = urdf
+                    document.body.style.backgroundColor = color
+                })
+            })
+
+            document.addEventListener('WebComponentsReady', () => {
+                vw.addEventListener('urdf-processed', e => updateAngles())
+                document.querySelector('li[urdf]').dispatchEvent(new Event('click'))
+
+                if (/javascript\/example\/build/i.test(window.location)) {
+                    vw.package = '../../../urdf'
+                }
+
+                _do()
+            })
+        </script>
+    </body>
+</html>
