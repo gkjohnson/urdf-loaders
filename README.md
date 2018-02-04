@@ -1,10 +1,10 @@
 # urdf-loaders
 
-URDF loading code in both [C# for Unity](./unity/Assets/lib/) and [Javascript for THREE.js](./javascript/), as well as example ATHLETE URDF files
+URDF loading code in both [C# for Unity](./unity/Assets/lib/) and [Javascript for THREE.js](./javascript/), as well as example [JPL ATHLETE](https://www-robotics.jpl.nasa.gov/systems/system.cfm?System=11) URDF files
 
 [Demo Here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/index.bundle.html)
 
-![Example](./javascript/docs/javascript-example.gif)
+![Example](./unity/Assets/lib/docs/all-urdfs.png)
 
 ### Gotchas
 
