@@ -220,9 +220,11 @@ class URDFViewer extends HTMLElement {
             item.children.forEach(c => _dispose(c))
         }
 
+        if (this._prevload === `${pkg}|${urdf}`) return
+
         this._robots.forEach(r => _dispose(r))
 
-        if (pkg && urdf && this._prevload !== `${pkg}|${urdf}`) {
+        if (pkg && urdf) {
             this._prevload = `${pkg}|${urdf}`
 
             // Keep track of this request and make
