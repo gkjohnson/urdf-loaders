@@ -2,7 +2,7 @@
 
 Utilities for loading URDF files and STL geometry into Unity
 
-![Example](./docs/unity-example.gif)
+![Example](../docs/unity-example.gif)
 
 ## Use
 ```cs
