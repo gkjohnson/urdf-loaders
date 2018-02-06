@@ -1,18 +1,10 @@
 # javascript urdf-loader
 
+[![npm version](https://badge.fury.io/js/urdf-loader.svg)](https://www.npmjs.com/package/urdf-loader)
+
 Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model
 
 ![Example](./docs/javascript-example.gif)
-
-## Running the Example
-
-Install Node.js and NPM
-
-Run `npm install`
-
-Run `npm run server`
-
-Visit `localhost:9080/javascript/example/` to view the page
 
 ## URDFLoader
 ```html
@@ -106,6 +98,16 @@ Sets the given joint to the provided angle in radians.
 #### setAngles(jointDictionary)
 
 Sets all joint names specified as keys to radian angle value.
+
+## Running the Example
+
+Install Node.js and NPM
+
+Run `npm install`
+
+Run `npm run server`
+
+Visit `localhost:9080/javascript/example/` to view the page
 
 # LICENSE
 
