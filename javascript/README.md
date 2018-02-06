@@ -4,7 +4,7 @@
 
 Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model
 
-![Example](./docs/javascript-example.gif)
+![Example](/javascript/docs/javascript-example.gif)
 
 ## URDFLoader
 ```html
