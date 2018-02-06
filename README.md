@@ -4,7 +4,7 @@ URDF loading code in both [C# for Unity](./unity/Assets/lib/) and [Javascript fo
 
 [Demo Here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/index.bundle.html)
 
-![Example](./unity/Assets/lib/docs/all-urdfs.png)
+![Example](./unity/Assets/docs/asset%20store/all-urdfs.png)
 
 ### Gotchas
 
