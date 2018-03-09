@@ -18,6 +18,11 @@ class URDFLoader {
         return this._textureloader
     }
 
+    static get FileLoader() {
+        this._fileloader = this._fileloader || new THREE.FileLoader()
+        return this._fileloader
+    }
+
     /* Utilities */
     // forEach and filter function wrappers because 
     // HTMLCollection does not the by default
@@ -46,9 +51,7 @@ class URDFLoader {
         loadMeshCb = loadMeshCb || this.defaultMeshLoader
 
         const path = `${pkg}/${urdf}`
-        fetch(path, { credentials:'include' })
-            .then(res => res.text())
-            .then(data => this.loadStr(pkg, data, cb, loadMeshCb))
+        URDFLoader.FileLoader.load(path, data => this.loadStr(pkg, data, cb, loadMeshCb));
     }
 
     static loadStr(pkg, content, cb, loadMeshCb) {
