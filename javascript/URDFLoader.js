@@ -128,8 +128,8 @@ class URDFLoader {
 
         let parent = null
         let child = null
-        let xyz = null
-        let rpy = null
+        let xyz = [0, 0, 0]
+        let rpy = [0, 0, 0]
 
         // Extract the attributes
         URDFLoader.forEach(joint.children, n => {
@@ -208,8 +208,8 @@ class URDFLoader {
 
     // Process the visual nodes into meshes
     static _processVisualNode(pkg, vn, linkObj, loadMeshCb) {
-        let xyz = null
-        let rpy = null
+        let xyz = [0, 0, 0]
+        let rpy = [0, 0, 0]
         let mesh = null
 
         const material = new THREE.MeshLambertMaterial()
