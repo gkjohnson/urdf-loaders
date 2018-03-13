@@ -75,6 +75,8 @@ Corresponds to the `package` parameter in `URDFLoader.load`.
 
 Corresponds to the `urdfpath` parameter in `URDFLoader.load`.
 
+The element uses fetch options `{ mode: 'cors', credentials: 'same-origin' }` to load the urdf file.
+
 #### up
 
 The axis to associate with "up" in THREE.js. Values can be [+-][XYZ].
