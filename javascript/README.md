@@ -20,7 +20,7 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 ```
 
 ### API
-#### URDFLoader.load(package, urdfpath, robotsCallback, geometryLoader)
+#### URDFLoader.load(package, urdfpath, robotsCallback, geometryLoader, fetchOptions)
 
 Loads and builds the specified URDF robot in THREE.js
 
@@ -46,7 +46,13 @@ Callback that is called once the urdf robots have been loaded. An array of loade
 
 _optional_
 
-A optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `doneCallback` is called with the mesh once the geometry has been loaded.
+An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `doneCallback` is called with the mesh once the geometry has been loaded.
+
+##### fetchOptions
+
+_optional_
+
+An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
 
 ## urdf-viewer Element
 ```html
@@ -68,6 +74,8 @@ Corresponds to the `package` parameter in `URDFLoader.load`.
 #### urdf
 
 Corresponds to the `urdfpath` parameter in `URDFLoader.load`.
+
+The element uses fetch options `{ mode: 'cors', credentials: 'same-origin' }` to load the urdf file.
 
 #### up
 
