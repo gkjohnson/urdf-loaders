@@ -42,11 +42,11 @@ class URDFLoader {
     // pkg:     The equivelant of a ROS package:// directory
     // urdf:    The URDF path in the directory
     // cb:      Callback that is passed the model once loaded
-    static load(pkg, urdf, cb, loadMeshCb) {
+    static load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
         loadMeshCb = loadMeshCb || this.defaultMeshLoader
 
         const path = `${pkg}/${urdf}`
-        fetch(path, { credentials:'include' })
+        fetch(path, fetchOptions)
             .then(res => res.text())
             .then(data => this.loadStr(pkg, data, cb, loadMeshCb))
     }

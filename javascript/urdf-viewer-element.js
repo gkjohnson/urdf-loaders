@@ -272,7 +272,8 @@ class URDFViewer extends HTMLElement {
                             this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }))
                         }
                     })
-            })
+            },
+            { mode: 'cors', credentials: 'same-origin' })
         }
     }
 
