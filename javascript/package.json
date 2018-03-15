@@ -1,28 +1,20 @@
 {
   "name": "urdf-loader",
-
-  "version": "0.0.2",
-
+  "version": "0.1.1",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
-
   "scripts": {
     "server": "cd .. && static-server",
     "build": "cd example && webpack"
   },
-
   "license": "Apache-2.0",
-
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gkjohnson/urdf-loaders.git"
   },
-
   "bugs": {
     "url": "https://github.com/gkjohnson/urdf-loaders/issues"
   },
-
   "homepage": "https://github.com/gkjohnson/urdf-loaders#readme",
-
   "keywords": [
     "javascript",
     "threejs",
@@ -32,11 +24,9 @@
     "urdf-models",
     "webcomponents"
   ],
-
   "peerDependencies": {
     "three": "^0.89.0"
   },
-
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^1.0.7",
     "static-server": "^3.0.0",
