@@ -43,8 +43,6 @@ class URDFLoader {
     // urdf:    The URDF path in the directory
     // cb:      Callback that is passed the model once loaded
     static load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
-        loadMeshCb = loadMeshCb || this.defaultMeshLoader
-
         const path = `${pkg}/${urdf}`
         fetch(path, fetchOptions)
             .then(res => res.text())
@@ -52,7 +50,7 @@ class URDFLoader {
     }
 
     static loadStr(pkg, content, cb, loadMeshCb) {
-        cb(this._processUrdf(pkg, content, loadMeshCb))
+        cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader))
     }
 
     // Default mesh loading function
