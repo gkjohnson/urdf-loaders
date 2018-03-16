@@ -46,10 +46,10 @@ class URDFLoader {
         const path = `${pkg}/${urdf}`
         fetch(path, fetchOptions)
             .then(res => res.text())
-            .then(data => this.loadStr(pkg, data, cb, loadMeshCb))
+            .then(data => this.parse(pkg, data, cb, loadMeshCb))
     }
 
-    static loadStr(pkg, content, cb, loadMeshCb) {
+    static parse(pkg, content, cb, loadMeshCb) {
         cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader))
     }
 
