@@ -122,7 +122,11 @@ class URDFLoader {
         const jointType = joint.getAttribute('type')
         const obj = new THREE.Object3D()
         obj.name = joint.getAttribute('name')
-        obj.urdf = { node: joint, type: jointType, angle: 0, min: -Infinity, max: Infinity, setAngle: () => {} }
+        obj.urdf = {
+            node: joint, type: jointType, angle: 0, axis: null,
+            limits: { lower: -Infinity, upper: Infinity },
+            setAngle: () => {}
+        }
 
         let parent = null
         let child = null
@@ -140,8 +144,8 @@ class URDFLoader {
             } else if(type === 'parent') {
                 parent = linkMap[n.getAttribute('link')]
             } else if(type === 'limit') {
-                obj.urdf.min = parseFloat(n.getAttribute('lower') || obj.urdf.min)
-                obj.urdf.max = parseFloat(n.getAttribute('upper') || obj.urdf.max)
+                obj.urdf.limits.lower = parseFloat(n.getAttribute('lower') || obj.urdf.limits.lower)
+                obj.urdf.limits.upper = parseFloat(n.getAttribute('upper') || obj.urdf.limits.upper)
             }
         })
 
@@ -154,30 +158,29 @@ class URDFLoader {
         // Set up the rotate function
         const origRot = new THREE.Quaternion().copy(obj.quaternion)
         const axisnode = URDFLoader.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0]
-        let axis = null
 
         if (axisnode) {
             const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num))
-            axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2])
+            obj.urdf.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2])
         }
 
         switch (jointType) {
             case 'fixed': break;
             case 'continuous':
-                obj.urdf.min = -Infinity
-                obj.urdf.max = Infinity
+                obj.urdf.limits.lower = -Infinity
+                obj.urdf.limits.upper = Infinity
             case 'revolute':
                 obj.urdf.setAngle = function(angle = 0) {
-                    if (!axis) return
+                    if (!this.axis) return
 
-                    angle = Math.min(this.max, angle)
-                    angle = Math.max(this.min, angle)
+                    angle = Math.min(this.limits.upper, angle)
+                    angle = Math.max(this.limits.lower, angle)
 
                     // FromAxisAngle seems to rotate the opposite of the
                     // expected angle for URDF, so negate it here
                     angle *= -1
 
-                    const delta = new THREE.Quaternion().setFromAxisAngle(axis, angle)
+                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle)
                     obj.quaternion.multiplyQuaternions(origRot, delta)
                     this.angle = angle
                 }
