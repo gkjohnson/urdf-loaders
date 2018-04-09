@@ -198,6 +198,7 @@ class URDFViewer extends HTMLElement {
             const joint = r.urdf.joints[jointname]
             if (joint) joint.urdf.setAngle(angle)
         })
+        this._dirty = true
     }
     
     setAngles(angles) {
