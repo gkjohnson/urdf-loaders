@@ -184,6 +184,12 @@ class URDFViewer extends HTMLElement {
         const r = this.renderer
         const w = this.clientWidth
         const h = this.clientHeight
+        const currsize = r.getSize()
+
+        if (currsize.width != w || currsize.height != h) {
+            this._dirty = true
+        }
+
         r.setPixelRatio(window.devicePixelRatio)
         r.setSize(w, h, false)
 
