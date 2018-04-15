@@ -4,7 +4,6 @@
 // Events
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
-// TODO: Load textures, colors, materials, and other model formats
 class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
@@ -46,6 +45,7 @@ class URDFViewer extends HTMLElement {
 
         this._robots = []
         this._requestId = 0
+        this._dirty = false
 
         // Scene setup
         const scene = new THREE.Scene()
@@ -87,16 +87,16 @@ class URDFViewer extends HTMLElement {
         scene.add(plane)
 
         // Controls setup
-        window.controls = new THREE.OrbitControls(camera, renderer.domElement)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement)
         controls.rotateSpeed = 2.0
         controls.zoomSpeed = 5
         controls.panSpeed = 2
         controls.enableZoom = true
         controls.enablePan = true
-        controls.enableDamping = true
-        controls.dampingFactor = 0.3
+        controls.enableDamping = false
         controls.maxDistance = 50
         controls.minDistance = 0.25
+        controls.addEventListener('change', () => this._dirty = true)
         
         this.world = world
         this.renderer = renderer
@@ -108,8 +108,11 @@ class URDFViewer extends HTMLElement {
         const _do = () => {
             if(this.parentNode) {
                 this.controls.update()
-                this.renderer.render(scene, camera)
-                this._updatePlane()
+                if (this._dirty) {
+                    this._updatePlane()
+                    this.renderer.render(scene, camera)
+                    this._dirty = false
+                }
             }
             this._renderLoopId = requestAnimationFrame(_do)
         }
@@ -150,6 +153,8 @@ class URDFViewer extends HTMLElement {
     }
 
     attributeChangedCallback(attr, oldval, newval) {
+        this._dirty = true
+
         switch(attr) {
             case 'package':
             case 'urdf': {
@@ -177,6 +182,12 @@ class URDFViewer extends HTMLElement {
         const r = this.renderer
         const w = this.clientWidth
         const h = this.clientHeight
+        const currsize = r.getSize()
+
+        if (currsize.width != w || currsize.height != h) {
+            this._dirty = true
+        }
+
         r.setPixelRatio(window.devicePixelRatio)
         r.setSize(w, h, false)
 
@@ -191,6 +202,7 @@ class URDFViewer extends HTMLElement {
             const joint = r.urdf.joints[jointname]
             if (joint) joint.urdf.setAngle(angle)
         })
+        this._dirty = true
     }
     
     setAngles(angles) {
@@ -271,6 +283,8 @@ class URDFViewer extends HTMLElement {
                         if (meshesLoaded === totalMeshes && this._requestId === requestId) {
                             this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }))
                         }
+
+                        this._dirty = true
                     })
             },
             { mode: 'cors', credentials: 'same-origin' })

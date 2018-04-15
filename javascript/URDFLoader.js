@@ -190,6 +190,7 @@ class URDFLoader {
             case 'prismatic':
             case 'planar':
                 // TODO: Support these joint types
+                console.warn(`'${ jointType }' joint not yet supported`)
         }
 
         return obj
