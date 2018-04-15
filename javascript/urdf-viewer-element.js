@@ -4,7 +4,6 @@
 // Events
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
-// TODO: Load textures, colors, materials, and other model formats
 class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
@@ -113,7 +112,6 @@ class URDFViewer extends HTMLElement {
                     this._updatePlane()
                     this.renderer.render(scene, camera)
                     this._dirty = false
-                    console.log("RENDERING")
                 }
             }
             this._renderLoopId = requestAnimationFrame(_do)
