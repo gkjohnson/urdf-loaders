@@ -19,7 +19,7 @@ class URDFLoader {
     }
 
     /* Utilities */
-    // forEach and filter function wrappers because 
+    // forEach and filter function wrappers because
     // HTMLCollection does not the by default
     static forEach(coll, func)  { return [].forEach.call(coll, func) }
     static filter(coll, func)   { return [].filter.call(coll, func) }
@@ -43,7 +43,10 @@ class URDFLoader {
     // urdf:    The URDF path in the directory
     // cb:      Callback that is passed the model once loaded
     static load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
-        const path = `${pkg}/${urdf}`
+        let path = null
+        if (/^(f|ht)tps?:\/\//i.test(urdf))  path = urdf
+        else  path = `${pkg}/${urdf}`
+        
         fetch(path, fetchOptions)
             .then(res => res.text())
             .then(data => this.parse(pkg, data, cb, loadMeshCb))
@@ -138,7 +141,7 @@ class URDFLoader {
             const type = n.nodeName.toLowerCase()
             if (type === 'origin') {
                 xyz = this._processTuple(n.getAttribute('xyz'))
-                rpy = this._processTuple(n.getAttribute('rpy'))                    
+                rpy = this._processTuple(n.getAttribute('rpy'))
             } else if(type === 'child') {
                 child = linkMap[n.getAttribute('link')]
             } else if(type === 'parent') {
@@ -234,7 +237,7 @@ class URDFLoader {
 
                             obj.position.set(xyz[0], xyz[1], xyz[2])
                             obj.rotation.set(0,0,0)
-                            this._applyRotation(obj, rpy)                            
+                            this._applyRotation(obj, rpy)
                         }
                     })
                 } else if (geoType === 'box') {
