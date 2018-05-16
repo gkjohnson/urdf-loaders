@@ -124,7 +124,7 @@ class URDFLoader {
         obj.name = joint.getAttribute('name')
         obj.urdf = {
             node: joint, type: jointType, angle: 0, axis: null,
-            limits: { lower: -Infinity, upper: Infinity },
+            limits: { lower: 0, upper: 0 },
             setAngle: () => {}
         }
 
@@ -167,8 +167,8 @@ class URDFLoader {
         switch (jointType) {
             case 'fixed': break;
             case 'continuous':
-                obj.urdf.limits.lower = 0
-                obj.urdf.limits.upper = 0
+                obj.urdf.limits.lower = -Infinity
+                obj.urdf.limits.upper = Infinity
             case 'revolute':
                 obj.urdf.setAngle = function(angle = 0) {
                     if (!this.axis) return
