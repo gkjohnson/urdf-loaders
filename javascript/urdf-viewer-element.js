@@ -158,21 +158,19 @@ class URDFViewer extends HTMLElement {
         switch(attr) {
             case 'package':
             case 'urdf': {
-                if (this.package && this.urdf) {
-                    this._loadUrdf(this.package, this.urdf)
-                }
+                this._loadUrdf(this.package, this.urdf)
                 break
             }
 
             case 'up': {
                 this._setUp(this.up)
-                break;
+                break
             }
 
             case 'ambient-color': {
                 console.log(this.ambientLight, this.ambientColor)
                 this.ambientLight.color.set(this.ambientColor)
-                break;
+                break
             }
         }
     }
