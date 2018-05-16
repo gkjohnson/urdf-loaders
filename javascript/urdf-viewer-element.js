@@ -168,7 +168,6 @@ class URDFViewer extends HTMLElement {
             }
 
             case 'ambient-color': {
-                console.log(this.ambientLight, this.ambientColor)
                 this.ambientLight.color.set(this.ambientColor)
                 break
             }
