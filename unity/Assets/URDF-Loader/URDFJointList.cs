@@ -12,8 +12,8 @@ public class URDFJointList : MonoBehaviour {
 
         public string type = "fixed";
         public Vector3 axis = Vector3.zero;
-        public float minAngle = Mathf.NegativeInfinity;
-        public float maxAngle = Mathf.Infinity;
+        public float minAngle = 0;
+        public float maxAngle = 0;
 
 		public Transform transform;
         public Quaternion originalRotation;
