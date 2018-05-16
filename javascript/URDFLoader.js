@@ -157,11 +157,13 @@ class URDFLoader {
 
         // Set up the rotate function
         const origRot = new THREE.Quaternion().copy(obj.quaternion)
+        const origPos = new THREE.Vector3().copy(obj.position)
         const axisnode = URDFLoader.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0]
 
         if (axisnode) {
             const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num))
             obj.urdf.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2])
+            obj.urdf.axis.normalize()
         }
 
         switch (jointType) {
@@ -178,16 +180,27 @@ class URDFLoader {
 
                     // FromAxisAngle seems to rotate the opposite of the
                     // expected angle for URDF, so negate it here
-                    angle *= -1
-
-                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle)
+                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle * -1)
                     obj.quaternion.multiplyQuaternions(origRot, delta)
+
                     this.angle = angle
                 }
                 break;
 
-            case 'floating':
             case 'prismatic':
+                obj.urdf.setAngle = function(angle = 0) {
+                    if (!this.axis) return
+
+                    angle = Math.min(this.limits.upper, angle)
+                    angle = Math.max(this.limits.lower, angle)
+
+                    obj.position.copy(origPos);
+                    obj.position.addScaledVector(this.axis, angle)
+
+                    this.angle = angle
+                }
+                break;
+            case 'floating':
             case 'planar':
                 // TODO: Support these joint types
                 console.warn(`'${ jointType }' joint not yet supported`)
