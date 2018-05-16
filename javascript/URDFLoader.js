@@ -178,9 +178,7 @@ class URDFLoader {
 
                     // FromAxisAngle seems to rotate the opposite of the
                     // expected angle for URDF, so negate it here
-                    angle *= -1
-
-                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle)
+                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle * -1)
                     obj.quaternion.multiplyQuaternions(origRot, delta)
                     this.angle = angle
                 }
