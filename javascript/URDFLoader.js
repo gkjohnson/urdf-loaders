@@ -171,9 +171,12 @@ class URDFLoader {
             case 'continuous':
                 obj.urdf.limits.lower = -Infinity
                 obj.urdf.limits.upper = Infinity
+
+                // fall through to revolute joint 'setAngle' function
             case 'revolute':
-                obj.urdf.setAngle = function(angle = 0) {
+                obj.urdf.setAngle = function(angle = null) {
                     if (!this.axis) return
+                    if (angle == null) return
 
                     angle = Math.min(this.limits.upper, angle)
                     angle = Math.max(this.limits.lower, angle)
@@ -185,11 +188,12 @@ class URDFLoader {
 
                     this.angle = angle
                 }
-                break;
+                break
 
             case 'prismatic':
-                obj.urdf.setAngle = function(angle = 0) {
+                obj.urdf.setAngle = function(angle = null) {
                     if (!this.axis) return
+                    if (angle == null) return
 
                     angle = Math.min(this.limits.upper, angle)
                     angle = Math.max(this.limits.lower, angle)
@@ -199,12 +203,19 @@ class URDFLoader {
 
                     this.angle = angle
                 }
-                break;
+                break
+
             case 'floating':
             case 'planar':
                 // TODO: Support these joint types
                 console.warn(`'${ jointType }' joint not yet supported`)
         }
+
+        // copy the 'setAngle' function over to 'set' so
+        // it makes sense for other joint types (prismatic, planar)
+        // TODO: Remove the 'setAngle' function
+        // TODO: Figure out how to handle setting and getting angles of other types
+        obj.urdf.set = setAngle
 
         return obj
     }
