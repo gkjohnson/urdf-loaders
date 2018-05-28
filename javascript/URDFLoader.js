@@ -215,7 +215,7 @@ class URDFLoader {
         // it makes sense for other joint types (prismatic, planar)
         // TODO: Remove the 'setAngle' function
         // TODO: Figure out how to handle setting and getting angles of other types
-        obj.urdf.set = setAngle
+        obj.urdf.set = obj.urdf.setAngle
 
         return obj
     }
