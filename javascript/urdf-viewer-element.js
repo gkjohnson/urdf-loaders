@@ -107,6 +107,7 @@ class URDFViewer extends HTMLElement {
 
         const _do = () => {
             if(this.parentNode) {
+                this.refresh()
                 this.controls.update()
                 if (this._dirty) {
                     this._updatePlane()
@@ -118,8 +119,6 @@ class URDFViewer extends HTMLElement {
         }
         _do()
 
-        // set up the canvas
-        window.addEventListener('resize', () => this.refresh())
     }
 
     connectedCallback() {
