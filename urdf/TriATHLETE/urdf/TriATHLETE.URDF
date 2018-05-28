@@ -551,7 +551,9 @@
       xyz="1 0 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="ToolClamp1B">
@@ -607,7 +609,9 @@
       xyz="-1 0 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="Hip2">
@@ -1120,7 +1124,9 @@
       xyz="1 0 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="ToolClamp2B">
@@ -1176,7 +1182,9 @@
       xyz="-1 0 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="Hip3">
@@ -1689,7 +1697,9 @@
       xyz="1 0 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="ToolClamp3B">
@@ -1745,6 +1755,8 @@
       xyz="-1 0 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
 </robot>

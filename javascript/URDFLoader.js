@@ -157,11 +157,13 @@ class URDFLoader {
 
         // Set up the rotate function
         const origRot = new THREE.Quaternion().copy(obj.quaternion)
+        const origPos = new THREE.Vector3().copy(obj.position)
         const axisnode = URDFLoader.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0]
 
         if (axisnode) {
             const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num))
             obj.urdf.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2])
+            obj.urdf.axis.normalize()
         }
 
         switch (jointType) {
@@ -169,9 +171,12 @@ class URDFLoader {
             case 'continuous':
                 obj.urdf.limits.lower = -Infinity
                 obj.urdf.limits.upper = Infinity
+
+                // fall through to revolute joint 'setAngle' function
             case 'revolute':
-                obj.urdf.setAngle = function(angle = 0) {
+                obj.urdf.setAngle = function(angle = null) {
                     if (!this.axis) return
+                    if (angle == null) return
 
                     angle = Math.min(this.limits.upper, angle)
                     angle = Math.max(this.limits.lower, angle)
@@ -180,16 +185,37 @@ class URDFLoader {
                     // expected angle for URDF, so negate it here
                     const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle * -1)
                     obj.quaternion.multiplyQuaternions(origRot, delta)
+
                     this.angle = angle
                 }
-                break;
+                break
+
+            case 'prismatic':
+                obj.urdf.setAngle = function(angle = null) {
+                    if (!this.axis) return
+                    if (angle == null) return
+
+                    angle = Math.min(this.limits.upper, angle)
+                    angle = Math.max(this.limits.lower, angle)
+
+                    obj.position.copy(origPos);
+                    obj.position.addScaledVector(this.axis, angle)
+
+                    this.angle = angle
+                }
+                break
 
             case 'floating':
-            case 'prismatic':
             case 'planar':
                 // TODO: Support these joint types
                 console.warn(`'${ jointType }' joint not yet supported`)
         }
+
+        // copy the 'setAngle' function over to 'set' so
+        // it makes sense for other joint types (prismatic, planar)
+        // TODO: Remove the 'setAngle' function
+        // TODO: Figure out how to handle setting and getting angles of other types
+        obj.urdf.set = obj.urdf.setAngle
 
         return obj
     }

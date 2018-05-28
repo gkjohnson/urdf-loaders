@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "scripts": {
-    "server": "cd .. && static-server",
+    "start": "cd .. && static-server",
     "build": "cd example && webpack"
   },
   "license": "Apache-2.0",
@@ -28,11 +28,12 @@
     "three": "^0.89.0"
   },
   "devDependencies": {
-    "@webcomponents/webcomponentsjs": "^1.0.7",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
     "script-loader": "^0.7.0",
     "static-server": "^3.0.0",
     "three": "^0.91.0",
     "wc-loader": "^1.1.12",
     "webpack": "^3.5.3"
-  }
+  },
+  "dependencies": {}
 }
