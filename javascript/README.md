@@ -107,15 +107,25 @@ Sets the given joint to the provided angle in radians.
 
 Sets all joint names specified as keys to radian angle value.
 
+### Events
+
+#### 'urdf-processed'
+
+Fires when the URDF has finished loading and getting processed.
+
+#### 'geometry-loaded'
+
+Fires when all the geometry has been fully loaded.
+
 ## Running the Example
 
-Install Node.js and NPM
+Install Node.js and NPM.
 
-Run `npm install`
+Run `npm install`.
 
-Run `npm run server`
+Run `npm run server`.
 
-Visit `localhost:9080/javascript/example/` to view the page
+Visit `localhost:9080/javascript/example/` to view the page.
 
 # LICENSE
 
