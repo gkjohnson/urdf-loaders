@@ -1,0 +1,1591 @@
+<robot
+  name="TriATHLETE">
+  <link
+    name="Body">
+    <inertial>
+      <origin
+        xyz="0.00032761 0.38981 0.13484"
+        rpy="0 0 0" />
+      <mass
+        value="69.465" />
+      <inertia
+        ixx="9.5472"
+        ixy="-0.0060042"
+        ixz="-0.00096273"
+        iyy="61.245"
+        iyz="-0.026122"
+        izz="69.216" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Body.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Body.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Hip1">
+    <inertial>
+      <origin
+        xyz="0.12059 0.04703 -0.043975"
+        rpy="0 0 0" />
+      <mass
+        value="10.161" />
+      <inertia
+        ixx="0.69317"
+        ixy="0.0073762"
+        ixz="0.040711"
+        iyy="0.34376"
+        iyz="0.0014897"
+        izz="0.9152" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Hip1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Hip1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="HY1"
+    type="revolute">
+    <origin
+      xyz="1.7322 0.27849 0.41034"
+      rpy="-3.257E-15 -6.0627E-15 0.5236" />
+    <parent
+      link="Body" />
+    <child
+      link="Hip1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Thigh1">
+    <inertial>
+      <origin
+        xyz="0.37052 1.2567E-08 -0.0016621"
+        rpy="0 0 0" />
+      <mass
+        value="14.238" />
+      <inertia
+        ixx="1.0008"
+        ixy="7.0442E-08"
+        ixz="0.0087687"
+        iyy="2.0253"
+        iyz="-0.00024727"
+        izz="1.3252" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Thigh1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Thigh1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="HP1"
+    type="revolute">
+    <origin
+      xyz="0.36808 0 0"
+      rpy="-1.5708 1.2759E-14 6.6613E-16" />
+    <parent
+      link="Hip1" />
+    <child
+      link="Thigh1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.9199"
+      upper="1.5708"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Knee1">
+    <inertial>
+      <origin
+        xyz="0.014835 -0.055529 0.0058012"
+        rpy="0 0 0" />
+      <mass
+        value="6.9322" />
+      <inertia
+        ixx="0.16535"
+        ixy="0.0071097"
+        ixz="-0.0005908"
+        iyy="0.14265"
+        iyz="0.0022095"
+        izz="0.11836" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Knee1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Knee1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="KP1"
+    type="revolute">
+    <origin
+      xyz="0.8627 0 0"
+      rpy="7.7716E-16 5.5497E-16 1.5708" />
+    <parent
+      link="Thigh1" />
+    <child
+      link="Knee1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.9199"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Shin1">
+    <inertial>
+      <origin
+        xyz="2.2722E-06 1.9798E-05 0.38864"
+        rpy="0 0 0" />
+      <mass
+        value="11.342" />
+      <inertia
+        ixx="0.80592"
+        ixy="-0.0001612"
+        ixz="-5.0691E-06"
+        iyy="0.59356"
+        iyz="-5.2897E-05"
+        izz="0.3788" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Shin1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Shin1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="KR1"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 2.6218E-16 8.7503E-15" />
+    <parent
+      link="Knee1" />
+    <child
+      link="Shin1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Ankle1">
+    <inertial>
+      <origin
+        xyz="0.01649 -0.057475 0.0063572"
+        rpy="0 0 0" />
+      <mass
+        value="6.2489" />
+      <inertia
+        ixx="0.13248"
+        ixy="0.0072959"
+        ixz="-0.00064928"
+        iyy="0.11016"
+        iyz="0.0023058"
+        izz="0.1122" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Ankle1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Ankle1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="AP1"
+    type="revolute">
+    <origin
+      xyz="0 0 0.79918"
+      rpy="-1.5708 -1.5149E-15 2.7636E-16" />
+    <parent
+      link="Shin1" />
+    <child
+      link="Ankle1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.0944"
+      upper="2.0944"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Foot1">
+    <inertial>
+      <origin
+        xyz="0.55009 0.039493 0.39286"
+        rpy="0 0 0" />
+      <mass
+        value="561.33" />
+      <inertia
+        ixx="35.475"
+        ixy="0.68563"
+        ixz="-0.40406"
+        iyy="24.501"
+        iyz="-2.4704"
+        izz="32.003" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Foot1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Foot1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="AR1"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 7.4188E-16 1.3492E-16" />
+    <parent
+      link="Ankle1" />
+    <child
+      link="Foot1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolCam1">
+    <inertial>
+      <origin
+        xyz="0 -5.5511E-17 -0.059372"
+        rpy="0 0 0" />
+      <mass
+        value="0.00060466" />
+      <inertia
+        ixx="8.1422E-07"
+        ixy="4.178E-23"
+        ixz="1.5882E-22"
+        iyy="1.2351E-06"
+        iyz="-1.3405E-22"
+        izz="6.2829E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolCam1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolCam1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TCam1"
+    type="revolute">
+    <origin
+      xyz="0.13569 0 0.60972"
+      rpy="1.7997E-15 2.2204E-16 -1.5708" />
+    <parent
+      link="Foot1" />
+    <child
+      link="ToolCam1" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolClamp1A">
+    <inertial>
+      <origin
+        xyz="-0.0033419 -4.4964E-15 0.054123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00064477" />
+      <inertia
+        ixx="2.5412E-06"
+        ixy="6.1543E-21"
+        ixz="-7.1857E-08"
+        iyy="1.3569E-06"
+        iyz="-9.8912E-20"
+        izz="1.6609E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp1A.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp1A.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TC1A"
+    type="prismatic">
+    <origin
+      xyz="0 0.082309 0.62909"
+      rpy="1.8082E-15 -5.5511E-17 -1.5708" />
+    <parent
+      link="Foot1" />
+    <child
+      link="ToolClamp1A" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolClamp1B">
+    <inertial>
+      <origin
+        xyz="0.0033419 4.5519E-15 0.054123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00064477" />
+      <inertia
+        ixx="2.5412E-06"
+        ixy="5.8962E-21"
+        ixz="7.1857E-08"
+        iyy="1.3569E-06"
+        iyz="1.003E-19"
+        izz="1.6609E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp1B.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp1B.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TC1B"
+    type="prismatic">
+    <origin
+      xyz="0 -0.082309 0.62909"
+      rpy="1.2378E-15 -3.3307E-16 -1.5708" />
+    <parent
+      link="Foot1" />
+    <child
+      link="ToolClamp1B" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Hip2">
+    <inertial>
+      <origin
+        xyz="0.11762 0.052167 -0.043975"
+        rpy="0 0 0" />
+      <mass
+        value="10.161" />
+      <inertia
+        ixx="0.69318"
+        ixy="0.00738"
+        ixz="0.040711"
+        iyy="0.34375"
+        iyz="0.0014912"
+        izz="0.91521" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Hip2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Hip2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="HY2"
+    type="revolute">
+    <origin
+      xyz="0.0051465 1.2815 0.41034"
+      rpy="-2.8244E-15 -5.8129E-15 1.5708" />
+    <parent
+      link="Body" />
+    <child
+      link="Hip2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Thigh2">
+    <inertial>
+      <origin
+        xyz="0.36756 1.2571E-08 0.0034683"
+        rpy="0 0 0" />
+      <mass
+        value="14.238" />
+      <inertia
+        ixx="1.0008"
+        ixy="7.0917E-08"
+        ixz="0.0088218"
+        iyy="2.0253"
+        iyz="-0.00024727"
+        izz="1.3251" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Thigh2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Thigh2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="HP2"
+    type="revolute">
+    <origin
+      xyz="0.36808 0 0"
+      rpy="-1.5708 1.2724E-14 7.794E-16" />
+    <parent
+      link="Hip2" />
+    <child
+      link="Thigh2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.9199"
+      upper="1.5708"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Knee2">
+    <inertial>
+      <origin
+        xyz="0.014835 -0.052569 0.010929"
+        rpy="0 0 0" />
+      <mass
+        value="6.9322" />
+      <inertia
+        ixx="0.16535"
+        ixy="0.0071087"
+        ixz="-0.00059243"
+        iyy="0.14265"
+        iyz="0.0022037"
+        izz="0.11835" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Knee2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Knee2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="KP2"
+    type="revolute">
+    <origin
+      xyz="0.8627 0 0"
+      rpy="8.4954E-15 4.3895E-15 1.5708" />
+    <parent
+      link="Thigh2" />
+    <child
+      link="Knee2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.9199"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Shin2">
+    <inertial>
+      <origin
+        xyz="2.2719E-06 0.0051584 0.38567"
+        rpy="0 0 0" />
+      <mass
+        value="11.342" />
+      <inertia
+        ixx="0.80591"
+        ixy="-0.0001612"
+        ixz="-5.0685E-06"
+        iyy="0.59355"
+        iyz="-4.9846E-05"
+        izz="0.3788" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Shin2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Shin2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="KR2"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 -3.5876E-15 -5.5998E-15" />
+    <parent
+      link="Knee2" />
+    <child
+      link="Shin2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Ankle2">
+    <inertial>
+      <origin
+        xyz="0.01649 -0.054514 0.011486"
+        rpy="0 0 0" />
+      <mass
+        value="6.2489" />
+      <inertia
+        ixx="0.13248"
+        ixy="0.0072949"
+        ixz="-0.000651"
+        iyy="0.11016"
+        iyz="0.0023008"
+        izz="0.1122" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Ankle2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Ankle2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="AP2"
+    type="revolute">
+    <origin
+      xyz="0 0 0.79918"
+      rpy="-1.5708 -1.5611E-15 2.5127E-16" />
+    <parent
+      link="Shin2" />
+    <child
+      link="Ankle2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.0944"
+      upper="2.0944"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Foot2">
+    <inertial>
+      <origin
+        xyz="0.55011 0.044802 0.38984"
+        rpy="0 0 0" />
+      <mass
+        value="561.68" />
+      <inertia
+        ixx="35.523"
+        ixy="0.68863"
+        ixz="-0.40501"
+        iyy="24.524"
+        iyz="-2.4616"
+        izz="32.029" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Foot2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Foot2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="AR2"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 7.1678E-16 1.811E-16" />
+    <parent
+      link="Ankle2" />
+    <child
+      link="Foot2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolCam2">
+    <inertial>
+      <origin
+        xyz="-8.6736E-19 0 -0.059372"
+        rpy="0 0 0" />
+      <mass
+        value="0.00060466" />
+      <inertia
+        ixx="8.1422E-07"
+        ixy="0"
+        ixz="-5.2049E-23"
+        iyy="1.2351E-06"
+        iyz="2.2546E-23"
+        izz="6.2829E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolCam2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolCam2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TCam2"
+    type="revolute">
+    <origin
+      xyz="0.13569 0 0.60972"
+      rpy="-6.9798E-15 6.8834E-15 -1.5708" />
+    <parent
+      link="Foot2" />
+    <child
+      link="ToolCam2" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolClamp2A">
+    <inertial>
+      <origin
+        xyz="-0.0033419 -4.4964E-15 0.054123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00064477" />
+      <inertia
+        ixx="2.5412E-06"
+        ixy="8.312E-21"
+        ixz="-7.1857E-08"
+        iyy="1.3569E-06"
+        iyz="-9.7044E-20"
+        izz="1.6609E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp2A.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp2A.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TC2A"
+    type="prismatic">
+    <origin
+      xyz="0 0.082309 0.62909"
+      rpy="-6.9798E-15 6.8834E-15 -1.5708" />
+    <parent
+      link="Foot2" />
+    <child
+      link="ToolClamp2A" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolClamp2B">
+    <inertial>
+      <origin
+        xyz="0.0033419 3.9968E-15 0.054123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00064477" />
+      <inertia
+        ixx="2.5412E-06"
+        ixy="3.4497E-21"
+        ixz="7.1857E-08"
+        iyy="1.3569E-06"
+        iyz="9.988E-20"
+        izz="1.6609E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp2B.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp2B.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TC2B"
+    type="prismatic">
+    <origin
+      xyz="0 -0.082309 0.62909"
+      rpy="-6.9798E-15 6.8834E-15 -1.5708" />
+    <parent
+      link="Foot2" />
+    <child
+      link="ToolClamp2B" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Hip3">
+    <inertial>
+      <origin
+        xyz="0.12059 0.057303 -0.043975"
+        rpy="0 0 0" />
+      <mass
+        value="10.161" />
+      <inertia
+        ixx="0.69319"
+        ixy="0.0073894"
+        ixz="0.040711"
+        iyy="0.34376"
+        iyz="0.0014925"
+        izz="0.91523" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Hip3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Hip3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="HY3"
+    type="revolute">
+    <origin
+      xyz="-1.727 0.2874 0.41034"
+      rpy="-2.3917E-15 -6.0627E-15 2.618" />
+    <parent
+      link="Body" />
+    <child
+      link="Hip3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Thigh3">
+    <inertial>
+      <origin
+        xyz="0.37052 1.2575E-08 0.0085988"
+        rpy="0 0 0" />
+      <mass
+        value="14.238" />
+      <inertia
+        ixx="1.0008"
+        ixy="7.0333E-08"
+        ixz="0.0088758"
+        iyy="2.0253"
+        iyz="-0.00024727"
+        izz="1.3252" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Thigh3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Thigh3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="HP3"
+    type="revolute">
+    <origin
+      xyz="0.36808 0 0"
+      rpy="-1.5708 1.2772E-14 7.7716E-16" />
+    <parent
+      link="Hip3" />
+    <child
+      link="Thigh3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.9199"
+      upper="1.5708"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Knee3">
+    <inertial>
+      <origin
+        xyz="0.014835 -0.055529 0.016058"
+        rpy="0 0 0" />
+      <mass
+        value="6.9322" />
+      <inertia
+        ixx="0.16536"
+        ixy="0.0071096"
+        ixz="-0.00059406"
+        iyy="0.14266"
+        iyz="0.0021963"
+        izz="0.11836" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Knee3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Knee3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="KP3"
+    type="revolute">
+    <origin
+      xyz="0.8627 0 0"
+      rpy="8.3267E-16 6.1564E-16 1.5708" />
+    <parent
+      link="Thigh3" />
+    <child
+      link="Knee3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.9199"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Shin3">
+    <inertial>
+      <origin
+        xyz="2.2717E-06 0.010297 0.38864"
+        rpy="0 0 0" />
+      <mass
+        value="11.342" />
+      <inertia
+        ixx="0.80592"
+        ixy="-0.0001612"
+        ixz="-5.0682E-06"
+        iyy="0.59356"
+        iyz="-4.6265E-05"
+        izz="0.3788" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Shin3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Shin3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="KR3"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 3.7078E-17 8.6514E-15" />
+    <parent
+      link="Knee3" />
+    <child
+      link="Shin3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Ankle3">
+    <inertial>
+      <origin
+        xyz="0.01649 -0.057475 0.016615"
+        rpy="0 0 0" />
+      <mass
+        value="6.2489" />
+      <inertia
+        ixx="0.13249"
+        ixy="0.0072959"
+        ixz="-0.00065273"
+        iyy="0.11016"
+        iyz="0.0022943"
+        izz="0.1122" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Ankle3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Ankle3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="AP3"
+    type="revolute">
+    <origin
+      xyz="0 0 0.79918"
+      rpy="-1.5708 -1.4518E-15 5.062E-17" />
+    <parent
+      link="Shin3" />
+    <child
+      link="Ankle3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.0944"
+      upper="2.0944"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Foot3">
+    <inertial>
+      <origin
+        xyz="0.55009 0.049785 0.39286"
+        rpy="0 0 0" />
+      <mass
+        value="561.33" />
+      <inertia
+        ixx="35.476"
+        ixy="0.68591"
+        ixz="-0.40405"
+        iyy="24.501"
+        iyz="-2.4704"
+        izz="32.003" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Foot3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/Foot3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="AR3"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 7.7376E-16 1.4621E-16" />
+    <parent
+      link="Ankle3" />
+    <child
+      link="Foot3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1416"
+      upper="3.1416"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolCam3">
+    <inertial>
+      <origin
+        xyz="-4.4409E-16 2.7756E-17 -0.059372"
+        rpy="0 0 0" />
+      <mass
+        value="0.00060466" />
+      <inertia
+        ixx="8.1422E-07"
+        ixy="1.1599E-23"
+        ixz="-9.5291E-22"
+        iyy="1.2351E-06"
+        iyz="3.5438E-24"
+        izz="6.2829E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolCam3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolCam3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TCam3"
+    type="revolute">
+    <origin
+      xyz="0.13569 0 0.60972"
+      rpy="1.7753E-15 3.3307E-16 -1.5708" />
+    <parent
+      link="Foot3" />
+    <child
+      link="ToolCam3" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolClamp3A">
+    <inertial>
+      <origin
+        xyz="-0.0033419 -4.3854E-15 0.054123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00064477" />
+      <inertia
+        ixx="2.5412E-06"
+        ixy="1.0269E-20"
+        ixz="-7.1857E-08"
+        iyy="1.3569E-06"
+        iyz="-9.5455E-20"
+        izz="1.6609E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp3A.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp3A.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TC3A"
+    type="prismatic">
+    <origin
+      xyz="0 0.082309 0.62909"
+      rpy="1.7838E-15 5.5511E-17 -1.5708" />
+    <parent
+      link="Foot3" />
+    <child
+      link="ToolClamp3A" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="ToolClamp3B">
+    <inertial>
+      <origin
+        xyz="0.0033419 4.5519E-15 0.054123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00064477" />
+      <inertia
+        ixx="2.5412E-06"
+        ixy="7.7055E-21"
+        ixz="7.1857E-08"
+        iyy="1.3569E-06"
+        iyz="9.7572E-20"
+        izz="1.6609E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp3B.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://TriATHLETE/meshes/ToolClamp3B.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="TC3B"
+    type="prismatic">
+    <origin
+      xyz="0 -0.082309 0.62909"
+      rpy="1.2134E-15 -1.6653E-16 -1.5708" />
+    <parent
+      link="Foot3" />
+    <child
+      link="ToolClamp3B" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>
