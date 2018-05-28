@@ -495,10 +495,12 @@
     <child
       link="ToolClamp1A" />
     <axis
-      xyz="1 0 0" />
+      xyz="0 -1 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="ToolClamp1B">
@@ -551,10 +553,12 @@
     <child
       link="ToolClamp1B" />
     <axis
-      xyz="-1 0 0" />
+      xyz="0 1 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="Hip2">
@@ -1011,10 +1015,12 @@
     <child
       link="ToolClamp2A" />
     <axis
-      xyz="1 0 0" />
+      xyz="0 -1 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="ToolClamp2B">
@@ -1067,10 +1073,12 @@
     <child
       link="ToolClamp2B" />
     <axis
-      xyz="-1 0 0" />
+      xyz="0 1 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="Hip3">
@@ -1527,10 +1535,12 @@
     <child
       link="ToolClamp3A" />
     <axis
-      xyz="1 0 0" />
+      xyz="0 -1 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
   <link
     name="ToolClamp3B">
@@ -1583,9 +1593,11 @@
     <child
       link="ToolClamp3B" />
     <axis
-      xyz="-1 0 0" />
+      xyz="0 1 0" />
     <limit
       effort="0"
-      velocity="0" />
+      velocity="0"
+      lower="0"
+      upper="0.065"/>
   </joint>
 </robot>
