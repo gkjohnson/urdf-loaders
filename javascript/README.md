@@ -10,16 +10,22 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 ```html
 <script src=".../URDFLoader.js"></script>
 <script>
-  URDFLoader.load(
+  const manager = new THREE.LoadingManager();
+  const loader = new URDFLoader(manager);
+  loader.load(
     '.../package/dir/',           // URDF's package:// directory
     'T12/urdf/T12.URDF',          // The path to the URDF in the package
     robot => { },                 // The robot is loaded!
     (path, ext, done) => { },     // Callback for each mesh for custom mesh processing and loading code
-   )
+   );
 </script>
 ```
 
 ### API
+#### constructor(manager)
+
+URDFLoader constructor takes a THREE.js LoadingManager.
+
 #### URDFLoader.load(package, urdfpath, robotsCallback, geometryLoader, fetchOptions)
 
 Loads and builds the specified URDF robot in THREE.js
