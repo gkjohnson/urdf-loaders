@@ -100,7 +100,7 @@ module.exports = function(src) {
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/*__wc__loader*/!function(a){var b="\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no\">\n    \n        <title>URDF Viewer Example</title>\n    \n        <link href=\"https://fonts.googleapis.com/css?family=Roboto:100\" rel=\"stylesheet\">\n        \n\n        \n        \n        \n        \n        \n        \n        \n\n        <style type=\"text/css\">html,body,urdf-viewer{padding:0;margin:0;height:100%;width:100%;overflow:hidden;}body{font-family:\"Roboto\",helvetica,arial,sans-serif;animation:fade 3s ease;color:white;user-select:none;}ul{list-style:none;position:absolute;top:0;left:0;padding:0;margin:20px;font-size:30px;}li{cursor:pointer;opacity:0.4;}li:hover{opacity:0.75;}@keyframes fade{from{opacity:0;}to{opacity:1;}}</style>\n    ";if(a.head){var c=a.head,d=a.createElement("div");for(d.innerHTML=b;d.children.length>0;)c.appendChild(d.children[0])}else a.write(b)}(document);!function(a){var b="\n        <ul id=\"urdf-options\">\n            <li urdf=\"T12/urdf/T12.URDF\" color=\"#E91E63\">ATHLETE</li>\n            <li urdf=\"TriATHLETE/urdf/TriATHLETE.URDF\" color=\"#009688\">TriATHLETE</li>\n            <li urdf=\"TriATHLETE_Climbing/urdf/TriATHLETE.URDF\" color=\"#FFB300\">TriATHLETE Climbing</li>\n        </ul>\n\n        <urdf-viewer package=\"../../urdf\" up=\"+Z\" display-shadow=\"\"></urdf-viewer>\n\n        \n    \n";if(a.body){var c=a.body,d=a.createElement("div");for(d.innerHTML=b;d.children.length>0;)c.appendChild(d.children[0])}else a.write(b)}(document);
+/*__wc__loader*/!function(a){var b="\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no\">\n    \n        <title>URDF Viewer Example</title>\n    \n        <link href=\"https://fonts.googleapis.com/css?family=Roboto:100\" rel=\"stylesheet\">\n        \n\n        \n        \n        \n        \n        \n        \n        \n\n        <style type=\"text/css\">html,body,urdf-viewer{padding:0;margin:0;height:100%;width:100%;overflow:hidden;}body{font-family:\"Roboto\",helvetica,arial,sans-serif;animation:fade 3s ease;color:white;user-select:none;}ul{list-style:none;padding:0;margin:20px;}input[type=\"range\"]{-webkit-appearance:none;appearance:none;background:white;height:1px;border-radius:2px;flex:1;width:100%;}input[type=\"range\"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:10px;height:10px;border-radius:10px;background:white;}input[type=\"range\"]::-moz-range-track{height:1px;background:white;border-radius:10px;}input[type=\"range\"]::-moz-range-thumb{width:10px;height:10px;border-radius:10px;background:white;border:none;}input:focus{outline:none;opacity:1;}#controls{position:absolute;top:0;left:0;display:flex;flex-direction:column;max-height:100%;}#urdf-options li{cursor:pointer;opacity:0.4;font-size:30px;}#urdf-options li:hover{opacity:0.75;}#sliders{flex:1;display:flex;flex-direction:column;width:100%;}#sliders ul{flex:1;overflow-y:auto;}#sliders li{font-size:16px;display:flex;align-items:center;width:200px;}#sliders li span{padding:0 5px;}#sliders li span.value{width:50px;}#do-animate{margin-left:20px;padding-left:25px;position:relative;cursor:pointer;}#do-animate:before{content:\"\";position:absolute;left:0;width:15px;height:15px;border-radius:10px;border:2px solid white;margin-right:5px;}#do-animate:after{content:\"\";width:9px;height:9px;position:absolute;left:5px;top:5px;background:white;border-radius:10px;opacity:0;}#do-animate:not(.checked):hover:after{opacity:0.25;}#do-animate.checked:after{opacity:1;}@keyframes fade{from{opacity:0;}to{opacity:1;}}</style>\n    ";if(a.head){var c=a.head,d=a.createElement("div");for(d.innerHTML=b;d.children.length>0;)c.appendChild(d.children[0])}else a.write(b)}(document);!function(a){var b="\n\n        <div id=\"controls\">\n            <ul id=\"urdf-options\">\n                <li urdf=\"T12/urdf/T12.URDF\" color=\"#E91E63\">ATHLETE</li>\n                <li urdf=\"TriATHLETE/urdf/TriATHLETE.URDF\" color=\"#009688\">TriATHLETE</li>\n                <li urdf=\"TriATHLETE_Climbing/urdf/TriATHLETE.URDF\" color=\"#FFB300\">TriATHLETE Climbing</li>\n            </ul>\n\n            <div id=\"sliders\">\n                <div id=\"do-animate\" class=\"checked\">Animate Joints</div>\n                <ul></ul>\n            </div>\n        </div>\n        <urdf-viewer package=\"../../urdf\" up=\"+Z\" display-shadow=\"\" tabindex=\"0\"></urdf-viewer>\n\n\n        \n    \n";if(a.body){var c=a.body,d=a.createElement("div");for(d.innerHTML=b;d.children.length>0;)c.appendChild(d.children[0])}else a.write(b)}(document);
 __webpack_require__(2);
 
 __webpack_require__(4);
@@ -120,56 +120,142 @@ __webpack_require__(14);
         
 
 
-            const vw = document.querySelector('urdf-viewer')
+            const viewer = document.querySelector('urdf-viewer')
+            const animToggle = document.getElementById('do-animate')
+            const sliderList = document.querySelector('#sliders ul')
             const DEG2RAD = Math.PI / 180
+            const RAD2DEG = 1 / DEG2RAD
+            let sliders = {};
 
             const lerp = (from, to, ratio) => from + (to - from) * ratio
 
             const updateAngles = () => {
-                if (!vw.setAngle) return
+                if (!viewer.setAngle) return
 
+                // reset everything to 0 first
+                const resetangles = viewer.angles;
+                for(const name in resetangles) resetangles[name] = 0;
+                viewer.setAngles(resetangles);
+
+                // animate the legs
                 const time = Date.now() / 3e2
                 for(let i = 1; i <= 6; i ++) {
                     const offset = i * Math.PI / 3
                     const ratio = Math.max(0, Math.sin(time + offset))
 
-                    vw.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD)
-                    vw.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD)
-                    vw.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD)
+                    viewer.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD)
+                    viewer.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD)
+                    viewer.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD)
 
-                    vw.setAngle(`TC${i}A`, lerp(0, 0.065, ratio))
-                    vw.setAngle(`TC${i}B`, lerp(0, 0.065, ratio))
+                    viewer.setAngle(`TC${i}A`, lerp(0, 0.065, ratio))
+                    viewer.setAngle(`TC${i}B`, lerp(0, 0.065, ratio))
                     
-                    vw.setAngle(`W${i}`, window.performance.now() * 0.001)
+                    viewer.setAngle(`W${i}`, window.performance.now() * 0.001)
                 }
 
                 const ratio = Math.sin(time) / 2 + 0.5
             }
 
-            const _do = () => {
-                updateAngles()
-                requestAnimationFrame(_do)
+
+            const updateLoop = () => {
+                if (animToggle.classList.contains('checked')) {
+                    updateAngles()
+                    Object.values(sliders).forEach(li => li.update())
+                }
+
+                requestAnimationFrame(updateLoop)
             }
 
-            document.querySelectorAll('li[urdf]').forEach(el => {
+            // toggle checkbox
+            animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'))
+
+            // watch for urdf changes
+            viewer.addEventListener('urdf-change', () => {
+
+                Object.keys(sliders)
+                    .map(n => sliders[n])
+                    .forEach(sl => sl.remove());
+                sliders = {};
+
+            });
+
+            // create the sliders
+            viewer.addEventListener('urdf-processed', () => {
+
+                const r = viewer._robots[0];
+                Object
+                    .keys(r.urdf.joints)
+                    .sort((a, b) => {
+
+                        const da = a.split(/[^\d]+/g).filter(v => !!v).pop();
+                        const db = b.split(/[^\d]+/g).filter(v => !!v).pop();
+
+                        if (da !== undefined && db !== undefined) {
+                            const delta = parseFloat(da) - parseFloat(db);
+                            if (delta !== 0) return delta;
+                        }
+
+                        if (a > b) return 1;
+                        if (b > a) return -1;
+                        return 0;
+
+                    })
+                    .map(key => r.urdf.joints[key])
+                    .forEach(joint => {
+
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                        `
+                        <span>${joint.name}</span>
+                        <input type="range" min="${joint.urdf.limits.lower}" max="${joint.urdf.limits.upper}" value="0" step="0.0001"/>
+                        <span class="value">0</span>
+                        `;
+                        
+                        sliderList.appendChild(li)
+                        
+                        const angleel = li.querySelector('.value')
+                        const slider = li.querySelector('input')
+                        li.update = () => {
+                            let val = joint.urdf.type === 'revolute' ? joint.urdf.angle * RAD2DEG : joint.urdf.angle
+                            if (Math.abs(val) > 1) val = val.toFixed(1);
+                            else val = val.toPrecision(2);
+                            
+                            angleel.innerText = parseFloat(val)
+                            slider.value = joint.urdf.angle
+                        }
+
+                        slider.addEventListener('input', () => {
+                            viewer.setAngle(joint.name, slider.value)
+                            li.update()
+                        })
+
+                        li.update()
+
+                        sliders[joint.name] = li;
+
+                    })
+
+            })
+
+            document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
                 el.addEventListener('click', e => {
                     const urdf = e.target.getAttribute('urdf')
                     const color = e.target.getAttribute('color')
 
-                    vw.urdf = urdf
+                    viewer.urdf = urdf
                     document.body.style.backgroundColor = color
                 })
             })
 
             document.addEventListener('WebComponentsReady', () => {
-                vw.addEventListener('urdf-processed', e => updateAngles())
+                viewer.addEventListener('urdf-processed', e => updateAngles())
                 document.querySelector('li[urdf]').dispatchEvent(new Event('click'))
 
                 if (/javascript\/example\/build/i.test(window.location)) {
-                    vw.package = '../../../urdf'
+                    viewer.package = '../../../urdf'
                 }
 
-                _do()
+                updateLoop()
             })
         
 
@@ -256,7 +342,7 @@ __webpack_require__(0)(__webpack_require__(15))
 /* 15 */
 /***/ (function(module, exports) {
 
-module.exports = "// urdf-viewer element\r\n// Loads and displays a 3D view of a URDF-formatted robot\r\n\r\n// Events\r\n// urdf-processed: Fires when the URDF has finished loading and getting processed\r\n// geometry-loaded: Fires when all the geometry has been fully loaded\r\nclass URDFViewer extends HTMLElement {\r\n\r\n    static get observedAttributes() {\r\n        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color']\r\n    }\r\n\r\n    get package() { return this.getAttribute('package') || '' }\r\n    set package(val) { this.setAttribute('package', val) } \r\n    \r\n    get urdf() { return this.getAttribute('urdf') || '' }\r\n    set urdf(val) { this.setAttribute('urdf', val) }\r\n\r\n    get up() { return this.getAttribute('up') || '+Y' }\r\n    set up(val) { this.setAttribute('up', val) }\r\n\r\n    get displayShadow() { return this.hasAttribute('display-shadow') || false }\r\n    set displayShadow(val) {\r\n        val = !!val\r\n        val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow')\r\n    }\r\n\r\n    get ambientColor() { return this.getAttribute('ambient-color') || '#455A64' }\r\n    set ambientColor(val) {\r\n        val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color')\r\n    }\r\n\r\n    get angles() {\r\n        const angles = {}\r\n        this._robots.forEach(r => {\r\n            for (let name in r.urdf.joints) angles[name] = r.urdf.joints[name].urdf.angle\r\n        })\r\n        return angles\r\n    }\r\n    set angles(val) { this._setAngles(val) }\r\n\r\n    /* Lifecycle Functions */\r\n    constructor() {\r\n        super()\r\n\r\n        this._robots = []\r\n        this._requestId = 0\r\n        this._dirty = false\r\n\r\n        // Scene setup\r\n        const scene = new THREE.Scene()\r\n\r\n        const ambientLight = new THREE.AmbientLight(this.ambientColor)\r\n        scene.add(ambientLight)\r\n\r\n        // Light setup\r\n        const dirLight = new THREE.DirectionalLight(0xffffff)\r\n        dirLight.position.set(.4, 1, .1)\r\n        dirLight.shadow.mapSize.width = 2048\r\n        dirLight.shadow.mapSize.height = 2048\r\n        dirLight.castShadow = true\r\n        \r\n        scene.add(dirLight)\r\n\r\n        // Renderer setup\r\n        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })\r\n        renderer.setClearColor(0xffffff)\r\n        renderer.setClearAlpha(0)\r\n        renderer.shadowMap.enabled = true\r\n\r\n        // Camera setup\r\n        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)\r\n        camera.position.z = -10\r\n\r\n        // World setup\r\n        const world = new THREE.Object3D()\r\n        scene.add(world)\r\n\r\n        const plane = new THREE.Mesh(\r\n            new THREE.PlaneBufferGeometry( 40, 40 ),\r\n            new THREE.ShadowMaterial( { side: THREE.DoubleSide, transparent: true, opacity: 0.25 } )\r\n        )\r\n        plane.rotation.x = -Math.PI/2\r\n        plane.position.y = -0.5\r\n        plane.receiveShadow = true\r\n        plane.scale.set(10, 10, 10)\r\n        scene.add(plane)\r\n\r\n        // Controls setup\r\n        const controls = new THREE.OrbitControls(camera, renderer.domElement)\r\n        controls.rotateSpeed = 2.0\r\n        controls.zoomSpeed = 5\r\n        controls.panSpeed = 2\r\n        controls.enableZoom = true\r\n        controls.enablePan = true\r\n        controls.enableDamping = false\r\n        controls.maxDistance = 50\r\n        controls.minDistance = 0.25\r\n        controls.addEventListener('change', () => this._dirty = true)\r\n        \r\n        this.world = world\r\n        this.renderer = renderer\r\n        this.camera = camera\r\n        this.controls = controls\r\n        this.plane = plane\r\n        this.ambientLight = ambientLight\r\n\r\n        const _do = () => {\r\n            if(this.parentNode) {\r\n                this.refresh()\r\n                this.controls.update()\r\n                if (this._dirty) {\r\n                    this._updatePlane()\r\n                    this.renderer.render(scene, camera)\r\n                    this._dirty = false\r\n                }\r\n            }\r\n            this._renderLoopId = requestAnimationFrame(_do)\r\n        }\r\n        _do()\r\n\r\n    }\r\n\r\n    connectedCallback() {\r\n        // Add our initialize styles for the element if they haven't\r\n        // been added yet\r\n        if (!this.constructor._styletag) {\r\n            const styletag = document.createElement('style')\r\n            styletag.innerHTML =\r\n            `\r\n                ${this.tagName} { display: block; }\r\n                ${this.tagName} canvas {\r\n                    width: 100%;\r\n                    height: 100%;\r\n                }\r\n            `\r\n            document.head.appendChild(styletag)\r\n            this.constructor._styletag = styletag\r\n        }\r\n\r\n        // add the renderer\r\n        if (this.childElementCount === 0) {\r\n            this.appendChild(this.renderer.domElement)\r\n        }\r\n\r\n        this.refresh()\r\n        requestAnimationFrame(() => this.refresh())\r\n    }\r\n\r\n    disconnectedCallback() {\r\n        cancelAnimationFrame(this._renderLoopId)\r\n    }\r\n\r\n    attributeChangedCallback(attr, oldval, newval) {\r\n        this._dirty = true\r\n\r\n        switch(attr) {\r\n            case 'package':\r\n            case 'urdf': {\r\n                this._loadUrdf(this.package, this.urdf)\r\n                break\r\n            }\r\n\r\n            case 'up': {\r\n                this._setUp(this.up)\r\n                break\r\n            }\r\n\r\n            case 'ambient-color': {\r\n                this.ambientLight.color.set(this.ambientColor)\r\n                break\r\n            }\r\n        }\r\n    }\r\n\r\n    /* Public API */\r\n    refresh() {\r\n        const r = this.renderer\r\n        const w = this.clientWidth\r\n        const h = this.clientHeight\r\n        const currsize = r.getSize()\r\n\r\n        if (currsize.width != w || currsize.height != h) {\r\n            this._dirty = true\r\n        }\r\n\r\n        r.setPixelRatio(window.devicePixelRatio)\r\n        r.setSize(w, h, false)\r\n\r\n        this.camera.aspect = w / h\r\n        this.camera.updateProjectionMatrix();\r\n    }\r\n\r\n    // Set the joint with jointname to\r\n    // angle in degrees\r\n    setAngle(jointname, angle) {\r\n        this._robots.forEach(r => {\r\n            const joint = r.urdf.joints[jointname]\r\n            if (joint) joint.urdf.setAngle(angle)\r\n        })\r\n        this._dirty = true\r\n    }\r\n    \r\n    setAngles(angles) {\r\n        for(name in angles) this.setAngle(name, angles[name])\r\n    }\r\n\r\n    /* Private Functions */\r\n    // Updates the position of the plane to be at the\r\n    // lowest point below the robot\r\n    _updatePlane() {\r\n        this.plane.visible = this.displayShadow\r\n        if(this._robots && this.displayShadow) {\r\n            let lowestPoint = Infinity\r\n            this._robots.forEach(r => {\r\n                const bbox = new THREE.Box3().setFromObject(r)\r\n                lowestPoint = Math.min(lowestPoint, bbox.min.y)\r\n            })\r\n            this.plane.position.y = lowestPoint\r\n        }\r\n    }\r\n\r\n    // Watch the package and urdf field and load the \r\n    _loadUrdf(pkg, urdf) {\r\n        const _dispose = item => {\r\n            if (item.parent) item.parent.remove(item)\r\n            if (item.dispose) item.dispose()\r\n            item.children.forEach(c => _dispose(c))\r\n        }\r\n\r\n        if (this._prevload === `${pkg}|${urdf}`) return\r\n\r\n        this._robots.forEach(r => _dispose(r))\r\n\r\n        if (pkg && urdf) {\r\n            this._prevload = `${pkg}|${urdf}`\r\n\r\n            // Keep track of this request and make\r\n            // sure it doesn't get overwritten by\r\n            // a subsequent one\r\n            this._requestId ++\r\n            const requestId = this._requestId\r\n\r\n            let totalMeshes = 0\r\n            let meshesLoaded = 0\r\n            URDFLoader.load(\r\n                pkg,\r\n                urdf,\r\n                \r\n                // Callback with array of robots\r\n                arr => {\r\n                    // If another request has come in to load a new\r\n                    // robot, then ignore this one\r\n                    if (this._requestId !== requestId) {\r\n                        arr.forEach(r => _dispose(r))\r\n                        return\r\n                    }\r\n\r\n                    this._robots = arr\r\n                    arr.forEach(r => this.world.add(r))\r\n\r\n                    this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }))\r\n                },\r\n\r\n                // Load meshes and enable shadow casting\r\n                (path, ext, done) => {\r\n                    totalMeshes++\r\n                    URDFLoader.defaultMeshLoader(path, ext, mesh => {\r\n                        const _enableShadows = o => {\r\n                            if (o instanceof THREE.Mesh) {\r\n                                o.castShadow = true\r\n                            }\r\n                            o.children.forEach(c => _enableShadows(c))\r\n                        }\r\n                        _enableShadows(mesh)\r\n                        done(mesh)\r\n\r\n                        meshesLoaded++\r\n                        if (meshesLoaded === totalMeshes && this._requestId === requestId) {\r\n                            this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }))\r\n                        }\r\n\r\n                        this._dirty = true\r\n                    })\r\n            },\r\n            { mode: 'cors', credentials: 'same-origin' })\r\n        }\r\n    }\r\n\r\n    // Watch the coordinate frame and update the\r\n    // rotation of the scene to match\r\n    _setUp(up) {\r\n        if (!up) up = '+Y'\r\n        up = up.toUpperCase()\r\n        const sign = up.replace(/[^-+]/g, '')[0] || '+'\r\n        const axis = up.replace(/[^XYZ]/gi, '')[0] || 'Y'\r\n\r\n        const PI = Math.PI\r\n        const HALFPI = PI / 2\r\n        if (axis === 'X') this.world.rotation.set(0, 0, sign === '+' ? HALFPI : -HALFPI)\r\n        if (axis === 'Z') this.world.rotation.set(sign === '+' ? HALFPI : -HALFPI, 0, 0)\r\n        if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0)\r\n    }\r\n}\r\n\r\nwindow.URDFViewer = URDFViewer\r\n"
+module.exports = "// urdf-viewer element\r\n// Loads and displays a 3D view of a URDF-formatted robot\r\n\r\n// Events\r\n// urdf-change: Fires when the URDF has finished loading and getting processed\r\n// urdf-processed: Fires when the URDF has finished loading and getting processed\r\n// geometry-loaded: Fires when all the geometry has been fully loaded\r\nclass URDFViewer extends HTMLElement {\r\n\r\n    static get observedAttributes() {\r\n        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color']\r\n    }\r\n\r\n    get package() { return this.getAttribute('package') || '' }\r\n    set package(val) { this.setAttribute('package', val) } \r\n    \r\n    get urdf() { return this.getAttribute('urdf') || '' }\r\n    set urdf(val) { this.setAttribute('urdf', val) }\r\n\r\n    get up() { return this.getAttribute('up') || '+Y' }\r\n    set up(val) { this.setAttribute('up', val) }\r\n\r\n    get displayShadow() { return this.hasAttribute('display-shadow') || false }\r\n    set displayShadow(val) {\r\n        val = !!val\r\n        val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow')\r\n    }\r\n\r\n    get ambientColor() { return this.getAttribute('ambient-color') || '#455A64' }\r\n    set ambientColor(val) {\r\n        val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color')\r\n    }\r\n\r\n    get angles() {\r\n        const angles = {}\r\n        this._robots.forEach(r => {\r\n            for (let name in r.urdf.joints) angles[name] = r.urdf.joints[name].urdf.angle\r\n        })\r\n        return angles\r\n    }\r\n    set angles(val) { this._setAngles(val) }\r\n\r\n    /* Lifecycle Functions */\r\n    constructor() {\r\n        super()\r\n\r\n        this._robots = []\r\n        this._requestId = 0\r\n        this._dirty = false\r\n\r\n        // Scene setup\r\n        const scene = new THREE.Scene()\r\n\r\n        const ambientLight = new THREE.AmbientLight(this.ambientColor)\r\n        scene.add(ambientLight)\r\n\r\n        // Light setup\r\n        const dirLight = new THREE.DirectionalLight(0xffffff)\r\n        dirLight.position.set(.4, 1, .1)\r\n        dirLight.shadow.mapSize.width = 2048\r\n        dirLight.shadow.mapSize.height = 2048\r\n        dirLight.castShadow = true\r\n        \r\n        scene.add(dirLight)\r\n\r\n        // Renderer setup\r\n        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })\r\n        renderer.setClearColor(0xffffff)\r\n        renderer.setClearAlpha(0)\r\n        renderer.shadowMap.enabled = true\r\n\r\n        // Camera setup\r\n        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)\r\n        camera.position.z = -10\r\n\r\n        // World setup\r\n        const world = new THREE.Object3D()\r\n        scene.add(world)\r\n\r\n        const plane = new THREE.Mesh(\r\n            new THREE.PlaneBufferGeometry( 40, 40 ),\r\n            new THREE.ShadowMaterial( { side: THREE.DoubleSide, transparent: true, opacity: 0.25 } )\r\n        )\r\n        plane.rotation.x = -Math.PI/2\r\n        plane.position.y = -0.5\r\n        plane.receiveShadow = true\r\n        plane.scale.set(10, 10, 10)\r\n        scene.add(plane)\r\n\r\n        // Controls setup\r\n        const controls = new THREE.OrbitControls(camera, renderer.domElement)\r\n        controls.rotateSpeed = 2.0\r\n        controls.zoomSpeed = 5\r\n        controls.panSpeed = 2\r\n        controls.enableZoom = true\r\n        controls.enablePan = true\r\n        controls.enableDamping = false\r\n        controls.maxDistance = 50\r\n        controls.minDistance = 0.25\r\n        controls.addEventListener('change', () => this._dirty = true)\r\n        \r\n        this.world = world\r\n        this.renderer = renderer\r\n        this.camera = camera\r\n        this.controls = controls\r\n        this.plane = plane\r\n        this.ambientLight = ambientLight\r\n\r\n        const _do = () => {\r\n            if(this.parentNode) {\r\n                this.refresh()\r\n                this.controls.update()\r\n                if (this._dirty) {\r\n                    this._updatePlane()\r\n                    this.renderer.render(scene, camera)\r\n                    this._dirty = false\r\n                }\r\n            }\r\n            this._renderLoopId = requestAnimationFrame(_do)\r\n        }\r\n        _do()\r\n\r\n    }\r\n\r\n    connectedCallback() {\r\n        // Add our initialize styles for the element if they haven't\r\n        // been added yet\r\n        if (!this.constructor._styletag) {\r\n            const styletag = document.createElement('style')\r\n            styletag.innerHTML =\r\n            `\r\n                ${this.tagName} { display: block; }\r\n                ${this.tagName} canvas {\r\n                    width: 100%;\r\n                    height: 100%;\r\n                }\r\n            `\r\n            document.head.appendChild(styletag)\r\n            this.constructor._styletag = styletag\r\n        }\r\n\r\n        // add the renderer\r\n        if (this.childElementCount === 0) {\r\n            this.appendChild(this.renderer.domElement)\r\n        }\r\n\r\n        this.refresh()\r\n        requestAnimationFrame(() => this.refresh())\r\n    }\r\n\r\n    disconnectedCallback() {\r\n        cancelAnimationFrame(this._renderLoopId)\r\n    }\r\n\r\n    attributeChangedCallback(attr, oldval, newval) {\r\n        this._dirty = true\r\n\r\n        switch(attr) {\r\n            case 'package':\r\n            case 'urdf': {\r\n                this._loadUrdf(this.package, this.urdf)\r\n                break\r\n            }\r\n\r\n            case 'up': {\r\n                this._setUp(this.up)\r\n                break\r\n            }\r\n\r\n            case 'ambient-color': {\r\n                this.ambientLight.color.set(this.ambientColor)\r\n                break\r\n            }\r\n        }\r\n    }\r\n\r\n    /* Public API */\r\n    refresh() {\r\n        const r = this.renderer\r\n        const w = this.clientWidth\r\n        const h = this.clientHeight\r\n        const currsize = r.getSize()\r\n\r\n        if (currsize.width != w || currsize.height != h) {\r\n            this._dirty = true\r\n        }\r\n\r\n        r.setPixelRatio(window.devicePixelRatio)\r\n        r.setSize(w, h, false)\r\n\r\n        this.camera.aspect = w / h\r\n        this.camera.updateProjectionMatrix();\r\n    }\r\n\r\n    // Set the joint with jointname to\r\n    // angle in degrees\r\n    setAngle(jointname, angle) {\r\n        this._robots.forEach(r => {\r\n            const joint = r.urdf.joints[jointname]\r\n            if (joint) joint.urdf.setAngle(angle)\r\n        })\r\n        this._dirty = true\r\n    }\r\n    \r\n    setAngles(angles) {\r\n        for(name in angles) this.setAngle(name, angles[name])\r\n    }\r\n\r\n    /* Private Functions */\r\n    // Updates the position of the plane to be at the\r\n    // lowest point below the robot\r\n    _updatePlane() {\r\n        this.plane.visible = this.displayShadow\r\n        if(this._robots && this.displayShadow) {\r\n            let lowestPoint = Infinity\r\n            this._robots.forEach(r => {\r\n                const bbox = new THREE.Box3().setFromObject(r)\r\n                lowestPoint = Math.min(lowestPoint, bbox.min.y)\r\n            })\r\n            this.plane.position.y = lowestPoint\r\n        }\r\n    }\r\n\r\n    // Watch the package and urdf field and load the \r\n    _loadUrdf(pkg, urdf) {\r\n        const _dispose = item => {\r\n            if (item.parent) item.parent.remove(item)\r\n            if (item.dispose) item.dispose()\r\n            item.children.forEach(c => _dispose(c))\r\n        }\r\n\r\n        if (this._prevload === `${pkg}|${urdf}`) return\r\n\r\n        this._robots.forEach(r => _dispose(r))\r\n\r\n        this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }))\r\n\r\n        if (pkg && urdf) {\r\n            this._prevload = `${pkg}|${urdf}`\r\n\r\n            // Keep track of this request and make\r\n            // sure it doesn't get overwritten by\r\n            // a subsequent one\r\n            this._requestId ++\r\n            const requestId = this._requestId\r\n\r\n            let totalMeshes = 0\r\n            let meshesLoaded = 0\r\n            URDFLoader.load(\r\n                pkg,\r\n                urdf,\r\n                \r\n                // Callback with array of robots\r\n                arr => {\r\n                    // If another request has come in to load a new\r\n                    // robot, then ignore this one\r\n                    if (this._requestId !== requestId) {\r\n                        arr.forEach(r => _dispose(r))\r\n                        return\r\n                    }\r\n\r\n                    this._robots = arr\r\n                    arr.forEach(r => this.world.add(r))\r\n\r\n                    this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }))\r\n                },\r\n\r\n                // Load meshes and enable shadow casting\r\n                (path, ext, done) => {\r\n                    totalMeshes++\r\n                    URDFLoader.defaultMeshLoader(path, ext, mesh => {\r\n                        const _enableShadows = o => {\r\n                            if (o instanceof THREE.Mesh) {\r\n                                o.castShadow = true\r\n                            }\r\n                            o.children.forEach(c => _enableShadows(c))\r\n                        }\r\n                        _enableShadows(mesh)\r\n                        done(mesh)\r\n\r\n                        meshesLoaded++\r\n                        if (meshesLoaded === totalMeshes && this._requestId === requestId) {\r\n                            this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }))\r\n                        }\r\n\r\n                        this._dirty = true\r\n                    })\r\n            },\r\n            { mode: 'cors', credentials: 'same-origin' })\r\n        }\r\n    }\r\n\r\n    // Watch the coordinate frame and update the\r\n    // rotation of the scene to match\r\n    _setUp(up) {\r\n        if (!up) up = '+Y'\r\n        up = up.toUpperCase()\r\n        const sign = up.replace(/[^-+]/g, '')[0] || '+'\r\n        const axis = up.replace(/[^XYZ]/gi, '')[0] || 'Y'\r\n\r\n        const PI = Math.PI\r\n        const HALFPI = PI / 2\r\n        if (axis === 'X') this.world.rotation.set(0, 0, sign === '+' ? HALFPI : -HALFPI)\r\n        if (axis === 'Z') this.world.rotation.set(sign === '+' ? HALFPI : -HALFPI, 0, 0)\r\n        if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0)\r\n    }\r\n}\r\n\r\nwindow.URDFViewer = URDFViewer\r\n"
 
 /***/ })
 /******/ ]);

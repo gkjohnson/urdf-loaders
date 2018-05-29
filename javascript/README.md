@@ -109,6 +109,10 @@ Sets all joint names specified as keys to radian angle value.
 
 ### Events
 
+#### 'urdf-change'
+
+Fires when the URDF has changed and a new one is starting to load.
+
 #### 'urdf-processed'
 
 Fires when the URDF has finished loading and getting processed.

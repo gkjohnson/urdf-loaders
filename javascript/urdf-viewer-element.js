@@ -2,6 +2,7 @@
 // Loads and displays a 3D view of a URDF-formatted robot
 
 // Events
+// urdf-change: Fires when the URDF has finished loading and getting processed
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
 class URDFViewer extends HTMLElement {
@@ -231,6 +232,8 @@ class URDFViewer extends HTMLElement {
         if (this._prevload === `${pkg}|${urdf}`) return
 
         this._robots.forEach(r => _dispose(r))
+
+        this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }))
 
         if (pkg && urdf) {
             this._prevload = `${pkg}|${urdf}`
