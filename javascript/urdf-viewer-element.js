@@ -60,7 +60,7 @@ class URDFViewer extends HTMLElement {
 
         // Light setup
         const dirLight = new THREE.DirectionalLight(0xffffff)
-        dirLight.position.set(.4, 1, .1)
+        dirLight.position.set(4, 10, 1)
         dirLight.shadow.mapSize.width = 2048
         dirLight.shadow.mapSize.height = 2048
         dirLight.castShadow = true
