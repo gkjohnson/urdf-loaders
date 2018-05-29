@@ -36,89 +36,306 @@
 
             ul {
                 list-style: none;
+                padding: 0;
+                margin: 20px;
+            }
+
+            input[type="range"] {
+                -webkit-appearance: none;
+                appearance: none;
+                background: white;
+                height: 1px;
+                border-radius: 2px;
+                flex: 1;
+                width: 100%;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 10px;
+                height: 10px;
+                border-radius: 10px;
+                background: white;
+            }
+
+            input[type="range"]::-moz-range-track {
+                height: 1px;
+                background: white;
+                border-radius: 10px;
+            }
+
+            input[type="range"]::-moz-range-thumb {
+                width: 10px;
+                height: 10px;
+                border-radius: 10px;
+                background: white;
+                border: none;
+            }
+
+            input:focus {
+                outline: none;
+                opacity: 1;
+            }
+
+            #controls {
                 position: absolute;
                 top: 0;
                 left: 0;
-                padding: 0;
-                margin: 20px;
+                display: flex;
+                flex-direction: column;
+                max-height: 100%;
+            }
+
+            #urdf-options li {
+                cursor: pointer;
+                opacity: 0.4;
                 font-size: 30px;
             }
 
-            li {
-                cursor: pointer;
-                opacity: 0.4;
+            #urdf-options li:hover {
+                opacity: 0.75;
             }
 
-            li:hover {
-                opacity: 0.75;
+            #sliders {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            #sliders ul {
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            #sliders li {
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+
+                width: 200px;
+            }
+
+            #sliders li span {
+
+                padding: 0 5px;
+
+            }
+
+            #sliders li span.value {
+                width: 50px;
+            }
+
+            #do-animate {
+                margin-left: 20px;
+                padding-left: 25px;
+                position: relative;
+
+                cursor: pointer;
+            }
+
+            #do-animate:before {
+                content: "";
+                position: absolute;
+                left: 0;
+                width: 15px;
+                height: 15px;
+
+                border-radius: 10px;
+                border: 2px solid white;
+
+                margin-right: 5px;
+            }
+
+            #do-animate:after {
+                content: "";
+                width: 9px;
+                height: 9px;
+
+                position: absolute;
+                left: 5px;
+                top: 5px;
+                background: white;
+                border-radius: 10px;
+                opacity: 0;
+            }
+
+            #do-animate:not(.checked):hover:after {
+                opacity: 0.25;
+            }
+
+            #do-animate.checked:after {
+                opacity: 1;
             }
 
             @keyframes fade {
                 from { opacity: 0; }
                 to { opacity: 1; }
             }
+
+            @media (max-width: 700px) {
+                #sliders {
+                    display: none;
+                }
+
+            }
         </style>
     </head>
-    <body>
-        <ul id="urdf-options">
-            <li urdf="T12/urdf/T12.URDF" color="#E91E63">ATHLETE</li>
-            <li urdf="TriATHLETE/urdf/TriATHLETE.URDF" color="#009688">TriATHLETE</li>
-            <li urdf="TriATHLETE_Climbing/urdf/TriATHLETE.URDF" color="#FFB300">TriATHLETE Climbing</li>
-        </ul>
+    <body tabindex="0">
 
-        <urdf-viewer package="../../urdf" up="+Z" display-shadow></urdf-viewer>
+        <div id="controls">
+            <ul id="urdf-options">
+                <li urdf="T12/urdf/T12.URDF" color="#E91E63">ATHLETE</li>
+                <li urdf="TriATHLETE/urdf/TriATHLETE.URDF" color="#009688">TriATHLETE</li>
+                <li urdf="TriATHLETE_Climbing/urdf/TriATHLETE.URDF" color="#FFB300">TriATHLETE Climbing</li>
+            </ul>
+
+            <div id="sliders">
+                <div id="do-animate" class="checked">Animate Joints</div>
+                <ul></ul>
+            </div>
+        </div>
+        <urdf-viewer package="../../urdf" up="+Z" display-shadow tabindex="0"></urdf-viewer>
+
 
         <script>
-            const vw = document.querySelector('urdf-viewer')
+            const viewer = document.querySelector('urdf-viewer')
+            const animToggle = document.getElementById('do-animate')
+            const sliderList = document.querySelector('#sliders ul')
             const DEG2RAD = Math.PI / 180
+            const RAD2DEG = 1 / DEG2RAD
+            let sliders = {};
 
             const lerp = (from, to, ratio) => from + (to - from) * ratio
 
             const updateAngles = () => {
-                if (!vw.setAngle) return
+                if (!viewer.setAngle) return
 
+                // reset everything to 0 first
+                const resetangles = viewer.angles;
+                for(const name in resetangles) resetangles[name] = 0;
+                viewer.setAngles(resetangles);
+
+                // animate the legs
                 const time = Date.now() / 3e2
                 for(let i = 1; i <= 6; i ++) {
                     const offset = i * Math.PI / 3
                     const ratio = Math.max(0, Math.sin(time + offset))
 
-                    vw.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD)
-                    vw.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD)
-                    vw.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD)
+                    viewer.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD)
+                    viewer.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD)
+                    viewer.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD)
 
-                    vw.setAngle(`TC${i}A`, lerp(0, 0.065, ratio))
-                    vw.setAngle(`TC${i}B`, lerp(0, 0.065, ratio))
+                    viewer.setAngle(`TC${i}A`, lerp(0, 0.065, ratio))
+                    viewer.setAngle(`TC${i}B`, lerp(0, 0.065, ratio))
                     
-                    vw.setAngle(`W${i}`, window.performance.now() * 0.001)
+                    viewer.setAngle(`W${i}`, window.performance.now() * 0.001)
                 }
 
                 const ratio = Math.sin(time) / 2 + 0.5
             }
 
-            const _do = () => {
-                updateAngles()
-                requestAnimationFrame(_do)
+
+            const updateLoop = () => {
+                if (animToggle.classList.contains('checked')) {
+                    updateAngles()
+                    Object.values(sliders).forEach(li => li.update())
+                }
+
+                requestAnimationFrame(updateLoop)
             }
 
-            document.querySelectorAll('li[urdf]').forEach(el => {
+            // toggle checkbox
+            animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'))
+
+            // watch for urdf changes
+            viewer.addEventListener('urdf-change', () => {
+
+                Object.keys(sliders)
+                    .map(n => sliders[n])
+                    .forEach(sl => sl.remove());
+                sliders = {};
+
+            });
+
+            // create the sliders
+            viewer.addEventListener('urdf-processed', () => {
+
+                const r = viewer._robots[0];
+                Object
+                    .keys(r.urdf.joints)
+                    .sort((a, b) => {
+
+                        const da = a.split(/[^\d]+/g).filter(v => !!v).pop();
+                        const db = b.split(/[^\d]+/g).filter(v => !!v).pop();
+
+                        if (da !== undefined && db !== undefined) {
+                            const delta = parseFloat(da) - parseFloat(db);
+                            if (delta !== 0) return delta;
+                        }
+
+                        if (a > b) return 1;
+                        if (b > a) return -1;
+                        return 0;
+
+                    })
+                    .map(key => r.urdf.joints[key])
+                    .forEach(joint => {
+
+                        const li = document.createElement('li');
+                        li.innerHTML =
+                        `
+                        <span>${joint.name}</span>
+                        <input type="range" min="${joint.urdf.limits.lower}" max="${joint.urdf.limits.upper}" value="0" step="0.0001"/>
+                        <span class="value">0</span>
+                        `;
+                        
+                        sliderList.appendChild(li)
+                        
+                        const angleel = li.querySelector('.value')
+                        const slider = li.querySelector('input')
+                        li.update = () => {
+                            let val = joint.urdf.type === 'revolute' ? joint.urdf.angle * RAD2DEG : joint.urdf.angle
+                            if (Math.abs(val) > 1) val = val.toFixed(1);
+                            else val = val.toPrecision(2);
+                            
+                            angleel.innerText = parseFloat(val)
+                            slider.value = joint.urdf.angle
+                        }
+
+                        slider.addEventListener('input', () => {
+                            viewer.setAngle(joint.name, slider.value)
+                            li.update()
+                        })
+
+                        li.update()
+
+                        sliders[joint.name] = li;
+
+                    })
+
+            })
+
+            document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
                 el.addEventListener('click', e => {
                     const urdf = e.target.getAttribute('urdf')
                     const color = e.target.getAttribute('color')
 
-                    vw.urdf = urdf
+                    viewer.urdf = urdf
                     document.body.style.backgroundColor = color
                 })
             })
 
             document.addEventListener('WebComponentsReady', () => {
-                vw.addEventListener('urdf-processed', e => updateAngles())
+                viewer.addEventListener('urdf-processed', e => updateAngles())
                 document.querySelector('li[urdf]').dispatchEvent(new Event('click'))
 
                 if (/javascript\/example\/build/i.test(window.location)) {
-                    vw.package = '../../../urdf'
+                    viewer.package = '../../../urdf'
                 }
 
-                _do()
+                updateLoop()
             })
         </script>
     </body>
