@@ -4,6 +4,7 @@
 // Events
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
+window.URDFViewer =
 class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
@@ -46,6 +47,8 @@ class URDFViewer extends HTMLElement {
         this._robots = []
         this._requestId = 0
         this._dirty = false
+        this.manager = new THREE.LoadingManager()
+        this.loader = new URDFLoader(this.manager)
 
         // Scene setup
         const scene = new THREE.Scene()
@@ -243,7 +246,7 @@ class URDFViewer extends HTMLElement {
 
             let totalMeshes = 0
             let meshesLoaded = 0
-            URDFLoader.load(
+            this.loader.load(
                 pkg,
                 urdf,
                 
@@ -265,7 +268,7 @@ class URDFViewer extends HTMLElement {
                 // Load meshes and enable shadow casting
                 (path, ext, done) => {
                     totalMeshes++
-                    URDFLoader.defaultMeshLoader(path, ext, mesh => {
+                    this.loader.defaultMeshLoader(path, ext, mesh => {
                         const _enableShadows = o => {
                             if (o instanceof THREE.Mesh) {
                                 o.castShadow = true
@@ -302,5 +305,3 @@ class URDFViewer extends HTMLElement {
         if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0)
     }
 }
-
-window.URDFViewer = URDFViewer

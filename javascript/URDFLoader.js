@@ -1,38 +1,45 @@
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
+window.URDFLoader = 
 class URDFLoader {
 
     // Cached mesh loaders
-    static get STLLoader() {
-        this._stlloader = this._stlloader || new THREE.STLLoader()
+    get STLLoader() {
+        this._stlloader = this._stlloader || new THREE.STLLoader(this.manager)
         return this._stlloader
     }
 
-    static get DAELoader() {
-        this._daeloader = this._daeloader || new THREE.ColladaLoader()
+    get DAELoader() {
+        this._daeloader = this._daeloader || new THREE.ColladaLoader(this.manager)
         return this._daeloader
     }
 
-    static get TextureLoader() {
-        this._textureloader = this._textureloader || new THREE.TextureLoader()
+    get TextureLoader() {
+        this._textureloader = this._textureloader || new THREE.TextureLoader(this.manager)
         return this._textureloader
+    }
+
+    constructor(manager) {
+
+        this.manager = manager || THREE.DefaultLoadingManager
+
     }
 
     /* Utilities */
     // forEach and filter function wrappers because 
     // HTMLCollection does not the by default
-    static forEach(coll, func)  { return [].forEach.call(coll, func) }
-    static filter(coll, func)   { return [].filter.call(coll, func) }
+    forEach(coll, func)  { return [].forEach.call(coll, func) }
+    filter(coll, func)   { return [].filter.call(coll, func) }
 
     // take a vector "x y z" and process it into
     // an array [x, y, z]
-    static _processTuple(val) {
+    _processTuple(val) {
         if (!val) return [0, 0, 0]
         return val.trim().split(/\s+/g).map(num => parseFloat(num))
     }
 
     // applies a rotation a threejs object in URDF order
-    static _applyRotation(obj, rpy) {
+    _applyRotation(obj, rpy) {
         obj.rotateOnAxis(new THREE.Vector3(0,0,1), rpy[2])
         obj.rotateOnAxis(new THREE.Vector3(0,1,0), rpy[1])
         obj.rotateOnAxis(new THREE.Vector3(1,0,0), rpy[0])
@@ -42,46 +49,48 @@ class URDFLoader {
     // pkg:     The equivelant of a ROS package:// directory
     // urdf:    The URDF path in the directory
     // cb:      Callback that is passed the model once loaded
-    static load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
-        const path = `${pkg}/${urdf}`
+    load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
+        let path = `${pkg}/${urdf}`
+        path = this.manager.resolveURL(path);
+
         fetch(path, fetchOptions)
             .then(res => res.text())
             .then(data => this.parse(pkg, data, cb, loadMeshCb))
     }
 
-    static parse(pkg, content, cb, loadMeshCb) {
+    parse(pkg, content, cb, loadMeshCb) {
         cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader))
     }
 
     // Default mesh loading function
-    static defaultMeshLoader(path, ext, done) {
+    defaultMeshLoader(path, ext, done) {
 
         if (/\.stl$/i.test(path))
-            URDFLoader.STLLoader.load(path, geom => {
+            this.STLLoader.load(path, geom => {
                 const mesh = new THREE.Mesh()
                 mesh.geometry = geom
                 done(mesh)
             })
         else if (/\.dae$/i.test(path))
-            URDFLoader.DAELoader.load(path, dae => done(dae.scene))
+            this.DAELoader.load(path, dae => done(dae.scene))
         else
             console.warn(`Could note load model at ${path}:\nNo loader available`)
     }
 
     /* Private Functions */
     // Process the URDF text format
-    static _processUrdf(pkg, data, loadMeshCb) {
+    _processUrdf(pkg, data, loadMeshCb) {
         const parser = new DOMParser()
         const urdf = parser.parseFromString(data, 'text/xml')
 
         const res = []
-        URDFLoader.forEach(urdf.children, n => res.push(this._processRobot(pkg, n, loadMeshCb)))
+        this.forEach(urdf.children, n => res.push(this._processRobot(pkg, n, loadMeshCb)))
 
         return res
     }
 
     // Process the <robot> node
-    static _processRobot(pkg, robot, loadMeshCb) {
+    _processRobot(pkg, robot, loadMeshCb) {
         const links = []
         const joints = []
         const obj = new THREE.Object3D()
@@ -89,7 +98,7 @@ class URDFLoader {
         obj.urdf = { node: robot }
 
         // Process the <joint> and <link> nodes
-        URDFLoader.forEach(robot.children, n => {
+        this.forEach(robot.children, n => {
             const type = n.nodeName.toLowerCase()
             if (type === 'link')        links.push(n)
             else if (type === 'joint')  joints.push(n)
@@ -97,14 +106,14 @@ class URDFLoader {
 
         // Create the <link> map
         const linkMap = {}
-        URDFLoader.forEach(links, l => {
+        this.forEach(links, l => {
             const name = l.getAttribute('name')
             linkMap[name] = this._processLink(pkg, l, loadMeshCb)
         })
 
         // Create the <joint> map
         const jointMap = {}
-        URDFLoader.forEach(joints, j => {
+        this.forEach(joints, j => {
             const name = j.getAttribute('name')
             jointMap[name] = this._processJoint(j, linkMap)
         })
@@ -118,7 +127,7 @@ class URDFLoader {
     }
 
     // Process joint nodes and parent them
-    static _processJoint(joint, linkMap) {
+    _processJoint(joint, linkMap) {
         const jointType = joint.getAttribute('type')
         const obj = new THREE.Object3D()
         obj.name = joint.getAttribute('name')
@@ -134,7 +143,7 @@ class URDFLoader {
         let rpy = [0, 0, 0]
 
         // Extract the attributes
-        URDFLoader.forEach(joint.children, n => {
+        this.forEach(joint.children, n => {
             const type = n.nodeName.toLowerCase()
             if (type === 'origin') {
                 xyz = this._processTuple(n.getAttribute('xyz'))
@@ -158,7 +167,7 @@ class URDFLoader {
         // Set up the rotate function
         const origRot = new THREE.Quaternion().copy(obj.quaternion)
         const origPos = new THREE.Vector3().copy(obj.position)
-        const axisnode = URDFLoader.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0]
+        const axisnode = this.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0]
 
         if (axisnode) {
             const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num))
@@ -221,25 +230,25 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    static _processLink(pkg, link, loadMeshCb) {
-        const visualNodes = URDFLoader.filter(link.children, n => n.nodeName.toLowerCase() === 'visual')
+    _processLink(pkg, link, loadMeshCb) {
+        const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual')
         const obj = new THREE.Object3D()
         obj.name = link.getAttribute('name')
         obj.urdf = { node: link }
 
-        URDFLoader.forEach(visualNodes, vn => this._processVisualNode(pkg, vn, obj, loadMeshCb))
+        this.forEach(visualNodes, vn => this._processVisualNode(pkg, vn, obj, loadMeshCb))
 
         return obj
     }
 
     // Process the visual nodes into meshes
-    static _processVisualNode(pkg, vn, linkObj, loadMeshCb) {
+    _processVisualNode(pkg, vn, linkObj, loadMeshCb) {
         let xyz = [0, 0, 0]
         let rpy = [0, 0, 0]
         let mesh = null
 
         const material = new THREE.MeshLambertMaterial()
-        URDFLoader.forEach(vn.children, n => {
+        this.forEach(vn.children, n => {
             const type = n.nodeName.toLowerCase()
             if (type === 'geometry') {
                 const geoType = n.children[0].nodeName.toLowerCase()
@@ -308,7 +317,7 @@ class URDFLoader {
                 xyz = this._processTuple(n.getAttribute('xyz'))
                 rpy = this._processTuple(n.getAttribute('rpy'))
             } else if(type === 'material') {
-                URDFLoader.forEach(n.children, c => {
+                this.forEach(n.children, c => {
 
                     if (c.nodeName.toLowerCase() === 'color') {
                         let rgba = c.getAttribute('rgba')
@@ -332,5 +341,3 @@ class URDFLoader {
         })
     }
 }
-
-window.URDFLoader = URDFLoader
