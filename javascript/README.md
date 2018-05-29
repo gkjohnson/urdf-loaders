@@ -22,9 +22,13 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 ```
 
 ### API
-#### constructor(manager)
+#### URDFLoader(manager)
 
-URDFLoader constructor takes a THREE.js LoadingManager.
+Constructor
+
+##### manager
+
+THREE.LoadingManager. Used for transforming load URLs.
 
 #### URDFLoader.load(package, urdfpath, robotsCallback, geometryLoader, fetchOptions)
 
@@ -42,7 +46,7 @@ _required_
 
 The path to the URDF file relative to the specified package directory.
 
-##### robotsCallback(robots)
+##### robotCallback(robot)
 
 _required_
 
