@@ -5,6 +5,7 @@
 // urdf-change: Fires when the URDF has finished loading and getting processed
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
+window.URDFViewer =
 class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
@@ -33,9 +34,10 @@ class URDFViewer extends HTMLElement {
 
     get angles() {
         const angles = {}
-        this._robots.forEach(r => {
-            for (let name in r.urdf.joints) angles[name] = r.urdf.joints[name].urdf.angle
-        })
+        if (this.robot) {
+            for (let name in this.robot.urdf.joints) angles[name] = this.robot.urdf.joints[name].urdf.angle
+        }
+        
         return angles
     }
     set angles(val) { this._setAngles(val) }
@@ -44,9 +46,11 @@ class URDFViewer extends HTMLElement {
     constructor() {
         super()
 
-        this._robots = []
         this._requestId = 0
         this._dirty = false
+        this.robot = null
+        this.manager = new THREE.LoadingManager()
+        this.loader = new URDFLoader(this.manager)
 
         // Scene setup
         const scene = new THREE.Scene()
@@ -56,7 +60,7 @@ class URDFViewer extends HTMLElement {
 
         // Light setup
         const dirLight = new THREE.DirectionalLight(0xffffff)
-        dirLight.position.set(.4, 1, .1)
+        dirLight.position.set(4, 10, 1)
         dirLight.shadow.mapSize.width = 2048
         dirLight.shadow.mapSize.height = 2048
         dirLight.castShadow = true
@@ -195,10 +199,10 @@ class URDFViewer extends HTMLElement {
     // Set the joint with jointname to
     // angle in degrees
     setAngle(jointname, angle) {
-        this._robots.forEach(r => {
-            const joint = r.urdf.joints[jointname]
-            if (joint) joint.urdf.setAngle(angle)
-        })
+        if (!this.robot) return
+
+        const joint = this.robot.urdf.joints[jointname]
+        if (joint) joint.urdf.setAngle(angle)
         this._dirty = true
     }
     
@@ -211,12 +215,10 @@ class URDFViewer extends HTMLElement {
     // lowest point below the robot
     _updatePlane() {
         this.plane.visible = this.displayShadow
-        if(this._robots && this.displayShadow) {
+        if(this.robot && this.displayShadow) {
             let lowestPoint = Infinity
-            this._robots.forEach(r => {
-                const bbox = new THREE.Box3().setFromObject(r)
-                lowestPoint = Math.min(lowestPoint, bbox.min.y)
-            })
+            const bbox = new THREE.Box3().setFromObject(this.robot)
+            lowestPoint = Math.min(lowestPoint, bbox.min.y)
             this.plane.position.y = lowestPoint
         }
     }
@@ -224,6 +226,7 @@ class URDFViewer extends HTMLElement {
     // Watch the package and urdf field and load the 
     _loadUrdf(pkg, urdf) {
         const _dispose = item => {
+            if (!item) return
             if (item.parent) item.parent.remove(item)
             if (item.dispose) item.dispose()
             item.children.forEach(c => _dispose(c))
@@ -231,7 +234,8 @@ class URDFViewer extends HTMLElement {
 
         if (this._prevload === `${pkg}|${urdf}`) return
 
-        this._robots.forEach(r => _dispose(r))
+        _dispose(this.robot)
+        this.robot = null
 
         this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }))
 
@@ -246,21 +250,21 @@ class URDFViewer extends HTMLElement {
 
             let totalMeshes = 0
             let meshesLoaded = 0
-            URDFLoader.load(
+            this.loader.load(
                 pkg,
                 urdf,
                 
                 // Callback with array of robots
-                arr => {
+                robot => {
                     // If another request has come in to load a new
                     // robot, then ignore this one
                     if (this._requestId !== requestId) {
-                        arr.forEach(r => _dispose(r))
+                        _dispose(robot)
                         return
                     }
 
-                    this._robots = arr
-                    arr.forEach(r => this.world.add(r))
+                    this.robot = robot
+                    this.world.add(robot)
 
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }))
                 },
@@ -268,7 +272,7 @@ class URDFViewer extends HTMLElement {
                 // Load meshes and enable shadow casting
                 (path, ext, done) => {
                     totalMeshes++
-                    URDFLoader.defaultMeshLoader(path, ext, mesh => {
+                    this.loader.defaultMeshLoader(path, ext, mesh => {
                         const _enableShadows = o => {
                             if (o instanceof THREE.Mesh) {
                                 o.castShadow = true
@@ -305,5 +309,3 @@ class URDFViewer extends HTMLElement {
         if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0)
     }
 }
-
-window.URDFViewer = URDFViewer
