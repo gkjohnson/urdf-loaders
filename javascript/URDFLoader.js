@@ -83,10 +83,8 @@ class URDFLoader {
         const parser = new DOMParser()
         const urdf = parser.parseFromString(data, 'text/xml')
 
-        const res = []
-        this.forEach(urdf.children, n => res.push(this._processRobot(pkg, n, loadMeshCb)))
-
-        return res
+        const robottag = this.filter(urdf.children, c => c.nodeName === 'robot').pop()
+        return this._processRobot(pkg, robottag, loadMeshCb)
     }
 
     // Process the <robot> node
