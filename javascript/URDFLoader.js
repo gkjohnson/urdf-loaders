@@ -50,7 +50,9 @@ class URDFLoader {
     // urdf:    The URDF path in the directory
     // cb:      Callback that is passed the model once loaded
     load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
-        let path = `${pkg}/${urdf}`
+
+        // normalize the path slashes
+        let path = `${pkg}/${urdf}`.replace(/\\/g, '/').replace(/\/+/g, '/')
         path = this.manager.resolveURL(path);
 
         fetch(path, fetchOptions)

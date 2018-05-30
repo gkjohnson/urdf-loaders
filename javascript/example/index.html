@@ -422,14 +422,27 @@
 
                             // TODO: This won't work for paths that traverse up
                             // and down (/example/../path/model.ply)
-                            url = '/' + url.replace(/^[\.\\\/]*/, '')
-                            if (url in files) {
-                                const newurl = URL.createObjectURL(files[url])
-                                
-                                // revoke the url after it's been used
-                                requestAnimationFrame(() => URL.revokeObjectURL(newurl))
+                            url = url.replace(viewer.package, '')
+                            url = url.replace(/^[\.\\\/]*/, '')
 
-                                return newurl
+                            // keep trying a shorter path to see if it matches because the
+                            // mesh URLs in the URDF assume file structure that we don't
+                            // have access to here
+                            const split = url.split('/')
+                            while (split.length) {
+
+                                const newurl = '/' + split.join('/')
+                                if (newurl in files) {
+
+                                    // revoke the url after it's been used
+                                    const bloburl = URL.createObjectURL(files[newurl])                                    
+                                    requestAnimationFrame(() => URL.revokeObjectURL(bloburl))
+
+                                    return bloburl
+                                }
+
+                                split.shift()
+
                             }
 
                             return url
@@ -441,6 +454,9 @@
                             filesNames
                                 .filter(n => /urdf$/i.test(n))
                                 .shift()
+
+                        // remove the url modifier function is it doesn't affect other actions
+                        viewer.loadingManager.setURLModifier(null)
 
                     })
             
