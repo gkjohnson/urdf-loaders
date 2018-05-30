@@ -37,7 +37,7 @@
             ul {
                 list-style: none;
                 padding: 0;
-                margin: 20px;
+                margin: 0;
             }
 
             input[type="range"] {
@@ -85,6 +85,7 @@
                 display: flex;
                 flex-direction: column;
                 max-height: 100%;
+                margin: 20px;
             }
 
             #urdf-options li {
@@ -102,6 +103,13 @@
                 display: flex;
                 flex-direction: column;
                 width: 100%;
+                margin: 10px 0;
+                padding-top: 10px;
+                border-top: 1px solid white;
+            }
+
+            #sliders > * {
+                margin: 5px 0;
             }
 
             #sliders ul {
@@ -128,7 +136,6 @@
             }
 
             #do-animate {
-                margin-left: 20px;
                 padding-left: 25px;
                 position: relative;
 
@@ -192,6 +199,7 @@
             </ul>
 
             <div id="sliders">
+                <div>Drag and drop a set of URDF files! <br/> (Chrome Only)</div>
                 <div id="do-animate" class="checked">Animate Joints</div>
                 <ul></ul>
             </div>
@@ -200,6 +208,86 @@
 
 
         <script>
+        
+            // Converts a datatransfer structer into an object with all paths and files
+            // listed out. Returns a promise that resolves with the file structure.
+            function dataTransferToFiles(dataTransfer) {
+
+                if (!(dataTransfer instanceof DataTransfer)) {
+
+                    throw new Error('Data must be of type "DataTransfer"', dataTransfer)
+
+                }        
+
+                const files = {}
+
+                // recurse down the webkit file structure resolving
+                // the paths to files names to store in the `files`
+                // object
+                function recurseDirectory(item) {
+                        
+                    if (item.isFile) {
+
+                        return new Promise(resolve => {
+                            item.file(file => {
+                                files[item.fullPath] = file
+                                resolve()
+                            })
+                        })
+
+                    } else {
+
+                        const reader = item.createReader()
+
+                        return new Promise(resolve => {
+
+                            const promises = []
+                            reader.readEntries(et => {
+                                et.forEach(e => {
+                                    promises.push(recurseDirectory(e))
+                                })
+
+                                Promise.all(promises).then(() => resolve())
+                            })
+                        })
+
+                        return Promise.all(promises)
+                    }
+                }
+
+                return new Promise(resolve => {
+
+                    // Traverse down the tree and add the files into the zip
+                    const dtitems = dataTransfer.items && [...dataTransfer.items]
+                    const dtfiles = [...dataTransfer.files]
+
+                    if (dtitems && dtitems.length && dtitems[0].webkitGetAsEntry) {
+
+                        const promises = []
+                        for (let i = 0; i < dtitems.length; i ++) {
+                            const item = dtitems[i]
+                            const entry = item.webkitGetAsEntry()
+
+                            promises.push(recurseDirectory(entry))
+
+                        }
+                        Promise.all(promises).then(() => resolve(files))
+
+                    } else {
+                        
+                        // add a '/' prefix to math the file directory entry
+                        // on webkit browsers
+                        dtfiles
+                            .filter(f => f.size !== 0)
+                            .forEach(f => files['/' + f.name] = f)
+
+                        resolve(files)
+                    
+                    }
+                })
+
+            }
+
             const viewer = document.querySelector('urdf-viewer')
             const animToggle = document.getElementById('do-animate')
             const sliderList = document.querySelector('#sliders ul')
@@ -314,6 +402,49 @@
                         sliders[joint.name] = li
 
                     })
+
+            })
+
+     
+            document.addEventListener('dragover', e => e.preventDefault())
+            document.addEventListener('dragenter', e => e.preventDefault())
+            document.addEventListener('drop', e => {
+
+                e.preventDefault()
+
+                // convert the files
+                dataTransferToFiles(e.dataTransfer)
+                    .then(files => {
+
+                        // set the loader url modifier to check the list
+                        // of files
+                        viewer.loadingManager.setURLModifier(url => {
+
+                            // TODO: This won't work for paths that traverse up
+                            // and down (/example/../path/model.ply)
+                            url = '/' + url.replace(/^[\.\\\/]*/, '')
+                            if (url in files) {
+                                const newurl = URL.createObjectURL(files[url])
+                                
+                                // revoke the url after it's been used
+                                requestAnimationFrame(() => URL.revokeObjectURL(newurl))
+
+                                return newurl
+                            }
+
+                            return url
+                        })
+
+                        // set the source of the element to the most likely intended display model
+                        const filesNames = Object.keys(files)
+                        viewer.urdf = 
+                            filesNames
+                                .filter(n => /urdf$/i.test(n))
+                                .shift()
+
+                    })
+            
+                document.body.style.backgroundColor = '#263238'
 
             })
 

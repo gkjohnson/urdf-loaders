@@ -42,6 +42,14 @@ class URDFViewer extends HTMLElement {
     }
     set angles(val) { this._setAngles(val) }
 
+    get loadingManager() {
+        return this._loadingManager = this._loadingManager || new THREE.LoadingManager();
+    }
+
+    get urdfLoader() {
+        return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager)
+    }
+
     /* Lifecycle Functions */
     constructor() {
         super()
@@ -49,8 +57,6 @@ class URDFViewer extends HTMLElement {
         this._requestId = 0
         this._dirty = false
         this.robot = null
-        this.manager = new THREE.LoadingManager()
-        this.loader = new URDFLoader(this.manager)
 
         // Scene setup
         const scene = new THREE.Scene()
@@ -250,7 +256,7 @@ class URDFViewer extends HTMLElement {
 
             let totalMeshes = 0
             let meshesLoaded = 0
-            this.loader.load(
+            this.urdfLoader.load(
                 pkg,
                 urdf,
                 
@@ -272,7 +278,7 @@ class URDFViewer extends HTMLElement {
                 // Load meshes and enable shadow casting
                 (path, ext, done) => {
                     totalMeshes++
-                    this.loader.defaultMeshLoader(path, ext, mesh => {
+                    this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
                         const _enableShadows = o => {
                             if (o instanceof THREE.Mesh) {
                                 o.castShadow = true
