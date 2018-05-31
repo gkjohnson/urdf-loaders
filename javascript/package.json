@@ -32,6 +32,7 @@
     "script-loader": "^0.7.0",
     "static-server": "^3.0.0",
     "three": "^0.91.0",
+    "threejs-model-loader": "0.0.1",
     "wc-loader": "^1.1.12",
     "webpack": "^3.5.3"
   },

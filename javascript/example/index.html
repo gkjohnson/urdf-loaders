@@ -5,13 +5,14 @@
     
         <title>URDF Viewer Example</title>
     
-        <link href="https://fonts.googleapis.com/css?family=Roboto:100" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet">
         <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
 
         <script src="../node_modules/three/build/three.js"></script>
         <script src="../node_modules/three/examples/js/controls/OrbitControls.js"></script>
         <script src="../node_modules/three/examples/js/loaders/STLLoader.js"></script>
         <script src="../node_modules/three/examples/js/loaders/ColladaLoader.js"></script>
+        <script src="../node_modules/threejs-model-loader/ModelLoader.js"></script>
         <script src="../URDFLoader.js"></script>
         <script src="../urdf-viewer-element.js"></script>
         <script>
@@ -39,7 +40,7 @@
                 border: none;
                 color: white;
                 font-size: 16px;
-                font-weight: lighter;
+                font-weight: 300;
                 font-family: "Roboto";
                 outline: none;
                 float: right;
@@ -98,7 +99,7 @@
                 margin: 0 20px;
             }
 
-            #controls {
+            #menu {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -110,51 +111,92 @@
 
             #urdf-options li {
                 cursor: pointer;
-                opacity: 0.4;
+                opacity: 0.5;
                 font-size: 30px;
+                font-weight: 100;
             }
 
             #urdf-options li:hover {
                 opacity: 0.75;
             }
 
-            #sliders {
+            #controls {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
                 width: 100%;
                 margin: 10px 0;
-                padding-top: 10px;
                 border-top: 1px solid white;
+                transition: 0.5s opacity ease;
             }
 
-            #sliders > * {
+            #controls > * {
                 margin: 5px 0;
+                transition: 0.1s opacity linear;
             }
 
-            #sliders ul {
+            #controls #toggle-controls {
+                margin-top: 0;
+                margin-bottom: 10px;
+                text-align: right;
+            }
+
+            #controls #toggle-controls:hover {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+
+            #controls #toggle-controls:before {
+                content: "hide controls";
+                font-size: 12px;
+                font-weight: normal;
+            }
+
+            /* hidden state */
+            #controls.hidden #toggle-controls:before {
+                content: "show controls";
+            }
+
+
+            #controls.hidden > *:not(#toggle-controls) {
+                opacity: 0;
+            }
+
+            #controls.hidden {
+                opacity: 0.5;
+            }
+
+            /* list of joint sliders */
+            #controls ul {
                 flex: 1;
                 overflow-y: auto;
             }
 
-            #sliders li {
+            #controls li {
                 font-size: 16px;
                 display: flex;
                 align-items: center;
 
                 width: 100%;
+                user-select: text;
             }
 
-            #sliders li span {
+            #controls li span {
 
                 padding: 0 5px;
+                max-width: 125px;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                direction: rtl;
 
             }
 
-            #sliders li span.value {
+            #controls li span.value {
                 width: 50px;
+                overflow: hidden;
             }
 
+            /* toggle controls */
             .toggle {
                 padding-left: 25px;
                 position: relative;
@@ -202,7 +244,7 @@
             }
 
             @media (max-width: 700px) {
-                #sliders {
+                #controls {
                     display: none;
                 }
             }
@@ -210,14 +252,15 @@
     </head>
     <body tabindex="0">
 
-        <div id="controls">
+        <div id="menu">
             <ul id="urdf-options">
                 <li urdf="T12/urdf/T12.URDF" color="#E91E63">ATHLETE</li>
                 <li urdf="TriATHLETE/urdf/TriATHLETE.URDF" color="#009688">TriATHLETE</li>
                 <li urdf="TriATHLETE_Climbing/urdf/TriATHLETE.URDF" color="#FFB300">TriATHLETE Climbing</li>
             </ul>
 
-            <div id="sliders">
+            <div id="controls" class="hidden">
+                <div id="toggle-controls"></div>
                 <div>Drag and drop a set of URDF files! <br/> (Chrome Only)</div>
                 <div id="do-animate" class="toggle checked">Animate Joints</div>
                 <label>
@@ -320,7 +363,9 @@
             const viewer = document.querySelector('urdf-viewer')
             const animToggle = document.getElementById('do-animate')
             const upSelect = document.getElementById('up-select')
-            const sliderList = document.querySelector('#sliders ul')
+            const sliderList = document.querySelector('#controls ul')
+            const controlsel = document.getElementById('controls')
+            const controlsToggle = document.getElementById('toggle-controls')
             const DEG2RAD = Math.PI / 180
             const RAD2DEG = 1 / DEG2RAD
             let sliders = {}
@@ -369,6 +414,8 @@
 
             upSelect.addEventListener('change', () => viewer.up = upSelect.value)
 
+            controlsToggle.addEventListener('click', () => controlsel.classList.toggle('hidden'))
+
             // watch for urdf changes
             viewer.addEventListener('urdf-change', () => {
 
@@ -406,7 +453,7 @@
                         const li = document.createElement('li')
                         li.innerHTML =
                         `
-                        <span>${joint.name}</span>
+                        <span title="${joint.name}">${joint.name}</span>
                         <input type="range" min="${joint.urdf.limits.lower}" max="${joint.urdf.limits.upper}" value="0" step="0.0001"/>
                         <span class="value">0</span>
                         `
@@ -510,6 +557,13 @@
             })
 
             document.addEventListener('WebComponentsReady', () => {
+
+                const modelLoader = new THREE.ModelLoader(viewer.loadingManager);
+                viewer.urdfLoader.defaultMeshLoader = (path, ext, done) => {
+                    modelLoader.load(path, res => done(res.model));
+                    console.log("DONE")
+                }
+
                 viewer.addEventListener('urdf-processed', e => updateAngles())
                 document.querySelector('li[urdf]').dispatchEvent(new Event('click'))
 
