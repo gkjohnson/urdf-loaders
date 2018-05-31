@@ -34,6 +34,21 @@
                 user-select: none;
             }
 
+            select {
+                background: rgba(255,255,255,0.25);
+                border: none;
+                color: white;
+                font-size: 16px;
+                font-weight: lighter;
+                font-family: "Roboto";
+                outline: none;
+                float: right;
+            }
+
+            option {
+                color: #888;
+            }
+
             ul {
                 list-style: none;
                 padding: 0;
@@ -76,6 +91,11 @@
             input:focus {
                 outline: none;
                 opacity: 1;
+            }
+
+            #up-select {
+                width: 70px;
+                margin: 0 20px;
             }
 
             #controls {
@@ -122,7 +142,7 @@
                 display: flex;
                 align-items: center;
 
-                width: 200px;
+                width: 100%;
             }
 
             #sliders li span {
@@ -135,14 +155,14 @@
                 width: 50px;
             }
 
-            #do-animate {
+            .toggle {
                 padding-left: 25px;
                 position: relative;
 
                 cursor: pointer;
             }
 
-            #do-animate:before {
+            .toggle:before {
                 content: "";
                 position: absolute;
                 left: 0;
@@ -155,7 +175,7 @@
                 margin-right: 5px;
             }
 
-            #do-animate:after {
+            .toggle:after {
                 content: "";
                 width: 9px;
                 height: 9px;
@@ -168,11 +188,11 @@
                 opacity: 0;
             }
 
-            #do-animate:not(.checked):hover:after {
+            .toggle:not(.checked):hover:after {
                 opacity: 0.25;
             }
 
-            #do-animate.checked:after {
+            .toggle.checked:after {
                 opacity: 1;
             }
 
@@ -185,7 +205,6 @@
                 #sliders {
                     display: none;
                 }
-
             }
         </style>
     </head>
@@ -200,7 +219,18 @@
 
             <div id="sliders">
                 <div>Drag and drop a set of URDF files! <br/> (Chrome Only)</div>
-                <div id="do-animate" class="checked">Animate Joints</div>
+                <div id="do-animate" class="toggle checked">Animate Joints</div>
+                <label>
+                    Up Axis
+                    <select id="up-select">
+                        <option value="+X">+X</option>
+                        <option value="-X">-X</option>
+                        <option value="+Y">+Y</option>
+                        <option value="-Y">-Y</option>
+                        <option value="+Z" selected>+Z</option>
+                        <option value="-Z">-Z</option>
+                    </select>
+                </label>
                 <ul></ul>
             </div>
         </div>
@@ -285,11 +315,11 @@
                     
                     }
                 })
-
             }
 
             const viewer = document.querySelector('urdf-viewer')
             const animToggle = document.getElementById('do-animate')
+            const upSelect = document.getElementById('up-select')
             const sliderList = document.querySelector('#sliders ul')
             const DEG2RAD = Math.PI / 180
             const RAD2DEG = 1 / DEG2RAD
@@ -336,6 +366,8 @@
 
             // toggle checkbox
             animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'))
+
+            upSelect.addEventListener('change', () => viewer.up = upSelect.value)
 
             // watch for urdf changes
             viewer.addEventListener('urdf-change', () => {
@@ -456,11 +488,12 @@
                                 .shift()
 
                         // remove the url modifier function is it doesn't affect other actions
-                        viewer.loadingManager.setURLModifier(null)
+                        requestAnimationFrame(() => viewer.loadingManager.setURLModifier(null))
 
                     })
             
                 document.body.style.backgroundColor = '#263238'
+                animToggle.classList.removeClass('checked')
 
             })
 
@@ -471,6 +504,8 @@
 
                     viewer.urdf = urdf
                     document.body.style.backgroundColor = color
+                    animToggle.classList.add('checked')
+
                 })
             })
 

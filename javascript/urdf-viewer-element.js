@@ -208,8 +208,10 @@ class URDFViewer extends HTMLElement {
         if (!this.robot) return
 
         const joint = this.robot.urdf.joints[jointname]
-        if (joint) joint.urdf.setAngle(angle)
-        this._dirty = true
+        if (joint && joint.urdf.angle !== angle) {
+            joint.urdf.setAngle(angle)
+            this._dirty = true
+        }
     }
     
     setAngles(angles) {
@@ -222,6 +224,8 @@ class URDFViewer extends HTMLElement {
     _updatePlane() {
         this.plane.visible = this.displayShadow
         if(this.robot && this.displayShadow) {
+            this.world.updateMatrixWorld()
+
             let lowestPoint = Infinity
             const bbox = new THREE.Box3().setFromObject(this.robot)
             lowestPoint = Math.min(lowestPoint, bbox.min.y)
