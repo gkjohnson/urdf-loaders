@@ -261,6 +261,7 @@
             <div id="controls" class="hidden">
                 <div id="toggle-controls"></div>
                 <div>Drag and drop a set of URDF files! <br/> (Chrome Only)</div>
+                <div id="ignore-joint-limits" class="toggle">Ignore Joint Limits</div>
                 <div id="do-animate" class="toggle checked">Animate Joints</div>
                 <label>
                     Up Axis
@@ -361,6 +362,7 @@
 
             const viewer = document.querySelector('urdf-viewer')
             const animToggle = document.getElementById('do-animate')
+            const limitsToggle = document.getElementById('ignore-joint-limits')
             const upSelect = document.getElementById('up-select')
             const sliderList = document.querySelector('#controls ul')
             const controlsel = document.getElementById('controls')
@@ -411,6 +413,11 @@
             // toggle checkbox
             animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'))
 
+            limitsToggle.addEventListener('click', () => {
+                limitsToggle.classList.toggle('checked')
+                viewer.ignoreLimits = limitsToggle.classList.contains('checked')
+            })
+
             upSelect.addEventListener('change', () => viewer.up = upSelect.value)
 
             controlsToggle.addEventListener('click', () => controlsel.classList.toggle('hidden'))
@@ -418,11 +425,18 @@
             // watch for urdf changes
             viewer.addEventListener('urdf-change', () => {
 
-                Object.keys(sliders)
-                    .map(n => sliders[n])
+                Object
+                    .values(sliders)
                     .forEach(sl => sl.remove())
                 sliders = {}
 
+            })
+
+            viewer.addEventListener('ignore-limits-change', () => {
+                
+                Object
+                    .values(sliders)
+                    .forEach(sl => sl.update())
             })
 
             // create the sliders
@@ -453,7 +467,7 @@
                         li.innerHTML =
                         `
                         <span title="${joint.name}">${joint.name}</span>
-                        <input type="range" min="${joint.urdf.limits.lower}" max="${joint.urdf.limits.upper}" value="0" step="0.0001"/>
+                        <input type="range" value="0" step="0.0001"/>
                         <span class="value">0</span>
                         `
                         
@@ -468,6 +482,14 @@
                             
                             angleel.innerText = parseFloat(val)
                             slider.value = joint.urdf.angle
+
+                            if (viewer.ignoreLimits) {
+                                slider.min = -6.28
+                                slider.max = 6.28
+                            } else {
+                                slider.min = joint.urdf.limits.lower
+                                slider.max = joint.urdf.limits.upper
+                            }
                         }
 
                         switch(joint.urdf.type) {

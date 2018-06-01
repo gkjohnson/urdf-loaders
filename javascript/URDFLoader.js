@@ -134,6 +134,7 @@ class URDFLoader {
         obj.urdf = {
             node: joint, type: jointType, angle: 0, axis: null,
             limits: { lower: 0, upper: 0 },
+            ignoreLimits: false,
             setAngle: () => {}
         }
 
@@ -187,8 +188,10 @@ class URDFLoader {
                     if (!this.axis) return
                     if (angle == null) return
 
-                    angle = Math.min(this.limits.upper, angle)
-                    angle = Math.max(this.limits.lower, angle)
+                    if (!this.ignoreLimits) {
+                        angle = Math.min(this.limits.upper, angle)
+                        angle = Math.max(this.limits.lower, angle)
+                    }
 
                     // FromAxisAngle seems to rotate the opposite of the
                     // expected angle for URDF, so negate it here
@@ -204,8 +207,10 @@ class URDFLoader {
                     if (!this.axis) return
                     if (angle == null) return
 
-                    angle = Math.min(this.limits.upper, angle)
-                    angle = Math.max(this.limits.lower, angle)
+                    if (!this.ignoreLimits) {
+                        angle = Math.min(this.limits.upper, angle)
+                        angle = Math.max(this.limits.lower, angle)
+                    }
 
                     obj.position.copy(origPos);
                     obj.position.addScaledVector(this.axis, angle)

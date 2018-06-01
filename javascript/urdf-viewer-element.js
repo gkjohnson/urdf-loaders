@@ -5,11 +5,12 @@
 // urdf-change: Fires when the URDF has finished loading and getting processed
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
+// ignore-limits-change: Fires when the 'ignore-limits' attribute changes 
 window.URDFViewer =
 class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
-        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color']
+        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits']
     }
 
     get package() { return this.getAttribute('package') || '' }
@@ -17,6 +18,11 @@ class URDFViewer extends HTMLElement {
     
     get urdf() { return this.getAttribute('urdf') || '' }
     set urdf(val) { this.setAttribute('urdf', val) }
+
+    get ignoreLimits() { return this.hasAttribute('ignore-limits') || false }
+    set ignoreLimits(val) {
+        val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits')
+    }
 
     get up() { return this.getAttribute('up') || '+Y' }
     set up(val) { this.setAttribute('up', val) }
@@ -188,6 +194,11 @@ class URDFViewer extends HTMLElement {
                 this.ambientLight.color.set(this.ambientColor)
                 break
             }
+
+            case 'ignore-limits': {
+                this._setIgnoreLimits(this.ignoreLimits, true)
+                break
+            }
         }
     }
 
@@ -283,6 +294,8 @@ class URDFViewer extends HTMLElement {
                     this.robot = robot
                     this.world.add(robot)
 
+                    this._setIgnoreLimits(this.ignoreLimits)
+
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }))
                 },
 
@@ -324,5 +337,23 @@ class URDFViewer extends HTMLElement {
         if (axis === 'X') this.world.rotation.set(0, 0, sign === '+' ? HALFPI : -HALFPI)
         if (axis === 'Z') this.world.rotation.set(sign === '+' ? HALFPI : -HALFPI, 0, 0)
         if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0)
+    }
+
+    // Updates the current robot's angles to ignore
+    // joint limits or not
+    _setIgnoreLimits(ignore, dispatch = false) {
+        if (this.robot) {
+            Object
+                .values(this.robot.urdf.joints)
+                .forEach(joint => {
+                    joint.urdf.ignoreLimits = ignore
+                    joint.urdf.setAngle(joint.urdf.angle)
+                })
+        }
+
+        if (dispatch) {
+            this.dispatchEvent(new CustomEvent('ignore-limits-change', { bubbles: true, cancelable: true, composed: true }))
+        }
+
     }
 }
