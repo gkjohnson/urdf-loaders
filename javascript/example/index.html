@@ -187,7 +187,6 @@
                 max-width: 125px;
                 text-overflow: ellipsis;
                 overflow: hidden;
-                direction: rtl;
 
             }
 
@@ -469,6 +468,17 @@
                             
                             angleel.innerText = parseFloat(val)
                             slider.value = joint.urdf.angle
+                        }
+
+                        switch(joint.urdf.type) {
+                            case 'continuous':
+                            case 'prismatic':
+                            case 'revolute':
+                                break;
+                            default:
+                                li.update = () => {}
+                                angleel.remove()
+                                slider.remove()
                         }
 
                         slider.addEventListener('input', () => {
