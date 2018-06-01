@@ -50,7 +50,11 @@ The path to the URDF file relative to the specified package directory.
 
 _required_
 
-Callback that is called once the urdf robots have been loaded. An array of loaded robots is passed to the function.
+Callback that is called once the urdf robots have been loaded. The loaded robot is passed to the function.
+
+The available joints are specified on `robot.urdf.joints`.
+
+To set a joint angle, call `robot.urdf.joint.setAngle(angle)`.
 
 ##### geometryLoader(pathToModel, fileExtension, doneCallback)
 
@@ -87,6 +91,10 @@ Corresponds to the `urdfpath` parameter in `URDFLoader.load`.
 
 The element uses fetch options `{ mode: 'cors', credentials: 'same-origin' }` to load the urdf file.
 
+#### ignore-limits
+
+Whether or not hte display should ignore the joint limits specified in the model when updating angles.
+
 #### up
 
 The axis to associate with "up" in THREE.js. Values can be [+-][XYZ].
@@ -122,6 +130,10 @@ Sets all joint names specified as keys to radian angle value.
 #### 'urdf-change'
 
 Fires when the URDF has changed and a new one is starting to load.
+
+#### 'ignore-limits-change'
+
+Fires when the `ignore-limits` attribute changes.
 
 #### 'urdf-processed'
 
