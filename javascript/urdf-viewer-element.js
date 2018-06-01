@@ -119,9 +119,16 @@ class URDFViewer extends HTMLElement {
         const _do = () => {
             if(this.parentNode) {
                 this.refresh()
-                this.controls.update()
+
                 if (this._dirty) {
-                    this._updatePlane()
+                    this._updateEnvironment()
+                }
+
+                // update controls after the environment in
+                // case the controls are retargeted
+                this.controls.update()
+
+                if (this._dirty) {
                     this.renderer.render(scene, camera)
                     this._dirty = false
                 }
@@ -220,16 +227,16 @@ class URDFViewer extends HTMLElement {
 
     /* Private Functions */
     // Updates the position of the plane to be at the
-    // lowest point below the robot
-    _updatePlane() {
+    // lowest point below the robot and focuses the 
+    // camera on the center of the scene
+    _updateEnvironment() {
         this.plane.visible = this.displayShadow
         if(this.robot && this.displayShadow) {
             this.world.updateMatrixWorld()
 
-            let lowestPoint = Infinity
             const bbox = new THREE.Box3().setFromObject(this.robot)
-            lowestPoint = Math.min(lowestPoint, bbox.min.y)
-            this.plane.position.y = lowestPoint
+            this.controls.target.y = bbox.getCenter(new THREE.Vector3()).y
+            this.plane.position.y = bbox.min.y - 1e-3
         }
     }
 
