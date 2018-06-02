@@ -1,6 +1,6 @@
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
-window.URDFLoader = 
+window.URDFLoader =
 class URDFLoader {
 
     // Cached mesh loaders
@@ -26,7 +26,7 @@ class URDFLoader {
     }
 
     /* Utilities */
-    // forEach and filter function wrappers because 
+    // forEach and filter function wrappers because
     // HTMLCollection does not the by default
     forEach(coll, func)  { return [].forEach.call(coll, func) }
     filter(coll, func)   { return [].filter.call(coll, func) }
@@ -148,7 +148,7 @@ class URDFLoader {
             const type = n.nodeName.toLowerCase()
             if (type === 'origin') {
                 xyz = this._processTuple(n.getAttribute('xyz'))
-                rpy = this._processTuple(n.getAttribute('rpy'))                    
+                rpy = this._processTuple(n.getAttribute('rpy'))
             } else if(type === 'child') {
                 child = linkMap[n.getAttribute('link')]
             } else if(type === 'parent') {
@@ -272,7 +272,7 @@ class URDFLoader {
 
                             obj.position.set(xyz[0], xyz[1], xyz[2])
                             obj.rotation.set(0,0,0)
-                            this._applyRotation(obj, rpy)                            
+                            this._applyRotation(obj, rpy)
                         }
                     })
                 } else if (geoType === 'box') {
@@ -303,7 +303,7 @@ class URDFLoader {
                         const radius = parseFloat(n.children[0].getAttribute('radius')) || 0
                         const length = parseFloat(n.children[0].getAttribute('length')) || 0
 
-                        const mesh = new THREE.mesh()
+                        const mesh = new THREE.Mesh()
                         mesh.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 25)
                         mesh.material = material
                         mesh.scale.set(radius, length, radius)
@@ -315,7 +315,6 @@ class URDFLoader {
                         linkObj.add(obj)
                         this._applyRotation(obj, rpy)
                         obj.position.set(xyz[0], xyz[1], xyz[2])
-                        obj.scale.set(size[0], size[1], size[2])
                     })
                 }
             } else if(type === 'origin') {
