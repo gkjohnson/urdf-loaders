@@ -2,9 +2,9 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    
+
         <title>URDF Viewer Example</title>
-    
+
         <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet">
         <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
 
@@ -281,7 +281,7 @@
 
 
         <script>
-        
+
             // Converts a datatransfer structer into an object with all paths and files
             // listed out. Returns a promise that resolves with the file structure.
             function dataTransferToFiles(dataTransfer) {
@@ -290,7 +290,7 @@
 
                     throw new Error('Data must be of type "DataTransfer"', dataTransfer)
 
-                }        
+                }
 
                 const files = {}
 
@@ -298,7 +298,7 @@
                 // the paths to files names to store in the `files`
                 // object
                 function recurseDirectory(item) {
-                        
+
                     if (item.isFile) {
 
                         return new Promise(resolve => {
@@ -347,7 +347,7 @@
                         Promise.all(promises).then(() => resolve(files))
 
                     } else {
-                        
+
                         // add a '/' prefix to math the file directory entry
                         // on webkit browsers
                         dtfiles
@@ -355,7 +355,7 @@
                             .forEach(f => files['/' + f.name] = f)
 
                         resolve(files)
-                    
+
                     }
                 })
             }
@@ -393,7 +393,7 @@
 
                     viewer.setAngle(`TC${i}A`, lerp(0, 0.065, ratio))
                     viewer.setAngle(`TC${i}B`, lerp(0, 0.065, ratio))
-                    
+
                     viewer.setAngle(`W${i}`, window.performance.now() * 0.001)
                 }
 
@@ -433,7 +433,7 @@
             })
 
             viewer.addEventListener('ignore-limits-change', () => {
-                
+
                 Object
                     .values(sliders)
                     .forEach(sl => sl.update())
@@ -470,16 +470,16 @@
                         <input type="range" value="0" step="0.0001"/>
                         <span class="value">0</span>
                         `
-                        
+
                         sliderList.appendChild(li)
-                        
+
                         const angleel = li.querySelector('.value')
                         const slider = li.querySelector('input')
                         li.update = () => {
                             let val = joint.urdf.type === 'revolute' ? joint.urdf.angle * RAD2DEG : joint.urdf.angle
                             if (Math.abs(val) > 1) val = val.toFixed(1)
                             else val = val.toPrecision(2)
-                            
+
                             angleel.innerText = parseFloat(val)
                             slider.value = joint.urdf.angle
 
@@ -516,7 +516,7 @@
 
             })
 
-     
+
             document.addEventListener('dragover', e => e.preventDefault())
             document.addEventListener('dragenter', e => e.preventDefault())
             document.addEventListener('drop', e => {
@@ -546,7 +546,7 @@
                                 if (newurl in files) {
 
                                     // revoke the url after it's been used
-                                    const bloburl = URL.createObjectURL(files[newurl])                                    
+                                    const bloburl = URL.createObjectURL(files[newurl])
                                     requestAnimationFrame(() => URL.revokeObjectURL(bloburl))
 
                                     return bloburl
@@ -561,16 +561,20 @@
 
                         // set the source of the element to the most likely intended display model
                         const filesNames = Object.keys(files)
-                        viewer.urdf = 
+                        viewer.urdf =
                             filesNames
                                 .filter(n => /urdf$/i.test(n))
                                 .shift()
 
                         // remove the url modifier function is it doesn't affect other actions
-                        requestAnimationFrame(() => viewer.loadingManager.setURLModifier(null))
+                        viewer.addEventListener(
+                            'geometry-loaded',
+                            () => viewer.loadingManager.setURLModifier(null),
+                            { once: true }
+                        )
 
                     })
-            
+
                 document.body.style.backgroundColor = '#263238'
                 animToggle.classList.remove('checked')
 
