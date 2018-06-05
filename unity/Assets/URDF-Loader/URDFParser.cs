@@ -56,9 +56,6 @@ public class URDFParser : MonoBehaviour
         Dictionary<string, XmlNode> xmlLinks = new Dictionary<string, XmlNode>();
         Dictionary<string, XmlNode> xmlJoints = new Dictionary<string, XmlNode>();
 
-        // indexed by link name
-        Dictionary<string, Transform> transforms = new Dictionary<string, Transform>();
-
         // indexed by joint name
         Dictionary<string, URDFJoint> urdfJoints = new Dictionary<string, URDFJoint>();
         Dictionary<string, URDFLink> urdfLinks = new Dictionary<string, URDFLink>();
@@ -100,6 +97,10 @@ public class URDFParser : MonoBehaviour
                         {
                             XmlNode colNode = GetXmlNodeChildByName(matNode, "color");
                             if (colNode != null) col = TupleToColor(colNode.Attributes["rgba"].Value);
+
+                            // TODO: Load the textures
+                            // XmlNode texNode = GetXmlNodeChildByName(matNode, "texture");
+                            // if (texNode != null) { }
                         }
 
                         // Get the mesh and the origin nodes
@@ -113,6 +114,7 @@ public class URDFParser : MonoBehaviour
                         {
                             visPos = TupleToVector3(visOriginNode.Attributes["xyz"].Value);
                         }
+
                         visPos = URDFToUnityPos(visPos);
 
                         Vector3 visRot = Vector3.zero;
@@ -120,6 +122,7 @@ public class URDFParser : MonoBehaviour
                         {
                             visRot = TupleToVector3(visOriginNode.Attributes["rpy"].Value);
                         }
+
                         visRot = URDFToUnityRot(visRot);
 
                         try
@@ -130,83 +133,44 @@ public class URDFParser : MonoBehaviour
                                 XmlNode primitiveNode = GetXmlNodeChildByName(geomNode, "box") ??
                                                         GetXmlNodeChildByName(geomNode, "sphere") ??
                                                         GetXmlNodeChildByName(geomNode, "cylinder");
-                                if (primitiveNode == null)
-                                    continue;
-                                GameObject go = null;
-                                switch (primitiveNode.Name)
+                                if (primitiveNode != null)
                                 {
-                                    case "box":
-                                        go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                                        go.transform.localScale =
-                                            URDFToUnityPos(TupleToVector3(primitiveNode.Attributes[0].Value));
-                                        break;
-                                    case "sphere":
-                                        go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                        go.transform.localScale =
-                                            Vector3.one * (float.Parse(primitiveNode.Attributes[0].Value) * 2);
-                                        break;
-                                    case "cylinder":
-                                        go = new GameObject();
-                                        var cPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                                        cPrimitive.transform.parent = go.transform;
-
-                                        var length = float.Parse(primitiveNode.Attributes[0].Value);
-                                        var radius = float.Parse(primitiveNode.Attributes[1].Value);
-                                        go.transform.localScale = new Vector3(radius * 2, length, radius * 2);
-                                        break;
-                                }
-                                Renderer r = go.GetComponent<Renderer>() ?? go.GetComponentInChildren<Renderer>();
-                                go.transform.parent = urdfLink.transform;
-                                go.transform.localPosition = visPos;
-                                go.transform.localRotation = Quaternion.Euler(visRot);
-
-                                go.name = urdfLink.name + " geometry " + primitiveNode.Name;
-
-                                if (!r)
-                                    continue;
-                                r.material.color = col;
-
-                                renderers.Add(r);
-                                if (Application.isPlaying)
-                                {
-                                    Destroy(r.GetComponent<Collider>());
-                                    Destroy(r.GetComponent<Rigidbody>());
-                                }
-                                else
-                                {
-                                    DestroyImmediate(r.GetComponent<Collider>());
-                                    DestroyImmediate(r.GetComponent<Rigidbody>());
-                                }
-                                continue;
-                            }
-                            // load the STL file if possible
-                            // get the file path and split it
-                            string fileName = meshNode.Attributes["filename"].Value;
-                            fileName = Path.Combine(package, fileName.Replace("package://", ""));
-
-                            // load all meshes 
-                            loadMesh(fileName, (meshes, materials) =>
-                            {
-                                if (meshes.Length > 0)
-                                {
-                                    // create the rest of the meshes and child them to the click target
-                                    for (int i = 0; i < meshes.Length; i++)
+                                    GameObject go = null;
+                                    switch (primitiveNode.Name)
                                     {
-                                        Renderer r = GameObject.CreatePrimitive(PrimitiveType.Cube)
-                                            .GetComponent<Renderer>();
-                                        r.GetComponent<MeshFilter>().mesh = meshes[i];
-                                        if (materials != null && materials.Length > i)
-                                            r.material = materials[i];
-                                        r.transform.parent = urdfLink.transform;
-                                        r.transform.localPosition = visPos;
-                                        r.transform.localRotation = Quaternion.Euler(visRot);
+                                        case "box":
+                                            go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                            go.transform.localScale =
+                                                URDFToUnityPos(TupleToVector3(primitiveNode.Attributes[0].Value));
+                                            break;
+                                        case "sphere":
+                                            go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                                            go.transform.localScale =
+                                                Vector3.one * (float.Parse(primitiveNode.Attributes[0].Value) * 2);
+                                            break;
+                                        case "cylinder":
+                                            go = new GameObject();
+                                            var cPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                                            cPrimitive.transform.parent = go.transform;
 
-                                        r.name = urdfLink.name + " geometry " + i;
+                                            var length = float.Parse(primitiveNode.Attributes[0].Value);
+                                            var radius = float.Parse(primitiveNode.Attributes[1].Value);
+                                            go.transform.localScale = new Vector3(radius * 2, length, radius * 2);
+                                            break;
+                                    }
+
+                                    Renderer r = go.GetComponent<Renderer>() ?? go.GetComponentInChildren<Renderer>();
+                                    go.transform.parent = urdfLink.transform;
+                                    go.transform.localPosition = visPos;
+                                    go.transform.localRotation = Quaternion.Euler(visRot);
+
+                                    go.name = urdfLink.name + " geometry " + primitiveNode.Name;
+
+                                    if (r)
+                                    {
                                         r.material.color = col;
 
                                         renderers.Add(r);
-
-                                        // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
                                         if (Application.isPlaying)
                                         {
                                             Destroy(r.GetComponent<Collider>());
@@ -217,12 +181,59 @@ public class URDFParser : MonoBehaviour
                                             DestroyImmediate(r.GetComponent<Collider>());
                                             DestroyImmediate(r.GetComponent<Rigidbody>());
                                         }
-                                    }
-                                }
-                            });
 
-                            // save the geometry in the link
-                            urdfLink.geometry = renderers;
+                                    }
+
+                                }
+
+                            }
+                            else
+                            {
+                                // load the STL file if possible
+                                // get the file path and split it
+                                string fileName = meshNode.Attributes["filename"].Value;
+                                fileName = Path.Combine(package, fileName.Replace("package://", ""));
+
+                                // load all meshes 
+                                loadMesh(fileName, (meshes, materials) =>
+                                {
+                                    if (meshes.Length > 0)
+                                    {
+                                        // create the rest of the meshes and child them to the click target
+                                        for (int i = 0; i < meshes.Length; i++)
+                                        {
+                                            Renderer r = GameObject.CreatePrimitive(PrimitiveType.Cube)
+                                                .GetComponent<Renderer>();
+                                            r.GetComponent<MeshFilter>().mesh = meshes[i];
+                                            if (materials != null && materials.Length > i)
+                                                r.material = materials[i];
+                                            r.transform.parent = urdfLink.transform;
+                                            r.transform.localPosition = visPos;
+                                            r.transform.localRotation = Quaternion.Euler(visRot);
+
+                                            r.name = urdfLink.name + " geometry " + i;
+                                            r.material.color = col;
+
+                                            renderers.Add(r);
+
+                                            // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
+                                            if (Application.isPlaying)
+                                            {
+                                                Destroy(r.GetComponent<Collider>());
+                                                Destroy(r.GetComponent<Rigidbody>());
+                                            }
+                                            else
+                                            {
+                                                DestroyImmediate(r.GetComponent<Collider>());
+                                                DestroyImmediate(r.GetComponent<Rigidbody>());
+                                            }
+                                        }
+                                    }
+                                });
+
+                                // save the geometry in the link
+                                urdfLink.geometry = renderers;
+                            }
                         }
                         catch (System.Exception e)
                         {
@@ -275,6 +286,7 @@ public class URDFParser : MonoBehaviour
                     {
                         pos = TupleToVector3(transNode.Attributes["xyz"].Value);
                     }
+
                     pos = URDFToUnityPos(pos);
 
                     Vector3 rot = Vector3.zero;
@@ -282,6 +294,7 @@ public class URDFParser : MonoBehaviour
                     {
                         rot = TupleToVector3(transNode.Attributes["rpy"].Value);
                     }
+
                     rot = URDFToUnityRot(rot);
 
                     // parent the joint and name it
@@ -331,6 +344,7 @@ public class URDFParser : MonoBehaviour
                     kv.Value.transform.localPosition = Vector3.zero;
                     kv.Value.transform.localRotation = Quaternion.identity;
                 }
+
                 urdfjointlist.links = urdfLinks;
                 urdfjointlist.joints = urdfJoints;
 
@@ -338,6 +352,7 @@ public class URDFParser : MonoBehaviour
                 return urdfjointlist;
             }
         }
+
         return null;
     }
 
@@ -478,27 +493,4 @@ public class URDFParser : MonoBehaviour
 
         return q.eulerAngles;
     }
-
-    // takes degrees, returns radians
-    public static Vector3 UnityToURDFRot(Vector3 v)
-    {
-        // add the angles to a quaternion so we can extract them
-        // euler angle are applied in zyx order
-        // https://docs.unity3d.com/ScriptReference/Transform-eulerAngles.html
-        Quaternion q = Quaternion.Euler(v);
-
-        // extract the angles
-        Vector3 angles = EulerMath.ExtractEulerZXY(q);
-
-        // swap the order
-        angles = new Vector3(angles.z, angles.x, angles.y);
-
-        // undo the negation from above
-        angles *= Mathf.Deg2Rad;
-        angles.x *= -1;
-        angles.z *= -1;
-
-        return angles;
-    }
-
 }

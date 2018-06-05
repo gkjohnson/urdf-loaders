@@ -28,13 +28,10 @@ public class ColladaLite
         }
         foreach (XmlNode childNode in colladaNode.ChildNodes)
         {
-            Debug.Log(childNode.Name);
             if (childNode.Name == "library_images")
             {
                 foreach (XmlNode imageNode in childNode.ChildNodes)
                 {
-                    Debug.Log(imageNode.Name);
-
                     if (imageNode.Name == "image" && imageNode.HasChildNodes)
                     {
                         if (imageNode.FirstChild.Name == "init_from")
@@ -48,8 +45,6 @@ public class ColladaLite
             {
                 if (childNode.HasChildNodes)
                 {
-                    Debug.Log(childNode.Name);
-
                     var fc = URDFParser.GetXmlNodeChildByName(childNode, "geometry");
                     foreach (XmlNode mesh in fc.ChildNodes)
                     {
@@ -151,11 +146,4 @@ public class ColladaLite
             }
         }
     }
-}
-
-public struct DaeInput
-{
-    public string semantic;
-    public string source;
-    public int offset;
 }
