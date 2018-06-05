@@ -44,10 +44,3 @@ public class DAELoader
         return Meshes;
     }
 }
-
-public struct DaeInput
-{
-    public string semantic;
-    public string source;
-    public int offset;
-}

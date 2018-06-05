@@ -10,6 +10,13 @@ using UnityEngine;
 /// **********************************************************************************************************************************************************************
 public class ColladaLite
 {
+    private struct DaeInput
+    {
+        public string semantic;
+        public string source;
+        public int offset;
+    }
+    
     public List<Mesh> meshes;
     public List<string> textureNames;
 
