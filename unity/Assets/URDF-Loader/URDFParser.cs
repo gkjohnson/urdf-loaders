@@ -22,7 +22,7 @@ public class URDFParser : MonoBehaviour
         {
             print("building dae file " + path);
             var empty = new string[0];
-            done(DAELoader.Load(path, ref empty), null);
+            done(DAELoader.LoadFromPath(path, ref empty), null);
         }
         else
         {
