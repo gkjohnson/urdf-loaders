@@ -10,29 +10,47 @@ public class URDFParser : MonoBehaviour
 {
     // Default mesh loading function that can
     // load STLs from file
-    public static void LoadMesh(string path, System.Action<Mesh[], Material[]> done)
+    public static void LoadMesh(string path, System.Action<GameObject[]> done)
     {
         string fileType = Path.GetExtension(path).ToLower().Replace(".", "");
+        Mesh[] meshes = null;
         if (fileType == "stl")
         {
             print("building stl file " + path);
-            done(StlLoader.Load(path), null);
+            meshes = StlLoader.Load(path);
+
         }
         else if (fileType == "dae")
         {
             print("building dae file " + path);
             var empty = new string[0];
-            done(DAELoader.LoadFromPath(path, ref empty), null);
+            meshes = DAELoader.LoadFromPath(path, ref empty);
         }
-        else
-        {
+
+        if (meshes == null) {
+
             throw new System.Exception("Filetype '" + fileType + "' not supported");
+
+        } else {
+
+            GameObject[] res = new GameObject[meshes.Length];
+            for (int i = 0; i < meshes.Length; i++) {
+                var mesh = meshes[i];
+                Renderer r = GameObject
+                    .CreatePrimitive(PrimitiveType.Cube)
+                    .GetComponent<Renderer>();
+                r.GetComponent<MeshFilter>().mesh = mesh;
+
+                res[i] = r.gameObject;
+            }
+
+            done(res);
         }
     }
 
     // Load the URDF from file and build the robot
     public static URDFJointList LoadURDFRobot(string package, string urdfpath,
-        System.Action<string, System.Action<Mesh[], Material[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+        System.Action<string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
     {
         string path = Path.Combine(package, urdfpath);
         StreamReader reader = new StreamReader(path);
@@ -43,7 +61,7 @@ public class URDFParser : MonoBehaviour
 
     // create the robot
     public static URDFJointList BuildRobot(string package, string urdfContent,
-        System.Action<string, System.Action<Mesh[], Material[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+        System.Action<string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
     {
         if (loadMesh == null) loadMesh = LoadMesh;
 
@@ -83,7 +101,7 @@ public class URDFParser : MonoBehaviour
 
                     // Get the geometry node and skip it if there isn't one
                     XmlNode[] visualNodes = GetXmlNodeChildrenByName(xLink, "visual");
-                    List<Renderer> renderers = new List<Renderer>();
+                    List<GameObject> renderers = new List<GameObject>();
 
                     // Iterate over all the visual nodes
                     foreach (var vn in visualNodes)
@@ -170,7 +188,7 @@ public class URDFParser : MonoBehaviour
                                     {
                                         r.material.color = col;
 
-                                        renderers.Add(r);
+                                        renderers.Add(r.gameObject);
                                         if (Application.isPlaying)
                                         {
                                             Destroy(r.GetComponent<Collider>());
@@ -195,40 +213,38 @@ public class URDFParser : MonoBehaviour
                                 fileName = Path.Combine(package, fileName.Replace("package://", ""));
 
                                 // load all meshes 
-                                loadMesh(fileName, (meshes, materials) =>
+                                loadMesh(fileName, models =>
                                 {
-                                    if (meshes.Length > 0)
+                                    // create the rest of the meshes and child them to the click target
+                                    for (int i = 0; i < models.Length; i++)
                                     {
-                                        // create the rest of the meshes and child them to the click target
-                                        for (int i = 0; i < meshes.Length; i++)
-                                        {
-                                            Renderer r = GameObject.CreatePrimitive(PrimitiveType.Cube)
-                                                .GetComponent<Renderer>();
-                                            r.GetComponent<MeshFilter>().mesh = meshes[i];
-                                            if (materials != null && materials.Length > i)
-                                                r.material = materials[i];
-                                            r.transform.parent = urdfLink.transform;
-                                            r.transform.localPosition = visPos;
-                                            r.transform.localRotation = Quaternion.Euler(visRot);
+                                        var trans = models[i].transform;
+                                        trans.parent = urdfLink.transform;
+                                        trans.localPosition = visPos;
+                                        trans.localRotation = Quaternion.Euler(visRot);
 
-                                            r.name = urdfLink.name + " geometry " + i;
+                                        trans.name = urdfLink.name + " geometry " + i;
+                                        
+                                        foreach (Renderer r in trans.GetComponentsInChildren<Renderer>()) {
                                             r.material.color = col;
+                                        }
 
-                                            renderers.Add(r);
+                                        renderers.Add(trans.gameObject);
 
-                                            // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
-                                            if (Application.isPlaying)
-                                            {
-                                                Destroy(r.GetComponent<Collider>());
-                                                Destroy(r.GetComponent<Rigidbody>());
-                                            }
-                                            else
-                                            {
-                                                DestroyImmediate(r.GetComponent<Collider>());
-                                                DestroyImmediate(r.GetComponent<Rigidbody>());
-                                            }
+                                        // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
+                                        // TODO: traverse over the children and do this
+                                        if (Application.isPlaying)
+                                        {
+                                            Destroy(trans.GetComponent<Collider>());
+                                            Destroy(trans.GetComponent<Rigidbody>());
+                                        }
+                                        else
+                                        {
+                                            DestroyImmediate(trans.GetComponent<Collider>());
+                                            DestroyImmediate(trans.GetComponent<Rigidbody>());
                                         }
                                     }
+                                    
                                 });
 
                                 // save the geometry in the link
@@ -239,6 +255,7 @@ public class URDFParser : MonoBehaviour
                         {
                             Debug.LogError("Error loading model for " + urdfLink.name + " : " + e.Message);
                         }
+                        
                     }
                 }
             }
@@ -451,12 +468,7 @@ public class URDFParser : MonoBehaviour
     {
         return new Vector3(-v.y, v.z, v.x);
     }
-
-    public static Vector3 UnityToURDFPos(Vector3 v)
-    {
-        return new Vector3(v.z, -v.x, v.y);
-    }
-
+    
     // URDF
     // Fixed Axis rotation, XYZ
     // roll on X

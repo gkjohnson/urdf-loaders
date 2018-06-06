@@ -18,7 +18,7 @@ public class URDFJointList : MonoBehaviour {
 		public Transform transform;
         public Quaternion originalRotation;
 
-        public List<Renderer> geometry { get { return childLink.geometry; } }
+        public List<GameObject> geometry { get { return childLink.geometry; } }
 
         // Set the rotation of the joint in radians
         private float _angle = 0;
@@ -40,7 +40,7 @@ public class URDFJointList : MonoBehaviour {
         public List<URDFJoint> children = new List<URDFJoint>();
 
         public Transform transform;
-        public List<Renderer> geometry;
+        public List<GameObject> geometry;
     }
 
     // dictionary containing all the URDF joints
