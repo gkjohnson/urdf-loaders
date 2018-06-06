@@ -40,13 +40,36 @@ public class LoadRobot : MonoBehaviour {
     URDFJointList CreateRobot(string package, string urdf) {
         StreamReader reader = new StreamReader(package + urdf);
         string content = reader.ReadToEnd();
-        URDFJointList ujl = URDFParser.BuildRobot(package, content);
-        ujl.name = urdf;
+        
+        var res = Resources.Load<TextAsset>("r2_description/robots/r2b.urdf");
+        Debug.Log(res.text);
+
+        URDFJointList ujl = URDFParser.BuildRobot("", res.text, (path, done) => {
+
+            // Load the dae model
+            GameObject dae = Resources.Load<GameObject>(path.Substring(0, path.Length - 4));
+            dae = Instantiate(dae);
+
+            GameObject go = new GameObject();
+            go.transform.position = Vector3.zero;
+            go.transform.rotation = Quaternion.identity;
+            dae.transform.parent = go.transform;
+
+            dae.transform.rotation = Quaternion.Euler(-90, 0, 90);
+
+            Debug.Log(go.transform.position);
+            done(new GameObject[] { go });
+
+        });
+        
+        //URDFJointList ujl = URDFParser.BuildRobot(package, content);
+        //ujl.name = urdf;
 
         return ujl;
     }
 
     void Update() {
+        return;
         float time = Time.timeSinceLevelLoad * 1000.0f / 3e2f;
         for(int i = 1; i <= 6; i ++) {
             float offset = i * Mathf.PI / 3;
