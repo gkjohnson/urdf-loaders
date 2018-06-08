@@ -250,6 +250,7 @@ class URDFLoader {
     _processVisualNode(pkg, vn, linkObj, loadMeshCb) {
         let xyz = [0, 0, 0]
         let rpy = [0, 0, 0]
+        let scale = [1, 1, 1]
         let mesh = null
 
         const material = new THREE.MeshLambertMaterial()
@@ -261,6 +262,8 @@ class URDFLoader {
                     const filename = n.children[0].getAttribute('filename').replace(/^((package:\/\/)|(model:\/\/))/, '')
                     const path = pkg + '/' + filename
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || ''
+                    let scale_exist = n.children[0].getAttribute('scale')
+                    if (scale_exist) scale = this._processTuple(scale_exist)
 
                     loadMeshCb(path, ext, obj => {
                         if (obj) {
@@ -272,6 +275,7 @@ class URDFLoader {
 
                             obj.position.set(xyz[0], xyz[1], xyz[2])
                             obj.rotation.set(0,0,0)
+                            obj.scale.set(scale[0], scale[1], scale[2])
                             this._applyRotation(obj, rpy)
                         }
                     })
