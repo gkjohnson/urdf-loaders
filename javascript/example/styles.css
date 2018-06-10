@@ -1,0 +1,235 @@
+html, body, urdf-viewer {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: "Roboto", helvetica, arial, sans-serif;
+    animation: fade 3s ease;
+    color: white;
+    user-select: none;
+}
+
+select {
+    font-family: "Roboto", helvetica, arial, sans-serif;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 300;
+    outline: none;
+    float: right;
+}
+
+option {
+    color: #888;
+}
+
+input[type="number"] {
+    color: white;
+    border: none;
+    font-weight: 300;
+    background: rgba(255,255,255,0.25);
+    padding: 1px 2px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: white;
+    height: 1px;
+    border-radius: 2px;
+    flex: 1;
+    width: 100%;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    background: white;
+}
+
+input[type="range"]::-moz-range-track {
+    height: 1px;
+    background: white;
+    border-radius: 10px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    background: white;
+    border: none;
+}
+
+input:focus {
+    outline: none;
+    opacity: 1;
+}
+
+#up-select {
+    width: 70px;
+    margin: 0 20px;
+}
+
+#menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    margin: 20px;
+}
+
+#urdf-options li {
+    cursor: pointer;
+    opacity: 0.5;
+    font-size: 30px;
+    font-weight: 100;
+}
+
+#urdf-options li:hover {
+    opacity: 0.75;
+}
+
+#controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 10px 0;
+    border-top: 1px solid white;
+    transition: 0.5s opacity ease;
+}
+
+#controls > * {
+    margin: 5px 0;
+    transition: 0.1s opacity linear;
+}
+
+#controls #toggle-controls {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+#controls #toggle-controls:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#controls #toggle-controls:before {
+    content: "hide controls";
+    font-size: 12px;
+    font-weight: normal;
+}
+
+/* hidden state */
+#controls.hidden #toggle-controls:before {
+    content: "show controls";
+}
+
+
+#controls.hidden > *:not(#toggle-controls) {
+    opacity: 0;
+}
+
+#controls.hidden {
+    opacity: 0.5;
+}
+
+/* list of joint sliders */
+#controls ul {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#controls li {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    user-select: text;
+}
+
+#controls li span {
+
+    padding: 0 5px;
+    max-width: 125px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+}
+
+#controls li input[type="number"] {
+    width: 50px;
+    overflow: hidden;
+}
+
+/* toggle controls */
+.toggle {
+    padding-left: 25px;
+    position: relative;
+
+    cursor: pointer;
+}
+
+.toggle:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 15px;
+    height: 15px;
+
+    border-radius: 10px;
+    border: 2px solid white;
+
+    margin-right: 5px;
+}
+
+.toggle:after {
+    content: "";
+    width: 9px;
+    height: 9px;
+
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    background: white;
+    border-radius: 10px;
+    opacity: 0;
+}
+
+.toggle:not(.checked):hover:after {
+    opacity: 0.25;
+}
+
+.toggle.checked:after {
+    opacity: 1;
+}
+
+@keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 700px) {
+    #controls {
+        display: none;
+    }
+}
