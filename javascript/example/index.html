@@ -14,6 +14,7 @@
         <script src="../URDFLoader.js"></script>
         <script src="../urdf-viewer-element.js"></script>
         <script>
+            /* globals URDFViewer */
             customElements.define('urdf-viewer', URDFViewer)
         </script>
 
@@ -52,5 +53,23 @@
 
         <script src="./index.js"></script>
         <script src="./dragAndDrop.js"></script>
+        <script>
+            /* eslint-disable */
+            /* globals viewer animToggle */
+            document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
+
+                el.addEventListener('click', e => {
+
+                    const urdf = e.target.getAttribute('urdf')
+                    const color = e.target.getAttribute('color')
+
+                    viewer.urdf = urdf
+                    document.body.style.backgroundColor = color
+                    animToggle.classList.add('checked')
+
+                })
+
+            })
+        </script>
     </body>
 </html>

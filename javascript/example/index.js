@@ -166,18 +166,6 @@ viewer.addEventListener('urdf-processed', () => {
 
 })
 
-document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
-    el.addEventListener('click', e => {
-        const urdf = e.target.getAttribute('urdf')
-        const color = e.target.getAttribute('color')
-
-        viewer.urdf = urdf
-        document.body.style.backgroundColor = color
-        animToggle.classList.add('checked')
-
-    })
-})
-
 document.addEventListener('WebComponentsReady', () => {
 
     const modelLoader = new THREE.ModelLoader(viewer.loadingManager);
