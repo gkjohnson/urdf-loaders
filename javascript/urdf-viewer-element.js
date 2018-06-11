@@ -327,15 +327,15 @@ class URDFViewer extends HTMLElement {
     // Watch the coordinate frame and update the
     // rotation of the scene to match
     _setUp(up) {
-        if (!up) up = '+Y'
+        if (!up) up = '+Z'
         up = up.toUpperCase()
         const sign = up.replace(/[^-+]/g, '')[0] || '+'
-        const axis = up.replace(/[^XYZ]/gi, '')[0] || 'Y'
+        const axis = up.replace(/[^XYZ]/gi, '')[0] || 'Z'
 
         const PI = Math.PI
         const HALFPI = PI / 2
         if (axis === 'X') this.world.rotation.set(0, 0, sign === '+' ? HALFPI : -HALFPI)
-        if (axis === 'Z') this.world.rotation.set(sign === '+' ? HALFPI : -HALFPI, 0, 0)
+        if (axis === 'Z') this.world.rotation.set(sign === '+' ? -HALFPI : HALFPI, 0, 0)
         if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0)
     }
 
