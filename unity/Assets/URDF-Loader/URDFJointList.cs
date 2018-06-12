@@ -27,7 +27,8 @@ public class URDFJointList : MonoBehaviour {
             set {
                 _angle = Mathf.Clamp(value, minAngle, maxAngle);
 
-                transform.localRotation = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, originalRotation * axis) * originalRotation;
+                // Negate to accomodate Right -> Left handed coordinate system
+                transform.localRotation = Quaternion.AngleAxis(angle * Mathf.Rad2Deg * -1, originalRotation * axis) * originalRotation;
             }
         }
     }
