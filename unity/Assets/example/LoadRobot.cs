@@ -52,9 +52,9 @@ public class LoadRobot : MonoBehaviour {
             float offset = i * Mathf.PI / 3;
             float ratio = Mathf.Max(0, Mathf.Sin(time + offset));
 
-            robot.TrySetAngle("HP" + i, -Mathf.Lerp(30, 0, ratio) * Mathf.Deg2Rad);
-            robot.TrySetAngle("KP" + i, -Mathf.Lerp(90, 150, ratio) * Mathf.Deg2Rad);
-            robot.TrySetAngle("AP" + i, -Mathf.Lerp(-30, -60, ratio) * Mathf.Deg2Rad);
+            robot.TrySetAngle("HP" + i, Mathf.Lerp(30, 0, ratio) * Mathf.Deg2Rad);
+            robot.TrySetAngle("KP" + i, Mathf.Lerp(90, 150, ratio) * Mathf.Deg2Rad);
+            robot.TrySetAngle("AP" + i, Mathf.Lerp(-30, -60, ratio) * Mathf.Deg2Rad);
 
             robot.TrySetAngle("TC" + i + "A", Mathf.Lerp(0, 0.065f, ratio));
             robot.TrySetAngle("TC" + i + "B", Mathf.Lerp(0, 0.065f, ratio));

@@ -26,9 +26,9 @@ const updateAngles = () => {
         const offset = i * Math.PI / 3
         const ratio = Math.max(0, Math.sin(time + offset))
 
-        viewer.setAngle(`HP${i}`, -lerp(30, 0, ratio) * DEG2RAD)
-        viewer.setAngle(`KP${i}`, -lerp(90, 150, ratio) * DEG2RAD)
-        viewer.setAngle(`AP${i}`, -lerp(-30, -60, ratio) * DEG2RAD)
+        viewer.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD)
+        viewer.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD)
+        viewer.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD)
 
         viewer.setAngle(`TC${i}A`, lerp(0, 0.065, ratio))
         viewer.setAngle(`TC${i}B`, lerp(0, 0.065, ratio))
