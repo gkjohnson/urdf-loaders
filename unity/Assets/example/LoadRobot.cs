@@ -30,9 +30,9 @@ public class LoadRobot : MonoBehaviour {
         Axis axis = !positive ? (Axis)(-1 * (int)_upAxis) : _upAxis;
         Vector3 angles = Vector3.zero;
 
-        if (axis == Axis.POS_X) angles.z = positive ? 90 : -90;
-        if (axis == Axis.POS_Z) angles.x = positive ? 90 : -90;
-        if (axis == Axis.POS_Y) angles.x = positive ? 0 : 180;
+        if (axis == Axis.POS_X) angles.x = positive ? 90 : -90;
+        if (axis == Axis.POS_Y) angles.z = positive ? -90 : 90;
+        if (axis == Axis.POS_Z) angles.x = positive ? 0 : 180;
 
         robot.transform.rotation = Quaternion.Euler(angles);
     }
@@ -52,9 +52,14 @@ public class LoadRobot : MonoBehaviour {
             float offset = i * Mathf.PI / 3;
             float ratio = Mathf.Max(0, Mathf.Sin(time + offset));
 
-            robot.SetAngle("HP" + i, Mathf.Lerp(30, 0, ratio) * Mathf.Deg2Rad);
-            robot.SetAngle("KP" + i, Mathf.Lerp(90, 150, ratio) * Mathf.Deg2Rad);
-            robot.SetAngle("AP" + i, Mathf.Lerp(-30, -60, ratio) * Mathf.Deg2Rad);
+            robot.TrySetAngle("HP" + i, Mathf.Lerp(30, 0, ratio) * Mathf.Deg2Rad);
+            robot.TrySetAngle("KP" + i, Mathf.Lerp(90, 150, ratio) * Mathf.Deg2Rad);
+            robot.TrySetAngle("AP" + i, Mathf.Lerp(-30, -60, ratio) * Mathf.Deg2Rad);
+
+            robot.TrySetAngle("TC" + i + "A", Mathf.Lerp(0, 0.065f, ratio));
+            robot.TrySetAngle("TC" + i + "B", Mathf.Lerp(0, 0.065f, ratio));
+
+            robot.TrySetAngle("W" + i, Time.realtimeSinceStartup * 0.000001f);
         }
     }
 

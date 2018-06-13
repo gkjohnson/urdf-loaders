@@ -1,4 +1,25 @@
-﻿using UnityEngine;
+﻿/*
+Reference coordinate frames for Unity and ROS.
+The Unity coordinate frame is left handed and ROS is right handed, so
+the axes are transformed to line up appropriately. See the "URDFToUnityPos"
+and "URDFToUnityRot" functions.
+
+Unity
+   Y
+   |   Z
+   | ／
+   .-----X 
+
+
+ROS URDf
+       Z
+       |   X
+       | ／
+ Y-----.
+
+*/
+
+using UnityEngine;
 using System.Collections.Generic;
 using System.Xml;
 using System.IO;

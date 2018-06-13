@@ -1,3 +1,25 @@
+/*
+Reference coordinate frames for THREE.js and ROS.
+Both coordinate systems are right handed so the URDF is instantiated without
+frame transforms. The resulting model can be rotated to rectify the proper up,
+right, and forward directions
+
+THREE.js
+   Y
+   |
+   |
+   .-----X
+ ／
+Z
+
+ROS URDf
+       Z
+       |   X
+       | ／
+ Y-----.
+
+*/
+
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
 window.URDFLoader =
@@ -195,7 +217,7 @@ class URDFLoader {
 
                     // FromAxisAngle seems to rotate the opposite of the
                     // expected angle for URDF, so negate it here
-                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle * -1)
+                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle)
                     obj.quaternion.multiplyQuaternions(origRot, delta)
 
                     this.angle = angle
