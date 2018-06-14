@@ -91,7 +91,7 @@
     <child
       link="Hip1" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -149,7 +149,7 @@
     <child
       link="Thigh1" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-1.9199"
       upper="1.5708"
@@ -207,7 +207,7 @@
     <child
       link="Knee1" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-1.9199"
       upper="3.1416"
@@ -265,7 +265,7 @@
     <child
       link="Shin1" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -323,7 +323,7 @@
     <child
       link="Ankle1" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-2.0944"
       upper="2.0944"
@@ -381,7 +381,7 @@
     <child
       link="Foot1" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -611,7 +611,7 @@
     <child
       link="Hip2" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -669,7 +669,7 @@
     <child
       link="Thigh2" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-1.9199"
       upper="1.5708"
@@ -727,7 +727,7 @@
     <child
       link="Knee2" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-1.9199"
       upper="3.1416"
@@ -785,7 +785,7 @@
     <child
       link="Shin2" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -843,7 +843,7 @@
     <child
       link="Ankle2" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-2.0944"
       upper="2.0944"
@@ -901,7 +901,7 @@
     <child
       link="Foot2" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -1131,7 +1131,7 @@
     <child
       link="Hip3" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -1189,7 +1189,7 @@
     <child
       link="Thigh3" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-1.9199"
       upper="1.5708"
@@ -1247,7 +1247,7 @@
     <child
       link="Knee3" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-1.9199"
       upper="3.1416"
@@ -1305,7 +1305,7 @@
     <child
       link="Shin3" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
@@ -1363,7 +1363,7 @@
     <child
       link="Ankle3" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-2.0944"
       upper="2.0944"
@@ -1421,7 +1421,7 @@
     <child
       link="Foot3" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
     <limit
       lower="-3.1416"
       upper="3.1416"
