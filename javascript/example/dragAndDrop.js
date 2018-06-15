@@ -91,34 +91,34 @@ document.addEventListener('drop', e => {
 
             // set the loader url modifier to check the list
             // of files
+            const fileNames = Object.keys(files)
             viewer.loadingManager.setURLModifier(url => {
 
-                // TODO: This won't work for paths that traverse up
-                // and down (/example/../path/model.ply)
                 url = url.replace(viewer.package, '')
                 url = url.replace(/^[\.\\\/]*/, '')
 
-                // keep trying a shorter path to see if it matches because the
-                // mesh URLs in the URDF assume file structure that we don't
-                // have access to here
-                const split = url.split('/')
-                while (split.length) {
+                // find the matching file given the requested url
+                const fileName = fileNames
+                    .filter(name => {
 
-                    const newurl = '/' + split.join('/')
-                    if (newurl in files) {
+                        // check if the end of file and url are the same
+                        const len = Math.min(name.length, url.length)
+                        return url.substr(url.length - len) === name.substr(name.length - len);
 
-                        // revoke the url after it's been used
-                        const bloburl = URL.createObjectURL(files[newurl])
-                        requestAnimationFrame(() => URL.revokeObjectURL(bloburl))
+                    }).pop()
 
-                        return bloburl
-                    }
+                if (fileName !== undefined) {
 
-                    split.shift()
+                    // revoke the url after it's been used
+                    const bloburl = URL.createObjectURL(files[fileName])
+                    requestAnimationFrame(() => URL.revokeObjectURL(bloburl))
+
+                    return bloburl
 
                 }
 
                 return url
+
             })
 
             // set the source of the element to the most likely intended display model
