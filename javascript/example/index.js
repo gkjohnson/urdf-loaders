@@ -110,10 +110,11 @@ viewer.addEventListener('urdf-processed', () => {
             const li = document.createElement('li')
             li.innerHTML =
             `
-            <span title="${joint.name}" joint-type="${ joint.type }">${joint.name}</span>
+            <span title="${joint.name}">${joint.name}</span>
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.0001" />
             `
+            li.setAttribute('joint-type', joint.urdf.type)
 
             sliderList.appendChild(li)
 
