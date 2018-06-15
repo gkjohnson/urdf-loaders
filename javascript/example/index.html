@@ -25,9 +25,9 @@
 
         <div id="menu">
             <ul id="urdf-options">
-                <li urdf="T12/urdf/T12.URDF" color="#E91E63">ATHLETE</li>
-                <li urdf="TriATHLETE/urdf/TriATHLETE.URDF" color="#009688">TriATHLETE</li>
-                <li urdf="TriATHLETE_Climbing/urdf/TriATHLETE.URDF" color="#FFB300">TriATHLETE Climbing</li>
+                <li urdf="T12/urdf/T12_flipped.URDF" color="#E91E63">ATHLETE</li>
+                <li urdf="TriATHLETE/urdf/TriATHLETE_flipped.URDF" color="#009688">TriATHLETE</li>
+                <li urdf="TriATHLETE_Climbing/urdf/TriATHLETE_flipped.URDF" color="#FFB300">TriATHLETE Climbing</li>
             </ul>
 
             <div id="controls" class="hidden">
@@ -49,7 +49,7 @@
                 <ul></ul>
             </div>
         </div>
-        <urdf-viewer package="../../urdf" up="+Z" display-shadow tabindex="0"></urdf-viewer>
+        <urdf-viewer package="../../urdf" up="-Z" display-shadow tabindex="0"></urdf-viewer>
 
         <script src="./index.js"></script>
         <script src="./dragAndDrop.js"></script>
@@ -70,6 +70,8 @@
                 })
 
             })
+
+            document.addEventListener('WebComponentsReady', () => viewer.camera.position.set(-3.5, 2, 3.5))
         </script>
     </body>
 </html>

@@ -1,13 +1,6 @@
 /* eslint-disable */
 /* globals animToggle viewer */
 
-// Hack to make the build work with webpack for now.
-// TODO: Remove this once modules or parcel is being used
-if (typeof animToggle === 'undefined') {
-    viewer = document.querySelector('urdf-viewer')
-    animToggle = document.getElementById('do-animate')
-}
-
 // Converts a datatransfer structer into an object with all paths and files
 // listed out. Returns a promise that resolves with the file structure.
 function dataTransferToFiles(dataTransfer) {
