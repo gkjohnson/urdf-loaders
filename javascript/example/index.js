@@ -1,6 +1,11 @@
 /*eslint-disable*/
-const viewer = document.querySelector('urdf-viewer')
-const animToggle = document.getElementById('do-animate')
+
+// declare these globally for the sake of the example.
+// Hack to make the build work with webpack for now.
+// TODO: Remove this once modules or parcel is being used
+viewer = document.querySelector('urdf-viewer')
+animToggle = document.getElementById('do-animate')
+
 const limitsToggle = document.getElementById('ignore-joint-limits')
 const upSelect = document.getElementById('up-select')
 const sliderList = document.querySelector('#controls ul')
@@ -109,6 +114,7 @@ viewer.addEventListener('urdf-processed', () => {
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.0001" />
             `
+            li.setAttribute('joint-type', joint.urdf.type)
 
             sliderList.appendChild(li)
 

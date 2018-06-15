@@ -5,7 +5,7 @@
 // urdf-change: Fires when the URDF has finished loading and getting processed
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
-// ignore-limits-change: Fires when the 'ignore-limits' attribute changes 
+// ignore-limits-change: Fires when the 'ignore-limits' attribute changes
 window.URDFViewer =
 class URDFViewer extends HTMLElement {
 
@@ -14,8 +14,8 @@ class URDFViewer extends HTMLElement {
     }
 
     get package() { return this.getAttribute('package') || '' }
-    set package(val) { this.setAttribute('package', val) } 
-    
+    set package(val) { this.setAttribute('package', val) }
+
     get urdf() { return this.getAttribute('urdf') || '' }
     set urdf(val) { this.setAttribute('urdf', val) }
 
@@ -43,7 +43,7 @@ class URDFViewer extends HTMLElement {
         if (this.robot) {
             for (let name in this.robot.urdf.joints) angles[name] = this.robot.urdf.joints[name].urdf.angle
         }
-        
+
         return angles
     }
     set angles(val) { this._setAngles(val) }
@@ -76,7 +76,7 @@ class URDFViewer extends HTMLElement {
         dirLight.shadow.mapSize.width = 2048
         dirLight.shadow.mapSize.height = 2048
         dirLight.castShadow = true
-        
+
         scene.add(dirLight)
 
         // Renderer setup
@@ -114,7 +114,7 @@ class URDFViewer extends HTMLElement {
         controls.maxDistance = 50
         controls.minDistance = 0.25
         controls.addEventListener('change', () => this._dirty = true)
-        
+
         this.world = world
         this.renderer = renderer
         this.camera = camera
@@ -124,7 +124,7 @@ class URDFViewer extends HTMLElement {
 
         const _do = () => {
             if(this.parentNode) {
-                this.refresh()
+                this.updateSize()
 
                 if (this._dirty) {
                     this._updateEnvironment()
@@ -167,8 +167,8 @@ class URDFViewer extends HTMLElement {
             this.appendChild(this.renderer.domElement)
         }
 
-        this.refresh()
-        requestAnimationFrame(() => this.refresh())
+        this.updateSize()
+        requestAnimationFrame(() => this.updateSize())
     }
 
     disconnectedCallback() {
@@ -203,7 +203,7 @@ class URDFViewer extends HTMLElement {
     }
 
     /* Public API */
-    refresh() {
+    updateSize() {
         const r = this.renderer
         const w = this.clientWidth
         const h = this.clientHeight
@@ -220,6 +220,10 @@ class URDFViewer extends HTMLElement {
         this.camera.updateProjectionMatrix();
     }
 
+    redraw() {
+        this._dirty = true
+    }
+
     // Set the joint with jointname to
     // angle in degrees
     setAngle(jointname, angle) {
@@ -231,14 +235,14 @@ class URDFViewer extends HTMLElement {
             this._dirty = true
         }
     }
-    
+
     setAngles(angles) {
         for(name in angles) this.setAngle(name, angles[name])
     }
 
     /* Private Functions */
     // Updates the position of the plane to be at the
-    // lowest point below the robot and focuses the 
+    // lowest point below the robot and focuses the
     // camera on the center of the scene
     _updateEnvironment() {
         this.plane.visible = this.displayShadow
@@ -251,7 +255,7 @@ class URDFViewer extends HTMLElement {
         }
     }
 
-    // Watch the package and urdf field and load the 
+    // Watch the package and urdf field and load the
     _loadUrdf(pkg, urdf) {
         const _dispose = item => {
             if (!item) return
@@ -281,7 +285,7 @@ class URDFViewer extends HTMLElement {
             this.urdfLoader.load(
                 pkg,
                 urdf,
-                
+
                 // Callback with array of robots
                 robot => {
                     // If another request has come in to load a new
