@@ -125,6 +125,10 @@ Sets the given joint to the provided angle in radians.
 
 Sets all joint names specified as keys to radian angle value.
 
+#### redraw()
+
+Dirty the renderer so the element will redraw next frame.
+
 ### Events
 
 #### 'urdf-change'
