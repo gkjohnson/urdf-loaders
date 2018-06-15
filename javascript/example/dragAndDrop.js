@@ -103,7 +103,7 @@ document.addEventListener('drop', e => {
 
                         // check if the end of file and url are the same
                         const len = Math.min(name.length, url.length)
-                        return url.substr(url.length - len) === name.substr(name.length - len);
+                        return url.substr(url.length - len) === name.substr(name.length - len)
 
                     }).pop()
 
