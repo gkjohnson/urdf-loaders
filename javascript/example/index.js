@@ -41,7 +41,6 @@ const updateAngles = () => {
         viewer.setAngle(`W${i}`, window.performance.now() * 0.001)
     }
 
-    const ratio = Math.sin(time) / 2 + 0.5
 }
 
 

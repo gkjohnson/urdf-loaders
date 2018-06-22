@@ -38,6 +38,11 @@ class URDFViewer extends HTMLElement {
         val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color')
     }
 
+    get autoRedraw() { return this.hasAttribute('auto-redraw') || false }
+    set autoRedraw(val) {
+        val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw')
+    }
+
     get angles() {
         const angles = {}
         if (this.robot) {
@@ -122,11 +127,11 @@ class URDFViewer extends HTMLElement {
         this.plane = plane
         this.ambientLight = ambientLight
 
-        const _do = () => {
+        const _renderLoop = () => {
             if(this.parentNode) {
                 this.updateSize()
 
-                if (this._dirty) {
+                if (this._dirty || this.autoRedraw) {
                     this._updateEnvironment()
                 }
 
@@ -134,14 +139,14 @@ class URDFViewer extends HTMLElement {
                 // case the controls are retargeted
                 this.controls.update()
 
-                if (this._dirty) {
+                if (this._dirty || this.autoRedraw) {
                     this.renderer.render(scene, camera)
                     this._dirty = false
                 }
             }
-            this._renderLoopId = requestAnimationFrame(_do)
+            this._renderLoopId = requestAnimationFrame(_renderLoop)
         }
-        _do()
+        _renderLoop()
 
     }
 
