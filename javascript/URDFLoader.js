@@ -83,7 +83,7 @@ class URDFLoader {
     }
 
     parse(pkg, content, cb, loadMeshCb) {
-        cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader))
+        cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader.bind(this)))
     }
 
     // Default mesh loading function
