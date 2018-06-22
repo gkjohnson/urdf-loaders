@@ -24,7 +24,7 @@ class URDFViewer extends HTMLElement {
         val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits')
     }
 
-    get up() { return this.getAttribute('up') || '+Y' }
+    get up() { return this.getAttribute('up') || '+Z' }
     set up(val) { this.setAttribute('up', val) }
 
     get displayShadow() { return this.hasAttribute('display-shadow') || false }
