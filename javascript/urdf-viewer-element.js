@@ -147,7 +147,7 @@ class URDFViewer extends HTMLElement {
         dirLight.position.set(4, 10, 1);
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.0001;
+        dirLight.shadow.bias = -0.00001;
         dirLight.castShadow = true;
         scene.add(dirLight);
 
@@ -362,7 +362,7 @@ class URDFViewer extends HTMLElement {
     // camera on the center of the scene
     _updateEnvironment () {
 
-        this.plane.visible = this.displayShadow;
+        this.directionalLight.castShadow = this.displayShadow;
         if (this.robot && this.displayShadow) {
 
             this.world.updateMatrixWorld();
@@ -374,10 +374,16 @@ class URDFViewer extends HTMLElement {
             // Update the shadow camera rendering bounds to encapsulate the
             // model. We use the bounding sphere of the bounding box for
             // simplicity -- this could be a tighter fit.
-            const minmax = bbox.getBoundingSphere(new THREE.Sphere()).radius;
+            const sphere = bbox.getBoundingSphere(new THREE.Sphere());
+            const minmax = sphere.radius;
             const cam = this.directionalLight.shadow.camera;
             cam.left = cam.bottom = -minmax;
             cam.right = cam.top = minmax;
+
+            // TODO: Position the camera about the center of the model
+            // because it's possible that the model will be off center
+            // and extend outside of the shadow camera bounds
+
             cam.updateProjectionMatrix();
 
         }
