@@ -353,9 +353,8 @@ class URDFLoader {
         let xyz = [0, 0, 0];
         let rpy = [0, 0, 0];
         let scale = [1, 1, 1];
-        let mesh = null;
 
-        const material = new THREE.MeshLambertMaterial();
+        const material = new THREE.MeshPhongMaterial();
         this.forEach(vn.children, n => {
 
             const type = n.nodeName.toLowerCase();
@@ -367,8 +366,8 @@ class URDFLoader {
                     const filename = n.children[0].getAttribute('filename').replace(/^((package:\/\/)|(model:\/\/))/, '');
                     const path = pkg + '/' + filename;
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
-                    let scale_exist = n.children[0].getAttribute('scale');
-                    if (scale_exist) scale = this._processTuple(scale_exist);
+                    let scaleAttr = n.children[0].getAttribute('scale');
+                    if (scaleAttr) scale = this._processTuple(scaleAttr);
 
                     loadMeshCb(path, ext, obj => {
 
@@ -376,7 +375,7 @@ class URDFLoader {
 
                             if (obj instanceof THREE.Mesh) {
 
-                                obj.material = material;
+                                obj.material.copy(material);
 
                             }
 
