@@ -371,6 +371,9 @@ class URDFViewer extends HTMLElement {
             this.controls.target.y = bbox.getCenter(new THREE.Vector3()).y;
             this.plane.position.y = bbox.min.y - 1e-3;
 
+            // Update the shadow camera rendering bounds to encapsulate the
+            // model. We use the bounding sphere of the bounding box for
+            // simplicity -- this could be a tighter fit.
             const minmax = bbox.getBoundingSphere(new THREE.Sphere()).radius;
             const cam = this.directionalLight.shadow.camera;
             cam.left = cam.bottom = -minmax;
