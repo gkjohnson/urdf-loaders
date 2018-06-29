@@ -371,6 +371,12 @@ class URDFViewer extends HTMLElement {
             this.controls.target.y = bbox.getCenter(new THREE.Vector3()).y;
             this.plane.position.y = bbox.min.y - 1e-3;
 
+            const minmax = bbox.getBoundingSphere(new THREE.Sphere()).radius;
+            const cam = this.directionalLight.shadow.camera;
+            cam.left = cam.bottom = -minmax;
+            cam.right = cam.top = minmax;
+            cam.updateProjectionMatrix();
+
         }
 
     }
