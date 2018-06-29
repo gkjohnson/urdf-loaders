@@ -147,7 +147,7 @@ class URDFViewer extends HTMLElement {
         dirLight.position.set(4, 10, 1);
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.00001;
+        dirLight.shadow.bias = -0.000025;
         dirLight.castShadow = true;
         scene.add(dirLight);
 
@@ -467,7 +467,7 @@ class URDFViewer extends HTMLElement {
 
                                                 if (m instanceof THREE.MeshBasicMaterial) {
 
-                                                    return new THREE.MeshPhongMaterial();
+                                                    m = new THREE.MeshPhongMaterial();
 
                                                 }
 
@@ -476,6 +476,8 @@ class URDFViewer extends HTMLElement {
                                                     m.map.encoding = THREE.GammaEncoding;
 
                                                 }
+
+                                                m.shadowSide = THREE.DoubleSide;
 
                                                 return m;
 
