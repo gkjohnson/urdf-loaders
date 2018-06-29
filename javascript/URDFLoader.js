@@ -181,7 +181,7 @@ class URDFLoader {
 
         });
 
-        for (let key in linkMap) {
+        for (const key in linkMap) {
 
             if (linkMap[key].parent == null) {
 
@@ -366,7 +366,7 @@ class URDFLoader {
                     const filename = n.children[0].getAttribute('filename').replace(/^((package:\/\/)|(model:\/\/))/, '');
                     const path = pkg + '/' + filename;
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
-                    let scaleAttr = n.children[0].getAttribute('scale');
+                    const scaleAttr = n.children[0].getAttribute('scale');
                     if (scaleAttr) scale = this._processTuple(scaleAttr);
 
                     loadMeshCb(path, ext, obj => {
@@ -456,7 +456,7 @@ class URDFLoader {
 
                     if (c.nodeName.toLowerCase() === 'color') {
 
-                        let rgba = c.getAttribute('rgba')
+                        const rgba = c.getAttribute('rgba')
                             .split(/\s/g)
                             .map(v => parseFloat(v));
 

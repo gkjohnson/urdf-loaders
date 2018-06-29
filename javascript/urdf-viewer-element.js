@@ -99,7 +99,7 @@ class URDFViewer extends HTMLElement {
         const angles = {};
         if (this.robot) {
 
-            for (let name in this.robot.urdf.joints) angles[name] = this.robot.urdf.joints[name].urdf.angle;
+            for (const name in this.robot.urdf.joints) angles[name] = this.robot.urdf.joints[name].urdf.angle;
 
         }
 
