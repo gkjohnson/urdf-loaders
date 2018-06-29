@@ -10,10 +10,6 @@ URDF loading code in both [C# for Unity](./unity/Assets/URDF-Loader/) and [Javas
 
 The `_flipped` variants of the URDF ATHLETE models invert the revolute joint axes to model ATHLETE in a configuration with the legs attached to the bottom of the chassis.
 
-### Gotchas
-
-The loaders support the necessary subset of the [URDF spec](http://wiki.ros.org/urdf/XML) to load the ATHLETE URDF and meshes. Specifically the code only supports fixed and revoluate joints, as well as loading `.STL` mesh files at the moment.
-
 # LICENSE
 
 The software is available under the [Apache V2.0 license](../LICENSE.txt).
