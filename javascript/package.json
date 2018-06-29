@@ -1,6 +1,6 @@
 {
   "name": "urdf-loader",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "scripts": {
     "start": "cd .. && static-server",
