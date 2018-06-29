@@ -136,7 +136,10 @@ class URDFViewer extends HTMLElement {
         // Scene setup
         const scene = new THREE.Scene();
 
-        const ambientLight = new THREE.AmbientLight(this.ambientColor);
+        const ambientLight = new THREE.HemisphereLight(this.ambientColor, '#000');
+        ambientLight.groundColor.lerp(ambientLight.color, 0.5);
+        ambientLight.intensity = 0.5;
+        ambientLight.position.set(0, 1, 0);
         scene.add(ambientLight);
 
         // Light setup
@@ -144,8 +147,8 @@ class URDFViewer extends HTMLElement {
         dirLight.position.set(4, 10, 1);
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.bias = -0.0001;
         dirLight.castShadow = true;
-
         scene.add(dirLight);
 
         // Renderer setup
@@ -153,6 +156,7 @@ class URDFViewer extends HTMLElement {
         renderer.setClearColor(0xffffff);
         renderer.setClearAlpha(0);
         renderer.shadowMap.enabled = true;
+        renderer.gammaOutput = true;
 
         // Camera setup
         const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -164,7 +168,7 @@ class URDFViewer extends HTMLElement {
 
         const plane = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(40, 40),
-            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.25 })
+            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
         );
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -0.5;
@@ -178,17 +182,19 @@ class URDFViewer extends HTMLElement {
         controls.zoomSpeed = 5;
         controls.panSpeed = 2;
         controls.enableZoom = true;
-        controls.enablePan = true;
+        controls.enablePan = false;
         controls.enableDamping = false;
         controls.maxDistance = 50;
         controls.minDistance = 0.25;
         controls.addEventListener('change', () => this._dirty = true);
 
+        this.scene = scene;
         this.world = world;
         this.renderer = renderer;
         this.camera = camera;
         this.controls = controls;
         this.plane = plane;
+        this.directionalLight = dirLight;
         this.ambientLight = ambientLight;
 
         const _renderLoop = () => {
@@ -284,6 +290,7 @@ class URDFViewer extends HTMLElement {
             case 'ambient-color': {
 
                 this.ambientLight.color.set(this.ambientColor);
+                this.ambientLight.groundColor.set('#000').lerp(this.ambientLight.color, 0.5);
                 break;
 
             }
@@ -430,17 +437,42 @@ class URDFViewer extends HTMLElement {
                     totalMeshes++;
                     this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
 
-                        const _enableShadows = o => {
+                        mesh.traverse(c => {
 
-                            if (o instanceof THREE.Mesh) {
+                            if (c.type === 'Mesh') {
 
-                                o.castShadow = true;
+                                c.castShadow = true;
+                                c.receiveShadow = true;
+
+                                if (c.material) {
+
+                                    const mats =
+                                        (Array.isArray(c.material) ? c.material : [c.material])
+                                            .map(m => {
+
+                                                if (m instanceof THREE.MeshBasicMaterial) {
+
+                                                    return new THREE.MeshPhongMaterial();
+
+                                                }
+
+                                                if (m.map) {
+
+                                                    m.map.encoding = THREE.GammaEncoding;
+
+                                                }
+
+                                                return m;
+
+                                            });
+                                    c.material = mats.length === 1 ? mats[0] : mats;
+
+                                }
 
                             }
-                            o.children.forEach(c => _enableShadows(c));
 
-                        };
-                        _enableShadows(mesh);
+
+                        });
                         done(mesh);
 
                         meshesLoaded++;
