@@ -480,7 +480,6 @@ class URDFViewer extends HTMLElement {
 
                             }
 
-
                         });
                         done(mesh);
 
