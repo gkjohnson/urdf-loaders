@@ -10,91 +10,91 @@
 window.URDFViewer =
 class URDFViewer extends HTMLElement {
 
-    static get observedAttributes () {
+    static get observedAttributes() {
 
         return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits'];
 
     }
 
-    get package () {
+    get package() {
 
         return this.getAttribute('package') || '';
 
     }
-    set package (val) {
+    set package(val) {
 
         this.setAttribute('package', val);
 
     }
 
-    get urdf () {
+    get urdf() {
 
         return this.getAttribute('urdf') || '';
 
     }
-    set urdf (val) {
+    set urdf(val) {
 
         this.setAttribute('urdf', val);
 
     }
 
-    get ignoreLimits () {
+    get ignoreLimits() {
 
         return this.hasAttribute('ignore-limits') || false;
 
     }
-    set ignoreLimits (val) {
+    set ignoreLimits(val) {
 
         val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits');
 
     }
 
-    get up () {
+    get up() {
 
         return this.getAttribute('up') || '+Z';
 
     }
-    set up (val) {
+    set up(val) {
 
         this.setAttribute('up', val);
 
     }
 
-    get displayShadow () {
+    get displayShadow() {
 
         return this.hasAttribute('display-shadow') || false;
 
     }
-    set displayShadow (val) {
+    set displayShadow(val) {
 
         val = !!val;
         val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow');
 
     }
 
-    get ambientColor () {
+    get ambientColor() {
 
         return this.getAttribute('ambient-color') || '#455A64';
 
     }
-    set ambientColor (val) {
+    set ambientColor(val) {
 
         val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color');
 
     }
 
-    get autoRedraw () {
+    get autoRedraw() {
 
         return this.hasAttribute('auto-redraw') || false;
 
     }
-    set autoRedraw (val) {
+    set autoRedraw(val) {
 
         val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw');
 
     }
 
-    get angles () {
+    get angles() {
 
         const angles = {};
         if (this.robot) {
@@ -106,26 +106,26 @@ class URDFViewer extends HTMLElement {
         return angles;
 
     }
-    set angles (val) {
+    set angles(val) {
 
         this._setAngles(val);
 
     }
 
-    get loadingManager () {
+    get loadingManager() {
 
         return this._loadingManager = this._loadingManager || new THREE.LoadingManager();
 
     }
 
-    get urdfLoader () {
+    get urdfLoader() {
 
         return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager);
 
     }
 
     /* Lifecycle Functions */
-    constructor () {
+    constructor() {
 
         super();
 
@@ -228,7 +228,7 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    connectedCallback () {
+    connectedCallback() {
 
         // Add our initialize styles for the element if they haven't
         // been added yet
@@ -260,13 +260,13 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    disconnectedCallback () {
+    disconnectedCallback() {
 
         cancelAnimationFrame(this._renderLoopId);
 
     }
 
-    attributeChangedCallback (attr, oldval, newval) {
+    attributeChangedCallback(attr, oldval, newval) {
 
         this._dirty = true;
 
@@ -307,7 +307,7 @@ class URDFViewer extends HTMLElement {
     }
 
     /* Public API */
-    updateSize () {
+    updateSize() {
 
         const r = this.renderer;
         const w = this.clientWidth;
@@ -328,7 +328,7 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    redraw () {
+    redraw() {
 
         this._dirty = true;
 
@@ -336,7 +336,7 @@ class URDFViewer extends HTMLElement {
 
     // Set the joint with jointname to
     // angle in degrees
-    setAngle (jointname, angle) {
+    setAngle(jointname, angle) {
 
         if (!this.robot) return;
 
@@ -350,7 +350,7 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    setAngles (angles) {
+    setAngles(angles) {
 
         for (const name in angles) this.setAngle(name, angles[name]);
 
@@ -360,7 +360,7 @@ class URDFViewer extends HTMLElement {
     // Updates the position of the plane to be at the
     // lowest point below the robot and focuses the
     // camera on the center of the scene
-    _updateEnvironment () {
+    _updateEnvironment() {
 
         this.directionalLight.castShadow = this.displayShadow;
         if (this.robot && this.displayShadow) {
@@ -391,7 +391,7 @@ class URDFViewer extends HTMLElement {
     }
 
     // Watch the package and urdf field and load the
-    _loadUrdf (pkg, urdf) {
+    _loadUrdf(pkg, urdf) {
 
         const _dispose = item => {
 
@@ -511,7 +511,7 @@ class URDFViewer extends HTMLElement {
 
     // Watch the coordinate frame and update the
     // rotation of the scene to match
-    _setUp (up) {
+    _setUp(up) {
 
         if (!up) up = '+Z';
         up = up.toUpperCase();
@@ -528,7 +528,7 @@ class URDFViewer extends HTMLElement {
 
     // Updates the current robot's angles to ignore
     // joint limits or not
-    _setIgnoreLimits (ignore, dispatch = false) {
+    _setIgnoreLimits(ignore, dispatch = false) {
 
         if (this.robot) {
 

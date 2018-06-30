@@ -27,28 +27,28 @@ window.URDFLoader =
 class URDFLoader {
 
     // Cached mesh loaders
-    get STLLoader () {
+    get STLLoader() {
 
         this._stlloader = this._stlloader || new THREE.STLLoader(this.manager);
         return this._stlloader;
 
     }
 
-    get DAELoader () {
+    get DAELoader() {
 
         this._daeloader = this._daeloader || new THREE.ColladaLoader(this.manager);
         return this._daeloader;
 
     }
 
-    get TextureLoader () {
+    get TextureLoader() {
 
         this._textureloader = this._textureloader || new THREE.TextureLoader(this.manager);
         return this._textureloader;
 
     }
 
-    constructor (manager) {
+    constructor(manager) {
 
         this.manager = manager || THREE.DefaultLoadingManager;
 
@@ -57,12 +57,12 @@ class URDFLoader {
     /* Utilities */
     // forEach and filter function wrappers because
     // HTMLCollection does not the by default
-    forEach (coll, func) {
+    forEach(coll, func) {
 
         return [].forEach.call(coll, func);
 
     }
-    filter (coll, func) {
+    filter(coll, func) {
 
         return [].filter.call(coll, func);
 
@@ -70,7 +70,7 @@ class URDFLoader {
 
     // take a vector "x y z" and process it into
     // an array [x, y, z]
-    _processTuple (val) {
+    _processTuple(val) {
 
         if (!val) return [0, 0, 0];
         return val.trim().split(/\s+/g).map(num => parseFloat(num));
@@ -78,7 +78,7 @@ class URDFLoader {
     }
 
     // applies a rotation a threejs object in URDF order
-    _applyRotation (obj, rpy) {
+    _applyRotation(obj, rpy) {
 
         obj.rotateOnAxis(new THREE.Vector3(0, 0, 1), rpy[2]);
         obj.rotateOnAxis(new THREE.Vector3(0, 1, 0), rpy[1]);
@@ -90,7 +90,7 @@ class URDFLoader {
     // pkg:     The equivelant of a ROS package:// directory
     // urdf:    The URDF path in the directory
     // cb:      Callback that is passed the model once loaded
-    load (pkg, urdf, cb, loadMeshCb, fetchOptions) {
+    load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
 
         // normalize the path slashes
         let path = `${ pkg }/${ urdf }`.replace(/\\/g, '/').replace(/\/+/g, '/');
@@ -102,14 +102,14 @@ class URDFLoader {
 
     }
 
-    parse (pkg, content, cb, loadMeshCb) {
+    parse(pkg, content, cb, loadMeshCb) {
 
         cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader.bind(this)));
 
     }
 
     // Default mesh loading function
-    defaultMeshLoader (path, ext, done) {
+    defaultMeshLoader(path, ext, done) {
 
         if (/\.stl$/i.test(path)) {
 
@@ -135,7 +135,7 @@ class URDFLoader {
 
     /* Private Functions */
     // Process the URDF text format
-    _processUrdf (pkg, data, loadMeshCb) {
+    _processUrdf(pkg, data, loadMeshCb) {
 
         const parser = new DOMParser();
         const urdf = parser.parseFromString(data, 'text/xml');
@@ -146,7 +146,7 @@ class URDFLoader {
     }
 
     // Process the <robot> node
-    _processRobot (pkg, robot, loadMeshCb) {
+    _processRobot(pkg, robot, loadMeshCb) {
 
         const links = [];
         const joints = [];
@@ -199,7 +199,7 @@ class URDFLoader {
     }
 
     // Process joint nodes and parent them
-    _processJoint (joint, linkMap) {
+    _processJoint(joint, linkMap) {
 
         const jointType = joint.getAttribute('type');
         const obj = new THREE.Object3D();
@@ -273,7 +273,7 @@ class URDFLoader {
 
                 // fall through to revolute joint 'setAngle' function
             case 'revolute':
-                obj.urdf.setAngle = function (angle = null) {
+                obj.urdf.setAngle = function(angle = null) {
 
                     if (!this.axis) return;
                     if (angle == null) return;
@@ -296,7 +296,7 @@ class URDFLoader {
                 break;
 
             case 'prismatic':
-                obj.urdf.setAngle = function (angle = null) {
+                obj.urdf.setAngle = function(angle = null) {
 
                     if (!this.axis) return;
                     if (angle == null) return;
@@ -334,7 +334,7 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    _processLink (pkg, link, loadMeshCb) {
+    _processLink(pkg, link, loadMeshCb) {
 
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
@@ -348,7 +348,7 @@ class URDFLoader {
     }
 
     // Process the visual nodes into meshes
-    _processVisualNode (pkg, vn, linkObj, loadMeshCb) {
+    _processVisualNode(pkg, vn, linkObj, loadMeshCb) {
 
         let xyz = [0, 0, 0];
         let rpy = [0, 0, 0];
