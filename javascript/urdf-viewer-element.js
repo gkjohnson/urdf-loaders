@@ -16,83 +16,30 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    get package() {
+    get package() { return this.getAttribute('package') || ''; }
+    set package(val) { this.setAttribute('package', val); }
 
-        return this.getAttribute('package') || '';
+    get urdf() { return this.getAttribute('urdf') || ''; }
+    set urdf(val) { this.setAttribute('urdf', val); }
 
-    }
-    set package(val) {
+    get ignoreLimits() { return this.hasAttribute('ignore-limits') || false; }
+    set ignoreLimits(val) { val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits'); }
 
-        this.setAttribute('package', val);
+    get up() { return this.getAttribute('up') || '+Z'; }
+    set up(val) { this.setAttribute('up', val); }
 
-    }
+    get displayShadow() { return this.hasAttribute('display-shadow') || false; }
+    set displayShadow(val) { val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow'); }
 
-    get urdf() {
+    get ambientColor() { return this.getAttribute('ambient-color') || '#455A64'; }
+    set ambientColor(val) { val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color'); }
 
-        return this.getAttribute('urdf') || '';
+    get autoRedraw() { return this.hasAttribute('auto-redraw') || false; }
+    set autoRedraw(val) { val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw'); }
 
-    }
-    set urdf(val) {
+    get loadingManager() { return this._loadingManager = this._loadingManager || new THREE.LoadingManager(); }
 
-        this.setAttribute('urdf', val);
-
-    }
-
-    get ignoreLimits() {
-
-        return this.hasAttribute('ignore-limits') || false;
-
-    }
-    set ignoreLimits(val) {
-
-        val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits');
-
-    }
-
-    get up() {
-
-        return this.getAttribute('up') || '+Z';
-
-    }
-    set up(val) {
-
-        this.setAttribute('up', val);
-
-    }
-
-    get displayShadow() {
-
-        return this.hasAttribute('display-shadow') || false;
-
-    }
-    set displayShadow(val) {
-
-        val = !!val;
-        val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow');
-
-    }
-
-    get ambientColor() {
-
-        return this.getAttribute('ambient-color') || '#455A64';
-
-    }
-    set ambientColor(val) {
-
-        val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color');
-
-    }
-
-    get autoRedraw() {
-
-        return this.hasAttribute('auto-redraw') || false;
-
-    }
-    set autoRedraw(val) {
-
-        val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw');
-
-    }
+    get urdfLoader() { return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager); }
 
     get angles() {
 
@@ -106,23 +53,7 @@ class URDFViewer extends HTMLElement {
         return angles;
 
     }
-    set angles(val) {
-
-        this._setAngles(val);
-
-    }
-
-    get loadingManager() {
-
-        return this._loadingManager = this._loadingManager || new THREE.LoadingManager();
-
-    }
-
-    get urdfLoader() {
-
-        return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager);
-
-    }
+    set angles(val) { this._setAngles(val); }
 
     /* Lifecycle Functions */
     constructor() {
