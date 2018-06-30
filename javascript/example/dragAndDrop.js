@@ -98,6 +98,9 @@ document.addEventListener('drop', e => {
                 const fileName = fileNames
                     .filter(name => {
 
+                        // TODO: this doesn't work correctly when there are
+                        // `../` up directory tokens in the path. They should
+                        // be resolved.
                         // check if the end of file and url are the same
                         const len = Math.min(name.length, url.length);
                         return url.substr(url.length - len) === name.substr(name.length - len);
