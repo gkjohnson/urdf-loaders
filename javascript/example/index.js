@@ -134,11 +134,11 @@ viewer.addEventListener('urdf-processed', () => {
                     input.min = -6.28
                     input.max = 6.28
                 } else {
-                    slider.min = joint.urdf.limits.lower
-                    slider.max = joint.urdf.limits.upper
+                    slider.min = joint.urdf.limit.lower
+                    slider.max = joint.urdf.limit.upper
 
-                    input.min = joint.urdf.limits.lower
-                    input.max = joint.urdf.limits.upper
+                    input.min = joint.urdf.limit.lower
+                    input.max = joint.urdf.limit.upper
                 }
             }
 

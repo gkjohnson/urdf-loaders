@@ -218,7 +218,7 @@ class URDFLoader {
             type: jointType,
             angle: 0,
             axis: null,
-            limits: { lower: 0, upper: 0 },
+            limit: { lower: 0, upper: 0 },
             ignoreLimits: false,
             setAngle: () => {},
         };
@@ -247,8 +247,8 @@ class URDFLoader {
 
             } else if (type === 'limit') {
 
-                obj.urdf.limits.lower = parseFloat(n.getAttribute('lower') || obj.urdf.limits.lower);
-                obj.urdf.limits.upper = parseFloat(n.getAttribute('upper') || obj.urdf.limits.upper);
+                obj.urdf.limit.lower = parseFloat(n.getAttribute('lower') || obj.urdf.limit.lower);
+                obj.urdf.limit.upper = parseFloat(n.getAttribute('upper') || obj.urdf.limit.upper);
 
             }
 
@@ -277,8 +277,8 @@ class URDFLoader {
 
             case 'fixed': break;
             case 'continuous':
-                obj.urdf.limits.lower = -Infinity;
-                obj.urdf.limits.upper = Infinity;
+                obj.urdf.limit.lower = -Infinity;
+                obj.urdf.limit.upper = Infinity;
 
                 // fall through to revolute joint 'setAngle' function
             case 'revolute':
@@ -289,8 +289,8 @@ class URDFLoader {
 
                     if (!this.ignoreLimits) {
 
-                        angle = Math.min(this.limits.upper, angle);
-                        angle = Math.max(this.limits.lower, angle);
+                        angle = Math.min(this.limit.upper, angle);
+                        angle = Math.max(this.limit.lower, angle);
 
                     }
 
@@ -312,8 +312,8 @@ class URDFLoader {
 
                     if (!this.ignoreLimits) {
 
-                        angle = Math.min(this.limits.upper, angle);
-                        angle = Math.max(this.limits.lower, angle);
+                        angle = Math.min(this.limit.upper, angle);
+                        angle = Math.max(this.limit.lower, angle);
 
                     }
 
