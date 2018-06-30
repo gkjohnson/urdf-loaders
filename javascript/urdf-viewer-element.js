@@ -81,6 +81,7 @@ class URDFViewer extends HTMLElement {
         dirLight.shadow.bias = -0.000025;
         dirLight.castShadow = true;
         scene.add(dirLight);
+        scene.add(dirLight.target);
 
         // Renderer setup
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -293,13 +294,15 @@ class URDFViewer extends HTMLElement {
     // camera on the center of the scene
     _updateEnvironment() {
 
-        this.directionalLight.castShadow = this.displayShadow;
+        const dirLight = this.directionalLight;
+        dirLight.castShadow = this.displayShadow;
         if (this.robot && this.displayShadow) {
 
             this.world.updateMatrixWorld();
 
             const bbox = new THREE.Box3().setFromObject(this.robot);
-            this.controls.target.y = bbox.getCenter(new THREE.Vector3()).y;
+            const center = bbox.getCenter(new THREE.Vector3());
+            this.controls.target.y = center.y;
             this.plane.position.y = bbox.min.y - 1e-3;
 
             // Update the shadow camera rendering bounds to encapsulate the
@@ -307,13 +310,15 @@ class URDFViewer extends HTMLElement {
             // simplicity -- this could be a tighter fit.
             const sphere = bbox.getBoundingSphere(new THREE.Sphere());
             const minmax = sphere.radius;
-            const cam = this.directionalLight.shadow.camera;
+            const cam = dirLight.shadow.camera;
             cam.left = cam.bottom = -minmax;
             cam.right = cam.top = minmax;
 
-            // TODO: Position the camera about the center of the model
-            // because it's possible that the model will be off center
-            // and extend outside of the shadow camera bounds
+            // Update the camera to focus on the center of the model so the
+            // shadow can encapsulate it
+            const offset = dirLight.position.clone().sub(dirLight.target.position);
+            dirLight.target.position.copy(center);
+            dirLight.position.copy(center).add(offset);
 
             cam.updateProjectionMatrix();
 
