@@ -92,8 +92,17 @@ class URDFLoader {
     // cb:      Callback that is passed the model once loaded
     load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
 
-        // normalize the path slashes
-        let path = `${ pkg }/${ urdf }`.replace(/\\/g, '/').replace(/\/+/g, '/');
+        // Check if a full URI is specified before
+        // prepending the package info
+        let path = urdf;
+        if (!/^[^:]+:\/\//.test(path)) {
+
+            // make sure we don't insert a double slash by cleaning
+            // the package and urdf paths
+            path = `${ pkg.replace(/(\\|\/)$/, '') }/${ urdf.replace(/^(\\|\/)/, '') }`;
+
+        }
+
         path = this.manager.resolveURL(path);
 
         fetch(path, fetchOptions)
@@ -363,7 +372,7 @@ class URDFLoader {
                 const geoType = n.children[0].nodeName.toLowerCase();
                 if (geoType === 'mesh') {
 
-                    const filename = n.children[0].getAttribute('filename').replace(/^((package:\/\/)|(model:\/\/))/, '');
+                    const filename = n.children[0].getAttribute('filename').replace(/^package:\/\//, '');
                     const path = pkg + '/' + filename;
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                     const scaleAttr = n.children[0].getAttribute('scale');
