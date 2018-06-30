@@ -1,4 +1,4 @@
-/*eslint-disable*/
+/* globals animToggle viewer THREE */
 
 // declare these globally for the sake of the example.
 // Hack to make the build work with webpack for now.
@@ -152,7 +152,7 @@ viewer.addEventListener('urdf-processed', () => {
                     input.remove();
                     slider.remove();
 
-}
+            }
 
             slider.addEventListener('input', () => {
                 viewer.setAngle(joint.name, slider.value);
