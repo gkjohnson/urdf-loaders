@@ -112,19 +112,19 @@ input:focus {
     flex-direction: column;
     width: 100%;
     margin: 15px 0;
-    border-top: 1px solid white;
     transition: 0.5s opacity ease;
 }
 
 #controls > * {
     margin: 5px 0;
-    transition: 0.1s opacity linear;
 }
 
 #controls #toggle-controls {
     margin-top: 0;
     margin-bottom: 10px;
     text-align: right;
+    transition: 0.1s opacity linear;
+    border-top: 1px solid white;
 }
 
 #controls #toggle-controls:hover {
@@ -145,10 +145,10 @@ input:focus {
 
 
 #controls.hidden > *:not(#toggle-controls) {
-    opacity: 0;
+    display: none;
 }
 
-#controls.hidden {
+#controls.hidden #toggle-controls {
     opacity: 0.5;
 }
 
