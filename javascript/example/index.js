@@ -119,25 +119,25 @@ viewer.addEventListener('urdf-processed', () => {
             const slider = li.querySelector('input[type="range"]');
             const input = li.querySelector('input[type="number"]');
             li.update = () => {
-                let val = joint.urdf.type === 'revolute' ? joint.urdf.angle * RAD2DEG : joint.urdf.angle;
-                if (Math.abs(val) > 1) val = val.toFixed(1);
-                else val = val.toPrecision(2);
+                let degVal = joint.urdf.type === 'revolute' ? joint.urdf.angle * RAD2DEG : joint.urdf.angle;
+                if (Math.abs(degVal) > 1) degVal = degVal.toFixed(1);
+                else degVal = degVal.toPrecision(2);
 
-                input.value = parseFloat(val);
+                input.value = parseFloat(degVal);
                 slider.value = joint.urdf.angle;
 
                 if (viewer.ignoreLimits) {
                     slider.min = -6.28;
                     slider.max = 6.28;
 
-                    input.min = -6.28;
-                    input.max = 6.28;
+                    input.min = -6.28 * RAD2DEG;
+                    input.max = 6.28 * RAD2DEG;
                 } else {
                     slider.min = joint.urdf.limit.lower;
                     slider.max = joint.urdf.limit.upper;
 
-                    input.min = joint.urdf.limit.lower;
-                    input.max = joint.urdf.limit.upper;
+                    input.min = joint.urdf.limit.lower * RAD2DEG;
+                    input.max = joint.urdf.limit.upper * RAD2DEG;
                 }
             };
 
@@ -160,7 +160,7 @@ viewer.addEventListener('urdf-processed', () => {
             });
 
             input.addEventListener('change', () => {
-                viewer.setAngle(joint.name, input.value);
+                viewer.setAngle(joint.name, input.value * DEG2RAD);
                 li.update();
             });
 
