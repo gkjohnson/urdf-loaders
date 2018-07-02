@@ -131,7 +131,13 @@ class URDFManipulator extends URDFViewer {
             temp.set(0, 0, -1).transformDirection(this.camera.matrixWorld);
             if (Math.abs(temp.dot(plane.normal)) < 0.25) {
 
+                // TODO: This can feel weird if the camera is too close to the
+                // geometry
+                // Get the point closest to the original clicked point
+                // and use that as center of the rotation axis
                 temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
+                temp2.copy(plane.normal).multiplyScalar(-plane.distanceToPoint(temp));
+                temp.add(temp2);
 
                 // Just project out from the camera
                 raycaster.setFromCamera(m1, this.camera);
@@ -144,7 +150,7 @@ class URDFManipulator extends URDFViewer {
 
                 temp.crossVectors(intersect2, intersect1);
 
-                // Multiply by the magic number 10 to make it feel good
+                // Multiply by a magic number to make it feel good
                 return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1) * 10;
 
             } else {
@@ -176,6 +182,7 @@ class URDFManipulator extends URDFViewer {
 
         };
 
+        // Get the amount to move the prismatic joint based on the mouse move
         const getMove = (tg, m1, m2) => {
 
             const dist = temp.copy(clickPoint).sub(this.camera.position).length();
@@ -211,6 +218,11 @@ class URDFManipulator extends URDFViewer {
                 clickPoint.copy(target.point);
                 this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
 
+                if (dragging) {
+
+                    this.controls.enabled = false;
+
+                }
             }
 
         }, true);
@@ -287,14 +299,9 @@ class URDFManipulator extends URDFViewer {
 
                 }
 
-                e.stopPropagation();
-                e.preventDefault();
-
             }
 
             lastMouse.copy(mouse);
-
-            return false;
 
         }, true);
 
@@ -304,6 +311,7 @@ class URDFManipulator extends URDFViewer {
 
                 this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
                 dragging = null;
+                this.controls.enabled = true;
 
             }
 
