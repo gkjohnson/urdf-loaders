@@ -1,4 +1,13 @@
 /* globals URDFViewer THREE */
+
+// urdf-manipulator element
+// Displays a URDF model that can be manipulated with the mouse
+
+// Events
+// joint-mouseover: Fired when a joint is hovered over
+// joint-mouseout: Fired when a joint is no longer hovered over
+// manipulate-start: Fires when a joint is manipulated
+// manipulate-end: Fires when a joint is done being manipulated
 class URDFManipulator extends URDFViewer {
 
     get disableDragging() { return this.hasAttribute('disable-dragging'); }
@@ -136,6 +145,8 @@ class URDFManipulator extends URDFViewer {
 
                         dragging = curr;
                         clickPoint.copy(target.point);
+
+                        this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
                         break;
 
                     }
@@ -181,6 +192,18 @@ class URDFManipulator extends URDFViewer {
 
             if (hovered !== wasHovered) {
 
+                if (wasHovered) {
+
+                    this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: wasHovered.urdf.name }));
+
+                }
+
+                if (wasHovered) {
+
+                    this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.urdf.name }));
+
+                }
+
                 this.redraw();
 
             }
@@ -215,7 +238,16 @@ class URDFManipulator extends URDFViewer {
 
         }, true);
 
-        el.addEventListener('mouseup', e => dragging = null);
+        el.addEventListener('mouseup', e => {
+
+            if (dragging) {
+
+                this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
+                dragging = null;
+
+            }
+
+        });
 
     }
 
