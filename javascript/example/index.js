@@ -52,6 +52,13 @@ const updateLoop = () => {
     requestAnimationFrame(updateLoop);
 };
 
+const setColor = color => {
+
+    document.body.style.backgroundColor = color;
+    viewer.highlightColor = '#' + (new THREE.Color(0xffffff)).lerp(new THREE.Color(color), 0.35).getHexString();
+
+};
+
 // toggle checkbox
 animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
 

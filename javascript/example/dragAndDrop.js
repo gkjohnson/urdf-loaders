@@ -1,4 +1,4 @@
-/* globals animToggle viewer */
+/* globals animToggle viewer setColor */
 
 // Converts a datatransfer structer into an object with all paths and files
 // listed out. Returns a promise that resolves with the file structure.
@@ -137,7 +137,7 @@ document.addEventListener('drop', e => {
 
         });
 
-    document.body.style.backgroundColor = '#263238';
+    setColor('#263238');
     animToggle.classList.remove('checked');
 
 });

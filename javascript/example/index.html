@@ -66,8 +66,8 @@
                     const color = e.target.getAttribute('color')
 
                     viewer.urdf = urdf
-                    document.body.style.backgroundColor = color
                     animToggle.classList.add('checked')
+                    setColor(color);
 
                 })
 
