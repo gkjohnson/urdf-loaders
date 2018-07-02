@@ -7,6 +7,7 @@
 // urdf-processed: Fires when the URDF has finished loading and getting processed
 // geometry-loaded: Fires when all the geometry has been fully loaded
 // ignore-limits-change: Fires when the 'ignore-limits' attribute changes
+// angle-change: Fires when an angle changes
 window.URDFViewer =
 class URDFViewer extends HTMLElement {
 
@@ -279,6 +280,8 @@ class URDFViewer extends HTMLElement {
             this._dirty = true;
 
         }
+
+        this.dispatchEvent(new CustomEvent('angle-change', { bubles: true, cancelable: true, detail: jointname }));
 
     }
 

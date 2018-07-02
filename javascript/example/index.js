@@ -52,7 +52,6 @@ const updateLoop = () => {
         updateAngles();
     }
 
-    Object.values(sliders).forEach(li => li.update());
     requestAnimationFrame(updateLoop);
 
 };
@@ -91,6 +90,12 @@ viewer.addEventListener('ignore-limits-change', () => {
     Object
         .values(sliders)
         .forEach(sl => sl.update());
+
+});
+
+viewer.addEventListener('angle-change', e => {
+
+    sliders[e.detail].update();
 
 });
 
