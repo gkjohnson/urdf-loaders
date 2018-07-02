@@ -95,7 +95,7 @@ viewer.addEventListener('ignore-limits-change', () => {
 
 viewer.addEventListener('angle-change', e => {
 
-    sliders[e.detail].update();
+    if (sliders[e.detail]) sliders[e.detail].update();
 
 });
 

@@ -117,21 +117,21 @@ class URDFManipulator extends URDFViewer {
         };
 
         const temp = new THREE.Vector3();
+        const temp2 = new THREE.Vector3();
         const intersect1 = new THREE.Vector3();
         const intersect2 = new THREE.Vector3();
 
         const getAngle = (tg, m1, m2) => {
 
             // TODO: Why is the constant negated?
-            temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
             plane.normal.copy(tg.urdf.axis).transformDirection(tg.matrixWorld).normalize();
-            plane.constant = -plane.normal.dot(temp);
+            plane.constant = -plane.normal.dot(clickPoint);
 
             // If the camera is looking at the rotation axis at a skewed angle
             temp.set(0, 0, -1).transformDirection(this.camera.matrixWorld);
-            if (Math.abs(temp.dot(plane.normal)) < 0.75) {
+            if (Math.abs(temp.dot(plane.normal)) < 0.25) {
 
-                temp.copy(plane.normal).multiplyScalar(plane.constant);
+                temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
 
                 // Just project out from the camera
                 raycaster.setFromCamera(m1, this.camera);
@@ -144,13 +144,18 @@ class URDFManipulator extends URDFViewer {
 
                 temp.crossVectors(intersect2, intersect1);
 
-                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1) * 50;
+                // Multiply by the magic number 10 to make it feel good
+                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1) * 10;
 
             } else {
 
-                // Project onto the plane of rotation
-                temp.copy(plane.normal).multiplyScalar(plane.constant);
+                // Get the point closest to the original clicked point
+                // and use that as center of the rotation axis
+                temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
+                temp2.copy(plane.normal).multiplyScalar(-plane.distanceToPoint(temp));
+                temp.add(temp2);
 
+                // project onto the plane of rotation
                 raycaster.setFromCamera(m1, this.camera);
                 line.start.copy(raycaster.ray.origin);
                 line.end.copy(raycaster.ray.origin).add(raycaster.ray.direction.normalize().multiplyScalar(1e5));
@@ -165,7 +170,7 @@ class URDFManipulator extends URDFViewer {
 
                 temp.crossVectors(intersect2, intersect1);
 
-                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1) * 5;
+                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1);
 
             }
 
