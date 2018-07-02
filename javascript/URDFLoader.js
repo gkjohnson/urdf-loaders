@@ -215,6 +215,7 @@ class URDFLoader {
         obj.name = joint.getAttribute('name');
         obj.urdf = {
             node: joint,
+            name: joint.getAttribute('name'),
             type: jointType,
             angle: 0,
             axis: null,
