@@ -167,6 +167,10 @@ input:focus {
     user-select: text;
 }
 
+#controls li[robot-hovered] {
+    background: rgba(255,255,255,0.35);
+}
+
 #controls li span {
 
     padding: 0 5px;

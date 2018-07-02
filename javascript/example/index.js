@@ -18,6 +18,7 @@ let sliders = {};
 const lerp = (from, to, ratio) => from + (to - from) * ratio;
 
 const updateAngles = () => {
+
     if (!viewer.setAngle) return;
 
     // reset everything to 0 first
@@ -28,6 +29,7 @@ const updateAngles = () => {
     // animate the legs
     const time = Date.now() / 3e2;
     for (let i = 1; i <= 6; i++) {
+
         const offset = i * Math.PI / 3;
         const ratio = Math.max(0, Math.sin(time + offset));
 
@@ -39,17 +41,20 @@ const updateAngles = () => {
         viewer.setAngle(`TC${ i }B`, lerp(0, 0.065, ratio));
 
         viewer.setAngle(`W${ i }`, window.performance.now() * 0.001);
+
     }
 
 };
 
 const updateLoop = () => {
+
     if (animToggle.classList.contains('checked')) {
         updateAngles();
-        Object.values(sliders).forEach(li => li.update());
     }
 
+    Object.values(sliders).forEach(li => li.update());
     requestAnimationFrame(updateLoop);
+
 };
 
 const setColor = color => {
@@ -86,6 +91,24 @@ viewer.addEventListener('ignore-limits-change', () => {
     Object
         .values(sliders)
         .forEach(sl => sl.update());
+
+});
+
+viewer.addEventListener('joint-mouseover', e => {
+
+    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    if (j) {
+        j.setAttribute('robot-hovered', true);
+        j.scrollIntoView({});
+        window.scrollTo(0, 0);
+    }
+});
+
+viewer.addEventListener('joint-mouseout', e => {
+
+    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    if (j) j.removeAttribute('robot-hovered');
+
 });
 
 // create the sliders
@@ -115,11 +138,12 @@ viewer.addEventListener('urdf-processed', () => {
             const li = document.createElement('li');
             li.innerHTML =
             `
-            <span title="${ joint.name }">${ joint.name }</span>
+            <span title="${ joint.urdf.name }">${ joint.urdf.name }</span>
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.0001" />
             `;
             li.setAttribute('joint-type', joint.urdf.type);
+            li.setAttribute('joint-name', joint.urdf.name);
 
             sliderList.appendChild(li);
 

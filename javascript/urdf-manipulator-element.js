@@ -224,7 +224,6 @@ class URDFManipulator extends URDFViewer {
             const wasHovered = hovered;
             if (hovered) {
 
-                highlightLinkGeometry(hovered, true);
                 hovered = null;
             }
 
@@ -235,9 +234,12 @@ class URDFManipulator extends URDFViewer {
                 if (joint) {
 
                     hovered = joint;
-                    highlightLinkGeometry(hovered, false);
 
                 }
+
+            } else if (dragging) {
+
+                hovered = dragging;
 
             }
 
@@ -245,12 +247,14 @@ class URDFManipulator extends URDFViewer {
 
                 if (wasHovered) {
 
+                    highlightLinkGeometry(wasHovered, true);
                     this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: wasHovered.urdf.name }));
 
                 }
 
                 if (hovered) {
 
+                    highlightLinkGeometry(hovered, false);
                     this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.urdf.name }));
 
                 }
