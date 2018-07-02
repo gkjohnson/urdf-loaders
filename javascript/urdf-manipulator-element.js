@@ -10,8 +10,17 @@
 // manipulate-end: Fires when a joint is done being manipulated
 class URDFManipulator extends URDFViewer {
 
+    static get observedAttributes() {
+
+        return ['highlight-color', ...super.observedAttributes];
+
+    }
+
     get disableDragging() { return this.hasAttribute('disable-dragging'); }
     set disableDragging(val) { val ? this.setAttribute('disable-dragging', !!val) : this.removeAttribute('disable-dragging'); }
+
+    get highlightColor() { return this.getAttribute('highlight-color') || '#FFFFFF'; }
+    set highlightColor(val) { val ? this.setAttribute('highlight-color', val) : this.removeAttribute('highlight-color'); }
 
     constructor(...args) {
 
@@ -51,11 +60,66 @@ class URDFManipulator extends URDFViewer {
 
         };
 
+        const findNearestJoint = m => {
+
+            let curr = m;
+            while (curr) {
+
+                if (curr.urdf && curr.urdf.type && curr.urdf.type !== 'fixed') {
+
+                    break;
+
+                }
+
+                curr = curr.parent;
+
+            }
+
+            return curr;
+
+        };
+
+        this.highlightMaterial = new THREE.MeshPhongMaterial({ shininess: 10, color: this.highlightColor, emissive: this.highlightColor, emissiveIntensity: 0.25 });
+        const highlightLinkGeometry = (m, revert) => {
+
+            const traverse = c => {
+
+                if (c.type === 'Mesh') {
+
+                    if (revert) {
+
+                        c.material = c.__origMaterial;
+                        delete c.__origMaterial;
+
+                    } else {
+
+                        c.__origMaterial = c.material;
+                        c.material = this.highlightMaterial;
+
+                    }
+
+                }
+
+                if (c === m || !c.urdf || !c.urdf.type || c.urdf.type === 'fixed') {
+
+                    for (let i = 0; i < c.children.length; i++) {
+
+                        traverse(c.children[i]);
+
+                    }
+
+                }
+
+            };
+
+            traverse(m);
+
+        };
+
         const temp = new THREE.Vector3();
         const intersect1 = new THREE.Vector3();
         const intersect2 = new THREE.Vector3();
 
-        // TODO: Handle 'revolute' and 'prismatic' joints here
         const getAngle = (tg, m1, m2) => {
 
             // TODO: Why is the constant negated?
@@ -65,7 +129,7 @@ class URDFManipulator extends URDFViewer {
 
             // If the camera is looking at the rotation axis at a skewed angle
             temp.set(0, 0, -1).transformDirection(this.camera.matrixWorld);
-            if (Math.abs(temp.dot(plane.normal)) < 0.9) {
+            if (Math.abs(temp.dot(plane.normal)) < 0.75) {
 
                 temp.copy(plane.normal).multiplyScalar(plane.constant);
 
@@ -138,27 +202,13 @@ class URDFManipulator extends URDFViewer {
             const target = getCollisions(mouse).shift();
             if (target) {
 
-                let curr = target.object;
-                while (curr) {
-
-                    if (curr.urdf && curr.urdf.type && curr.urdf.type !== 'fixed') {
-
-                        dragging = curr;
-                        clickPoint.copy(target.point);
-
-                        this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
-                        break;
-
-                    }
-
-                    curr = curr.parent;
-
-                }
+                dragging = findNearestJoint(target.object);
+                clickPoint.copy(target.point);
+                this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
 
             }
 
         }, true);
-
 
         let hovered = null;
         el.addEventListener('mousemove', e => {
@@ -174,17 +224,18 @@ class URDFManipulator extends URDFViewer {
             const wasHovered = hovered;
             if (hovered) {
 
-                hovered.material && hovered.material.color && (hovered.material.color.r = 1);
+                highlightLinkGeometry(hovered, true);
                 hovered = null;
             }
 
             if (dragging == null && this.disableDragging === false) {
 
-                hovered = getCollisions(mouse).shift() || null;
-                if (hovered) {
+                const collision = getCollisions(mouse).shift() || null;
+                const joint = collision && findNearestJoint(collision.object);
+                if (joint) {
 
-                    hovered = hovered.object;
-                    hovered.material && hovered.material.color && (hovered.material.color.r = 0);
+                    hovered = joint;
+                    highlightLinkGeometry(hovered, false);
 
                 }
 
@@ -198,7 +249,7 @@ class URDFManipulator extends URDFViewer {
 
                 }
 
-                if (wasHovered) {
+                if (hovered) {
 
                     this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.urdf.name }));
 
@@ -248,6 +299,21 @@ class URDFManipulator extends URDFViewer {
             }
 
         });
+
+    }
+
+    attributeChangedCallback(attr, oldval, newval) {
+
+        super.attributeChangedCallback(attr, oldval, newval);
+
+        switch (attr) {
+
+            case 'highlight-color':
+                this.highlightMaterial.color.set(this.highlightColor);
+                this.highlightMaterial.emissive.set(this.highlightColor);
+                break;
+
+        }
 
     }
 
