@@ -26,18 +26,30 @@ class URDFManipulator extends URDFViewer {
 
         super(...args);
 
+        // The highlight material
+        this.highlightMaterial =
+            new THREE.MeshPhongMaterial({
+                shininess: 10,
+                color: this.highlightColor,
+                emissive: this.highlightColor,
+                emissiveIntensity: 0.25,
+            });
+
         const el = this.renderer.domElement;
 
-        const raycaster = new THREE.Raycaster();
+        // Saved mouse data between frames and initial
+        // click point in space
         const mouse = new THREE.Vector2();
         const lastMouse = new THREE.Vector2();
-        const clickedMouse = new THREE.Vector2();
         const clickPoint = new THREE.Vector3();
+
+        // Reuseable variables
+        const raycaster = new THREE.Raycaster();
         const delta = new THREE.Vector2();
-        const clickedDelta = new THREE.Vector2();
         const plane = new THREE.Plane();
         const line = new THREE.Line3();
 
+        // The joint being manipulated
         let dragging = null;
 
         const toMouseCoord = (e, v) => {
@@ -47,6 +59,7 @@ class URDFManipulator extends URDFViewer {
 
         };
 
+        // Get which part of the robot is hit by the mouse click
         const getCollisions = m => {
 
             if (!this.robot) return [];
@@ -60,12 +73,19 @@ class URDFManipulator extends URDFViewer {
 
         };
 
+        const isJoint = j => {
+
+            return j.urdf && j.urdf.type && j.urdf.type !== 'fixed';
+
+        };
+
+        // Find the nearest parent that is a joint
         const findNearestJoint = m => {
 
             let curr = m;
             while (curr) {
 
-                if (curr.urdf && curr.urdf.type && curr.urdf.type !== 'fixed') {
+                if (isJoint(curr)) {
 
                     break;
 
@@ -79,11 +99,12 @@ class URDFManipulator extends URDFViewer {
 
         };
 
-        this.highlightMaterial = new THREE.MeshPhongMaterial({ shininess: 10, color: this.highlightColor, emissive: this.highlightColor, emissiveIntensity: 0.25 });
+        // Highlight the link geometry under a joint
         const highlightLinkGeometry = (m, revert) => {
 
             const traverse = c => {
 
+                // Set or revert the highlight color
                 if (c.type === 'Mesh') {
 
                     if (revert) {
@@ -100,7 +121,9 @@ class URDFManipulator extends URDFViewer {
 
                 }
 
-                if (c === m || !c.urdf || !c.urdf.type || c.urdf.type === 'fixed') {
+                // Look into the children and stop if the next child is
+                // another joint
+                if (c === m || !isJoint(c)) {
 
                     for (let i = 0; i < c.children.length; i++) {
 
@@ -121,6 +144,8 @@ class URDFManipulator extends URDFViewer {
         const intersect1 = new THREE.Vector3();
         const intersect2 = new THREE.Vector3();
 
+        // Get the changed angle between mouse position 1 and 2
+        // when manipulating target
         const getAngle = (tg, m1, m2) => {
 
             // TODO: Why is the constant negated?
@@ -128,14 +153,8 @@ class URDFManipulator extends URDFViewer {
             plane.constant = -plane.normal.dot(clickPoint);
 
             // If the camera is looking at the rotation axis at a skewed angle
-            // temp.set(0, 0, -1).transformDirection(this.camera.matrixWorld);
             temp.copy(this.camera.position).sub(clickPoint).normalize();
-
             if (Math.abs(temp.dot(plane.normal)) < 0.2) {
-
-                // TODO: This can feel weird if the camera is too close to the
-                // geometry because of the 0.5 projection distance that the raycaster
-                // adds.
 
                 // distance to the clicked point
                 const dist = temp.copy(clickPoint).sub(this.camera.position).length() * 0.9;
@@ -146,7 +165,7 @@ class URDFManipulator extends URDFViewer {
                 temp2.copy(plane.normal).multiplyScalar(-plane.distanceToPoint(temp));
                 temp.add(temp2);
 
-                // Just project out from the camera
+                // Project out from the camera
                 raycaster.setFromCamera(m1, this.camera);
                 intersect1.copy(raycaster.ray.origin).add(
                     raycaster.ray.direction.normalize().multiplyScalar(dist)
@@ -220,8 +239,9 @@ class URDFManipulator extends URDFViewer {
 
             toMouseCoord(e, mouse);
             lastMouse.copy(mouse);
-            clickedMouse.copy(mouse);
 
+            // get the information on the clicked item
+            // and set the dragged joint
             const target = getCollisions(mouse).shift();
             if (target) {
 
@@ -234,6 +254,7 @@ class URDFManipulator extends URDFViewer {
                     this.controls.enabled = false;
 
                 }
+
             }
 
         }, true);
@@ -243,8 +264,9 @@ class URDFManipulator extends URDFViewer {
 
             toMouseCoord(e, mouse);
             delta.copy(mouse).sub(lastMouse);
-            clickedDelta.copy(mouse).sub(clickedMouse);
 
+            // Keep track of the hovered item. If an item is being
+            // dragged, then it is considered hovered
             const wasHovered = hovered;
             if (hovered) {
 
@@ -267,6 +289,7 @@ class URDFManipulator extends URDFViewer {
 
             }
 
+            // Highlight the meshes and broadcast events if the hovered item changed
             if (hovered !== wasHovered) {
 
                 if (wasHovered) {
@@ -287,6 +310,7 @@ class URDFManipulator extends URDFViewer {
 
             }
 
+            // Apply the manipulation
             if (dragging !== null) {
 
                 let delta = null;
@@ -297,6 +321,10 @@ class URDFManipulator extends URDFViewer {
                 } else if (dragging.urdf.type === 'prismatic') {
 
                     delta = getMove(dragging, mouse, lastMouse);
+
+                } else {
+
+                    // Not supported
 
                 }
 
@@ -312,6 +340,7 @@ class URDFManipulator extends URDFViewer {
 
         }, true);
 
+        // Clean up
         el.addEventListener('mouseup', e => {
 
             if (dragging) {
