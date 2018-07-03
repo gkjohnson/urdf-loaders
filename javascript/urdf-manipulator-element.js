@@ -128,11 +128,18 @@ class URDFManipulator extends URDFViewer {
             plane.constant = -plane.normal.dot(clickPoint);
 
             // If the camera is looking at the rotation axis at a skewed angle
-            temp.set(0, 0, -1).transformDirection(this.camera.matrixWorld);
-            if (Math.abs(temp.dot(plane.normal)) < 0.25) {
+            // temp.set(0, 0, -1).transformDirection(this.camera.matrixWorld);
+            temp.copy(this.camera.position).sub(clickPoint).normalize();
+
+            if (Math.abs(temp.dot(plane.normal)) < 0.2) {
 
                 // TODO: This can feel weird if the camera is too close to the
-                // geometry
+                // geometry because of the 0.5 projection distance that the raycaster
+                // adds.
+
+                // distance to the clicked point
+                const dist = temp.copy(clickPoint).sub(this.camera.position).length() * 0.9;
+
                 // Get the point closest to the original clicked point
                 // and use that as center of the rotation axis
                 temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
@@ -141,17 +148,21 @@ class URDFManipulator extends URDFViewer {
 
                 // Just project out from the camera
                 raycaster.setFromCamera(m1, this.camera);
-                intersect1.copy(raycaster.ray.origin).add(raycaster.ray.direction);
+                intersect1.copy(raycaster.ray.origin).add(
+                    raycaster.ray.direction.normalize().multiplyScalar(dist)
+                );
                 intersect1.sub(temp);
 
                 raycaster.setFromCamera(m2, this.camera);
-                intersect2.copy(raycaster.ray.origin).add(raycaster.ray.direction);
+                intersect2.copy(raycaster.ray.origin).add(
+                    raycaster.ray.direction.normalize().multiplyScalar(dist)
+                );
                 intersect2.sub(temp);
 
-                temp.crossVectors(intersect2, intersect1);
+                temp.crossVectors(intersect2, intersect1).normalize();
 
                 // Multiply by a magic number to make it feel good
-                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1) * 10;
+                return temp.dot(plane.normal) * intersect2.angleTo(intersect1) * 2;
 
             } else {
 
@@ -229,10 +240,6 @@ class URDFManipulator extends URDFViewer {
 
         let hovered = null;
         el.addEventListener('mousemove', e => {
-
-            // TODO: How to handle the skewed axes?
-            // take into account the first click position to help determine
-            // which direction the node should be rotated
 
             toMouseCoord(e, mouse);
             delta.copy(mouse).sub(lastMouse);

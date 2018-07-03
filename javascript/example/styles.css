@@ -162,9 +162,12 @@ input:focus {
     font-size: 16px;
     display: flex;
     align-items: center;
+    padding: 1px 0;
 
     width: 100%;
     user-select: text;
+
+    transition: background 0.25s ease;
 }
 
 #controls li[robot-hovered] {
