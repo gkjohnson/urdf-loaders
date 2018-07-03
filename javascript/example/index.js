@@ -15,6 +15,7 @@ const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 1 / DEG2RAD;
 let sliders = {};
 
+// Global functions
 const lerp = (from, to, ratio) => from + (to - from) * ratio;
 
 const updateAngles = () => {
@@ -63,6 +64,7 @@ const setColor = color => {
 
 };
 
+// Events
 // toggle checkbox
 animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
 
@@ -102,17 +104,24 @@ viewer.addEventListener('angle-change', e => {
 viewer.addEventListener('joint-mouseover', e => {
 
     const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
-    if (j) {
-        j.setAttribute('robot-hovered', true);
-        j.scrollIntoView({});
-        window.scrollTo(0, 0);
-    }
+    if (j) j.setAttribute('robot-hovered', true);
+
 });
 
 viewer.addEventListener('joint-mouseout', e => {
 
     const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
     if (j) j.removeAttribute('robot-hovered');
+
+});
+
+viewer.addEventListener('manipulate-start', e => {
+
+    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    if (j) {
+        j.scrollIntoView({ block: 'nearest' });
+        window.scrollTo(0, 0);
+    }
 
 });
 
