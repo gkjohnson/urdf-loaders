@@ -14,9 +14,10 @@
         <script src="../node_modules/threejs-model-loader/ModelLoader.js"></script>
         <script src="../URDFLoader.js"></script>
         <script src="../urdf-viewer-element.js"></script>
+        <script src="../urdf-manipulator-element.js"></script>
         <script>
             /* globals URDFViewer */
-            customElements.define('urdf-viewer', URDFViewer)
+            customElements.define('urdf-viewer', URDFManipulator)
         </script>
 
         <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet"/>
@@ -65,14 +66,14 @@
                     const color = e.target.getAttribute('color')
 
                     viewer.urdf = urdf
-                    document.body.style.backgroundColor = color
                     animToggle.classList.add('checked')
+                    setColor(color);
 
-                })
+                });
 
-            })
+            });
 
-            document.addEventListener('WebComponentsReady', () => viewer.camera.position.set(-5.5, 3.5, 5.5))
+            document.addEventListener('WebComponentsReady', () => viewer.camera.position.set(-5.5, 3.5, 5.5));
         </script>
     </body>
 </html>
