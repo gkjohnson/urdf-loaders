@@ -371,4 +371,4 @@ class URDFManipulator extends URDFViewer {
 
     }
 
-}
+};
