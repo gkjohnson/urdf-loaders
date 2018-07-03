@@ -8,6 +8,7 @@
 // joint-mouseout: Fired when a joint is no longer hovered over
 // manipulate-start: Fires when a joint is manipulated
 // manipulate-end: Fires when a joint is done being manipulated
+window.URDFManipulator =
 class URDFManipulator extends URDFViewer {
 
     static get observedAttributes() {
