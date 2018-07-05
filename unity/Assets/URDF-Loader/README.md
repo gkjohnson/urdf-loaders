@@ -40,7 +40,7 @@ Returns a new `Dictionary<string, float>` with the current angle of all the join
 Takes a `Dictionary<string, float>` and sets all the angles on the robot that are listed in the dictionary.
 
 ## Limitations
-- The Collada model loader currently does not support textures or materials and loads the models with an offset rotation ([#52](Issue https://github.com/gkjohnson/urdf-loaders/issues/52))
+- The Collada model loader currently does not support textures or materials and loads the models with an offset rotation ([Issue #52](https://github.com/gkjohnson/urdf-loaders/issues/52))
 
 # LICENSE
 
