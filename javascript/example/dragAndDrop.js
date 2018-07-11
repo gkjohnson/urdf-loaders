@@ -86,24 +86,36 @@ document.addEventListener('drop', e => {
     dataTransferToFiles(e.dataTransfer)
         .then(files => {
 
+            // removes '..' and '.' tokens and normalizes slashes
+            const cleanFilePath = path => {
+
+                return path
+                    .replace(/\\/g, '/')
+                    .split(/\//g)
+                    .reduce((acc, el) => {
+
+                        if (el === '..') acc.pop();
+                        else if (el !== '.') acc.push(el);
+                        return acc;
+
+                    }, [])
+                    .join('/');
+
+            };
+
             // set the loader url modifier to check the list
             // of files
-            const fileNames = Object.keys(files);
+            const fileNames = Object.keys(files).map(n => cleanFilePath(n));
             viewer.loadingManager.setURLModifier(url => {
 
-                url = url.replace(viewer.package, '');
-                url = url.replace(/^[.\\/]*/, '');
-
                 // find the matching file given the requested url
+                const cleaned = cleanFilePath(url.replace(viewer.package, ''));
                 const fileName = fileNames
                     .filter(name => {
 
-                        // TODO: this doesn't work correctly when there are
-                        // `../` up directory tokens in the path. They should
-                        // be resolved.
                         // check if the end of file and url are the same
-                        const len = Math.min(name.length, url.length);
-                        return url.substr(url.length - len) === name.substr(name.length - len);
+                        const len = Math.min(name.length, cleaned.length);
+                        return cleaned.substr(cleaned.length - len) === name.substr(name.length - len);
 
                     }).pop();
 

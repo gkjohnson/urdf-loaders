@@ -141,7 +141,6 @@ class URDFManipulator extends URDFViewer {
         };
 
         const temp = new THREE.Vector3();
-        const temp2 = new THREE.Vector3();
         const intersect1 = new THREE.Vector3();
         const intersect2 = new THREE.Vector3();
 
@@ -163,8 +162,7 @@ class URDFManipulator extends URDFViewer {
                 // Get the point closest to the original clicked point
                 // and use that as center of the rotation axis
                 temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
-                temp2.copy(plane.normal).multiplyScalar(-plane.distanceToPoint(temp));
-                temp.add(temp2);
+                temp.addScaledVector(plane.normal, -plane.distanceToPoint(temp));
 
                 // Project out from the camera
                 raycaster.setFromCamera(m1, this.camera);
@@ -189,8 +187,7 @@ class URDFManipulator extends URDFViewer {
                 // Get the point closest to the original clicked point
                 // and use that as center of the rotation axis
                 temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
-                temp2.copy(plane.normal).multiplyScalar(-plane.distanceToPoint(temp));
-                temp.add(temp2);
+                temp.addScaledVector(plane.normal, -plane.distanceToPoint(temp));
 
                 // project onto the plane of rotation
                 raycaster.setFromCamera(m1, this.camera);
