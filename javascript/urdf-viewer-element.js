@@ -130,6 +130,9 @@ class URDFViewer extends HTMLElement {
         this.directionalLight = dirLight;
         this.ambientLight = ambientLight;
 
+        // redraw when something new has loaded
+        this.loadingManager.onLoad = () => this._dirty = true;
+
         const _renderLoop = () => {
 
             if (this.parentNode) {
