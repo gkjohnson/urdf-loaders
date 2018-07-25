@@ -244,11 +244,11 @@ class URDFManipulator extends URDFViewer {
             if (target) {
 
                 dragging = findNearestJoint(target.object);
-                clickPoint.copy(target.point);
-                this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
 
                 if (dragging) {
 
+                    clickPoint.copy(target.point);
+                    this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
                     this.controls.enabled = false;
 
                 }
