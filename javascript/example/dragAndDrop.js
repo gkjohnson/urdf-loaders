@@ -135,6 +135,7 @@ document.addEventListener('drop', e => {
 
             // set the source of the element to the most likely intended display model
             const filesNames = Object.keys(files);
+            viewer.up = '+Z';
             viewer.urdf =
                 filesNames
                     .filter(n => /urdf$/i.test(n))
