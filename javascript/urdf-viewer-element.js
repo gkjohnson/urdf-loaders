@@ -361,6 +361,48 @@ class URDFViewer extends HTMLElement {
             this._requestId++;
             const requestId = this._requestId;
 
+            const updateMaterials = mesh => {
+
+                mesh.traverse(c => {
+
+                    if (c.type === 'Mesh') {
+
+                        c.castShadow = true;
+                        c.receiveShadow = true;
+
+                        if (c.material) {
+
+                            const mats =
+                                (Array.isArray(c.material) ? c.material : [c.material])
+                                    .map(m => {
+
+                                        if (m instanceof THREE.MeshBasicMaterial) {
+
+                                            m = new THREE.MeshPhongMaterial();
+
+                                        }
+
+                                        if (m.map) {
+
+                                            m.map.encoding = THREE.GammaEncoding;
+
+                                        }
+
+                                        m.shadowSide = THREE.DoubleSide;
+
+                                        return m;
+
+                                    });
+                            c.material = mats.length === 1 ? mats[0] : mats;
+
+                        }
+
+                    }
+
+                });
+
+            }
+
             let totalMeshes = 0;
             let meshesLoaded = 0;
             this.urdfLoader.load(
@@ -379,6 +421,8 @@ class URDFViewer extends HTMLElement {
 
                     }
 
+                    requestAnimationFrame(() => updateMaterials(robot));
+
                     this.robot = robot;
                     this.world.add(robot);
 
@@ -394,43 +438,8 @@ class URDFViewer extends HTMLElement {
                     totalMeshes++;
                     this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
 
-                        mesh.traverse(c => {
+                        updateMaterials(mesh);
 
-                            if (c.type === 'Mesh') {
-
-                                c.castShadow = true;
-                                c.receiveShadow = true;
-
-                                if (c.material) {
-
-                                    const mats =
-                                        (Array.isArray(c.material) ? c.material : [c.material])
-                                            .map(m => {
-
-                                                if (m instanceof THREE.MeshBasicMaterial) {
-
-                                                    m = new THREE.MeshPhongMaterial();
-
-                                                }
-
-                                                if (m.map) {
-
-                                                    m.map.encoding = THREE.GammaEncoding;
-
-                                                }
-
-                                                m.shadowSide = THREE.DoubleSide;
-
-                                                return m;
-
-                                            });
-                                    c.material = mats.length === 1 ? mats[0] : mats;
-
-                                }
-
-                            }
-
-                        });
                         done(mesh);
 
                         meshesLoaded++;

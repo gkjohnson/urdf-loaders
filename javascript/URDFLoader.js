@@ -402,6 +402,9 @@ class URDFLoader {
 
                 } else if (geoType === 'box') {
 
+                    // TODO: We use animation frames here to ensure that materials are
+                    // appropriately applied. It would be better to scrape up all the data
+                    // before adding it to the scene
                     requestAnimationFrame(() => {
 
                         const mesh = new THREE.Mesh();
