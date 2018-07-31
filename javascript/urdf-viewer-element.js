@@ -401,7 +401,7 @@ class URDFViewer extends HTMLElement {
 
                 });
 
-            }
+            };
 
             let totalMeshes = 0;
             let meshesLoaded = 0;
