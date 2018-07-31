@@ -21,6 +21,10 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 </script>
 ```
 
+### Limitations
+- Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
+- Collision tags are not parsed.
+
 ### API
 #### URDFLoader(manager)
 
