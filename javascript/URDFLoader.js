@@ -429,6 +429,8 @@ class URDFLoader {
                         mesh.position.set(xyz[0], xyz[1], xyz[2]);
                         mesh.scale.set(radius, radius, radius);
 
+                        linkObj.add(mesh);
+
                     });
 
                 } else if (geoType === 'cylinder') {
@@ -445,7 +447,7 @@ class URDFLoader {
 
                         const obj = new THREE.Object3D();
                         obj.add(mesh);
-                        mesh.rotation.set(Math.PI, 0, 0);
+                        mesh.rotation.set(Math.PI / 2, 0, 0);
 
                         linkObj.add(obj);
                         this._applyRotation(obj, rpy);
