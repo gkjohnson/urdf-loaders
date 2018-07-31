@@ -425,7 +425,7 @@ class URDFLoader {
                     requestAnimationFrame(() => {
 
                         const mesh = new THREE.Mesh();
-                        mesh.geometry = new THREE.SphereGeometry(1, 20, 20);
+                        mesh.geometry = new THREE.SphereGeometry(1, 30, 30);
                         mesh.material = material;
 
                         const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
@@ -444,7 +444,7 @@ class URDFLoader {
                         const length = parseFloat(n.children[0].getAttribute('length')) || 0;
 
                         const mesh = new THREE.Mesh();
-                        mesh.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 25);
+                        mesh.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
                         mesh.material = material;
                         mesh.scale.set(radius, length, radius);
 
