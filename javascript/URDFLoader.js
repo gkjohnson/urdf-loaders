@@ -87,8 +87,8 @@ class URDFLoader {
     }
 
     /* Public API */
-    // pkg:     The equivelant of a ROS package:// directory
-    // urdf:    The URDF path in the directory
+    // pkg:     The equivelant of a (list of) ROS package(s):// directory
+    // urdf:    The path to the URDF within the package OR absolute
     // cb:      Callback that is passed the model once loaded
     load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
 

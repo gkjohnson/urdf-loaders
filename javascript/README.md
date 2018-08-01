@@ -13,8 +13,8 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
   const manager = new THREE.LoadingManager();
   const loader = new URDFLoader(manager);
   loader.load(
-    '.../package/dir/',           // URDF's package:// directory
-    'T12/urdf/T12.URDF',          // The path to the URDF in the package
+    '.../package/dir/',           // The equivelant of a (list of) ROS package(s):// directory
+    'T12/urdf/T12.URDF',          // The path to the URDF within the package OR absolute
     robot => { },                 // The robot is loaded!
     (path, ext, done) => { },     // Callback for each mesh for custom mesh processing and loading code
    );
@@ -42,9 +42,9 @@ Loads and builds the specified URDF robot in THREE.js
 
 _required_
 
-The path representing the `package://` directory to load `package://` relative files.
+The path representing the `package://` directory(s) to load `package://` relative files.
 
-##### urdfpath
+##### urdf
 
 _required_
 
@@ -87,7 +87,34 @@ An optional object with the set of options to pass to the `fetch` function call 
 
 #### package
 
-Corresponds to the `package` parameter in `URDFLoader.load`.
+Corresponds to the `package` parameter in `URDFLoader.load`. Supported are:
+
+1. Single package:
+
+    ```html
+    // 1. Example for single package named `default_package`
+    <urdf-viewer package=".../path/to/default_package" ...></urdf-viewer>
+    ```
+
+    Fallback within 1: If the target package within the `package://` relative files do not match the default path it is assumed that the default path is the parent folder that contains the target package(s).
+
+    ```html
+    // 1. Example for single package named `default_package` with fallback:
+    <urdf-viewer package=".../path/to/parent" ...></urdf-viewer>
+    // since `parent` does not match `default_package`
+    // the path ".../path/to/parent/default_package" is assumed
+    ```
+
+2. Serialized package map:
+
+    E.g. if the meshes of a URDF are distributed over mutliple packages.
+
+    ```html
+    // 2. Example for serialized package map that contains `package1` and `package2`
+    <urdf-viewer package="package1:.../path/to/package1, package2:.../path/to/package1" ...></urdf-viewer>
+    ```
+
+
 
 #### urdf
 
