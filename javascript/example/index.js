@@ -164,17 +164,28 @@ viewer.addEventListener('urdf-processed', () => {
 
             sliderList.appendChild(li);
 
+            // update the joint display
             const slider = li.querySelector('input[type="range"]');
             const input = li.querySelector('input[type="number"]');
             li.update = () => {
-                let degVal = joint.urdf.type === 'revolute' ? joint.urdf.angle * RAD2DEG : joint.urdf.angle;
-                if (Math.abs(degVal) > 1) degVal = degVal.toFixed(1);
-                else degVal = degVal.toPrecision(2);
+                let degVal = joint.urdf.angle;
+
+                if (joint.urdf.type === 'revolute' || joint.urdf.type === 'continuous') {
+                    degVal *= RAD2DEG;
+                }
+
+                if (Math.abs(degVal) > 1) {
+                    degVal = degVal.toFixed(1);
+                } else {
+                    degVal = degVal.toPrecision(2);
+                }
 
                 input.value = parseFloat(degVal);
+
+                // directly input the value
                 slider.value = joint.urdf.angle;
 
-                if (viewer.ignoreLimits) {
+                if (viewer.ignoreLimits || joint.urdf.type === 'continuous') {
                     slider.min = -6.28;
                     slider.max = 6.28;
 
