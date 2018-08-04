@@ -463,6 +463,8 @@ class URDFViewer extends HTMLElement {
 
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
 
+                    this._dirty = true;
+
                 },
 
                 // Load meshes and enable shadow casting
