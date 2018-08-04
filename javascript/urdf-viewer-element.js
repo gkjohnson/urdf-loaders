@@ -338,7 +338,12 @@ class URDFViewer extends HTMLElement {
         if (this._loadScheduled) return;
         this._loadScheduled = true;
 
-        requestAnimationFrame(() => this._loadUrdf(this.package, this.urdf));
+        requestAnimationFrame(() => {
+
+            this._loadUrdf(this.package, this.urdf);
+            this._loadScheduled = false;
+
+        });
 
     }
 
