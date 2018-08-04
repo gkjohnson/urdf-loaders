@@ -258,7 +258,7 @@ class URDFManipulator extends URDFViewer {
         }, true);
 
         let hovered = null;
-        el.addEventListener('mousemove', e => {
+        this._mouseMoveFunc = e => {
 
             toMouseCoord(e, mouse);
             delta.copy(mouse).sub(lastMouse);
@@ -336,10 +336,10 @@ class URDFManipulator extends URDFViewer {
 
             lastMouse.copy(mouse);
 
-        }, true);
+        };
 
         // Clean up
-        el.addEventListener('mouseup', e => {
+        this._mouseUpFunc = e => {
 
             if (dragging) {
 
@@ -349,7 +349,23 @@ class URDFManipulator extends URDFViewer {
 
             }
 
-        });
+        };
+
+    }
+
+    connectedCallback() {
+
+        super.connectedCallback();
+        window.addEventListener('mousemove', this._mouseMoveFunc, true);
+        window.addEventListener('mouseup', this._mouseUpFunc, true);
+
+    }
+
+    disconnectedCallback() {
+
+        super.disconnectedCallback();
+        window.removeEventListener('mousemove', this._mouseMoveFunc, true);
+        window.removeEventListener('mouseup', this._mouseUpFunc, true);
 
     }
 

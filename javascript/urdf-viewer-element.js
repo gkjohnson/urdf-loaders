@@ -63,6 +63,7 @@ class URDFViewer extends HTMLElement {
 
         this._requestId = 0;
         this._dirty = false;
+        this._loadScheduled = false;
         this.robot = null;
 
         // Scene setup
@@ -211,7 +212,7 @@ class URDFViewer extends HTMLElement {
             case 'package':
             case 'urdf': {
 
-                this._loadUrdf(this.package, this.urdf);
+                this._scheduleLoad();
                 break;
 
             }
@@ -332,28 +333,42 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    // Watch the package and urdf field and load the
+    _scheduleLoad() {
+
+        // if our current model is already what's being requested
+        // or has been loaded then early out
+        if (this._prevload === `${ this.package }|${ this.urdf }`) return;
+        this._prevload = `${ this.package }|${ this.urdf }`;
+
+        // if we're already waiting on a load then early out
+        if (this._loadScheduled) return;
+        this._loadScheduled = true;
+
+        if (this.robot) {
+
+            this.robot.traverse(c => c.dispose && c.dispose());
+            this.robot.parent.remove(this.robot);
+            this.robot = null;
+
+        }
+
+        requestAnimationFrame(() => {
+
+            this._loadUrdf(this.package, this.urdf);
+            this._loadScheduled = false;
+
+        });
+
+    }
+
+    // Watch the package and urdf field and load the robot model.
+    // This should _only_ be called from _scheduleLoad because that
+    // ensures the that current robot has been removed
     _loadUrdf(pkg, urdf) {
-
-        const _dispose = item => {
-
-            if (!item) return;
-            if (item.parent) item.parent.remove(item);
-            if (item.dispose) item.dispose();
-            item.children.forEach(c => _dispose(c));
-
-        };
-
-        if (this._prevload === `${ pkg }|${ urdf }`) return;
-
-        _dispose(this.robot);
-        this.robot = null;
 
         this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }));
 
-        if (pkg && urdf) {
-
-            this._prevload = `${ pkg }|${ urdf }`;
+        if (urdf) {
 
             // Keep track of this request and make
             // sure it doesn't get overwritten by
@@ -434,12 +449,12 @@ class URDFViewer extends HTMLElement {
                     // robot, then ignore this one
                     if (this._requestId !== requestId) {
 
-                        _dispose(robot);
+                        robot.traverse(c => c.dispose && c.dispose());
                         return;
 
                     }
 
-                    requestAnimationFrame(() => updateMaterials(robot));
+                    updateMaterials(robot);
 
                     this.robot = robot;
                     this.world.add(robot);
@@ -447,6 +462,8 @@ class URDFViewer extends HTMLElement {
                     this._setIgnoreLimits(this.ignoreLimits);
 
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
+
+                    this._dirty = true;
 
                 },
 
