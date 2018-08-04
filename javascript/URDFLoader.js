@@ -87,14 +87,17 @@ class URDFLoader {
     }
 
     /* Public API */
-    // pkg:     The equivelant of a ROS package:// directory
-    // urdf:    The URDF path in the directory
+    // pkg:     The equivelant of a (list of) ROS package(s):// directory
+    // urdf:    The path to the URDF within the package OR absolute
     // cb:      Callback that is passed the model once loaded
     load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
 
         // Check if a full URI is specified before
         // prepending the package info
+
         let path = urdf;
+
+        // If path is relative
         if (!/^[^:]+:\/\//.test(path)) {
 
             // make sure we don't insert a double slash by cleaning
@@ -143,6 +146,38 @@ class URDFLoader {
     }
 
     /* Private Functions */
+
+    // Resolves the path of mesh files
+    _resolveMeshPath(pkg, meshPath){
+
+        // Remove "package://" keyword and split meshPath at the first slash
+        const [targetPkg, relPath] = meshPath.replace(/^package:\/\//, '').split(/\/(.+)/);
+
+        if (typeof pkg === 'string') {
+            // "pkg" is one single package
+
+            if (pkg.endsWith(targetPkg)) {
+                // "pkg" is the target package
+
+                return pkg + '/' + relPath;
+
+            } else {
+                // Assume "pkg" is the target package's parent directory
+
+                return pkg + '/' + targetPkg + '/' + relPath;
+            }
+
+        } else if (typeof pkg === 'object') {
+            // "pkg" is a map of packages
+
+            if (targetPkg in pkg){
+
+                return pkg[targetPkg] + '/' + relPath;
+
+            } else console.warn(`Error: ${ targetPkg } not found in provided pkgs!`);
+        }
+    }
+
     // Process the URDF text format
     _processUrdf(pkg, data, loadMeshCb) {
 
@@ -373,8 +408,7 @@ class URDFLoader {
                 const geoType = n.children[0].nodeName.toLowerCase();
                 if (geoType === 'mesh') {
 
-                    const filename = n.children[0].getAttribute('filename').replace(/^package:\/\//, '');
-                    const path = pkg + '/' + filename;
+                    const path = this._resolveMeshPath(pkg, n.children[0].getAttribute('filename'))
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                     const scaleAttr = n.children[0].getAttribute('scale');
                     if (scaleAttr) scale = this._processTuple(scaleAttr);
