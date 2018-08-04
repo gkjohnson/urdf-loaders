@@ -148,7 +148,7 @@ class URDFLoader {
     /* Private Functions */
 
     // Resolves the path of mesh files
-    _resolveMeshPath(pkg, meshPath){
+    _resolveMeshPath(pkg, meshPath) {
 
         // Remove "package://" keyword and split meshPath at the first slash
         const [targetPkg, relPath] = meshPath.replace(/^package:\/\//, '').split(/\/(.+)/);
@@ -170,11 +170,15 @@ class URDFLoader {
         } else if (typeof pkg === 'object') {
             // "pkg" is a map of packages
 
-            if (targetPkg in pkg){
+            if (targetPkg in pkg) {
 
                 return pkg[targetPkg] + '/' + relPath;
 
-            } else console.warn(`Error: ${ targetPkg } not found in provided pkgs!`);
+            } else {
+
+                console.warn(`Error: ${ targetPkg } not found in provided pkgs!`);
+
+            }
         }
     }
 
@@ -408,7 +412,7 @@ class URDFLoader {
                 const geoType = n.children[0].nodeName.toLowerCase();
                 if (geoType === 'mesh') {
 
-                    const path = this._resolveMeshPath(pkg, n.children[0].getAttribute('filename'))
+                    const path = this._resolveMeshPath(pkg, n.children[0].getAttribute('filename'));
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                     const scaleAttr = n.children[0].getAttribute('scale');
                     if (scaleAttr) scale = this._processTuple(scaleAttr);

@@ -406,7 +406,7 @@ class URDFViewer extends HTMLElement {
             let totalMeshes = 0;
             let meshesLoaded = 0;
 
-            if (( pkg.includes(':')) && (pkg.split(':')[1].substring(0,2)) != '//' ) {
+            if (pkg.includes(':') && (pkg.split(':')[1].substring(0, 2)) !== '//') {
                 // E.g. pkg = "pkg_name: path/to/pkg_name, pk2: path2/to/pk2"}
 
                 // Convert pkg(s) into a map. E.g.
@@ -415,7 +415,7 @@ class URDFViewer extends HTMLElement {
 
                 pkg = pkg.split(',').reduce(function(map, value) {
 
-                    let [pkgName, pkgPath] = value.split(/:(.+)/).filter(x => x)
+                    const [pkgName, pkgPath] = value.split(/:(.+)/).filter(x => !!x);
                     map[pkgName.trim()] = pkgPath.trim();
 
                     return map;
