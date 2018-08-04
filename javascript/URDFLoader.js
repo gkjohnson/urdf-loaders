@@ -406,6 +406,7 @@ class URDFLoader {
         let scale = [1, 1, 1];
 
         const material = new THREE.MeshPhongMaterial();
+        let primitiveModel = null;
         this.forEach(vn.children, n => {
 
             const type = n.nodeName.toLowerCase();
@@ -443,61 +444,43 @@ class URDFLoader {
 
                 } else if (geoType === 'box') {
 
-                    // TODO: We use animation frames here to ensure that materials are
-                    // appropriately applied. It would be better to scrape up all the data
-                    // before adding it to the scene
-                    requestAnimationFrame(() => {
+                    primitiveModel = new THREE.Mesh();
+                    primitiveModel.geometry = new THREE.BoxGeometry(1, 1, 1);
+                    primitiveModel.material = material;
 
-                        const mesh = new THREE.Mesh();
-                        mesh.geometry = new THREE.BoxGeometry(1, 1, 1);
-                        mesh.material = material;
+                    const size = this._processTuple(n.children[0].getAttribute('size'));
 
-                        const size = this._processTuple(n.children[0].getAttribute('size'));
-
-                        linkObj.add(mesh);
-                        this._applyRotation(mesh, rpy);
-                        mesh.position.set(xyz[0], xyz[1], xyz[2]);
-                        mesh.scale.set(size[0], size[1], size[2]);
-
-                    });
+                    linkObj.add(primitiveModel);
+                    primitiveModel.scale.set(size[0], size[1], size[2]);
 
                 } else if (geoType === 'sphere') {
 
-                    requestAnimationFrame(() => {
+                    primitiveModel = new THREE.Mesh();
+                    primitiveModel.geometry = new THREE.SphereGeometry(1, 30, 30);
+                    primitiveModel.material = material;
 
-                        const mesh = new THREE.Mesh();
-                        mesh.geometry = new THREE.SphereGeometry(1, 30, 30);
-                        mesh.material = material;
+                    const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
+                    primitiveModel.scale.set(radius, radius, radius);
 
-                        const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
-                        mesh.position.set(xyz[0], xyz[1], xyz[2]);
-                        mesh.scale.set(radius, radius, radius);
-
-                        linkObj.add(mesh);
-
-                    });
+                    linkObj.add(primitiveModel);
 
                 } else if (geoType === 'cylinder') {
 
-                    requestAnimationFrame(() => {
+                    const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
+                    const length = parseFloat(n.children[0].getAttribute('length')) || 0;
 
-                        const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
-                        const length = parseFloat(n.children[0].getAttribute('length')) || 0;
+                    primitiveModel = new THREE.Object3D();
+                    const mesh = new THREE.Mesh();
+                    mesh.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
+                    mesh.material = material;
+                    mesh.scale.set(radius, length, radius);
 
-                        const mesh = new THREE.Mesh();
-                        mesh.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
-                        mesh.material = material;
-                        mesh.scale.set(radius, length, radius);
+                    primitiveModel.add(mesh);
+                    mesh.rotation.set(Math.PI / 2, 0, 0);
 
-                        const obj = new THREE.Object3D();
-                        obj.add(mesh);
-                        mesh.rotation.set(Math.PI / 2, 0, 0);
-
-                        linkObj.add(obj);
-                        this._applyRotation(obj, rpy);
-                        obj.position.set(xyz[0], xyz[1], xyz[2]);
-
-                    });
+                    linkObj.add(primitiveModel);
+                    this._applyRotation(primitiveModel, rpy);
+                    primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
 
                 }
 
@@ -536,6 +519,16 @@ class URDFLoader {
             }
 
         });
+
+        // apply the position and rotation to the primitive geometry after
+        // the fact because it's guaranteed to have been scraped from the child
+        // nodes by this point
+        if (primitiveModel) {
+
+            this._applyRotation(primitiveModel, rpy);
+            primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
+
+        }
 
     }
 

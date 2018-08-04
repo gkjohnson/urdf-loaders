@@ -455,7 +455,7 @@ class URDFViewer extends HTMLElement {
 
                     }
 
-                    requestAnimationFrame(() => updateMaterials(robot));
+                    updateMaterials(robot);
 
                     this.robot = robot;
                     this.world.add(robot);
