@@ -63,6 +63,7 @@ class URDFViewer extends HTMLElement {
 
         this._requestId = 0;
         this._dirty = false;
+        this._loadScheduled = false;
         this.robot = null;
 
         // Scene setup
@@ -211,7 +212,7 @@ class URDFViewer extends HTMLElement {
             case 'package':
             case 'urdf': {
 
-                this._loadUrdf(this.package, this.urdf);
+                this._scheduleLoad();
                 break;
 
             }
@@ -332,9 +333,19 @@ class URDFViewer extends HTMLElement {
 
     }
 
+    _scheduleLoad() {
+
+        if (this._loadScheduled) return;
+        this._loadScheduled = true;
+
+        requestAnimationFrame(() => this._loadUrdf(this.package, this.urdf));
+
+    }
+
     // Watch the package and urdf field and load the
     _loadUrdf(pkg, urdf) {
 
+        // disposes of the robot
         const _dispose = item => {
 
             if (!item) return;
@@ -351,7 +362,7 @@ class URDFViewer extends HTMLElement {
 
         this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }));
 
-        if (pkg && urdf) {
+        if (urdf) {
 
             this._prevload = `${ pkg }|${ urdf }`;
 
