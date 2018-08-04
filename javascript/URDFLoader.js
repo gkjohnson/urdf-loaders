@@ -150,6 +150,8 @@ class URDFLoader {
     // Resolves the path of mesh files
     _resolveMeshPath(pkg, meshPath) {
 
+        if (!/^package:\/\//.test(meshPath)) return meshPath;
+
         // Remove "package://" keyword and split meshPath at the first slash
         const [targetPkg, relPath] = meshPath.replace(/^package:\/\//, '').split(/\/(.+)/);
 
@@ -412,7 +414,8 @@ class URDFLoader {
                 const geoType = n.children[0].nodeName.toLowerCase();
                 if (geoType === 'mesh') {
 
-                    const path = this._resolveMeshPath(pkg, n.children[0].getAttribute('filename'));
+                    const filename = n.children[0].getAttribute('filename');
+                    const path = this._resolveMeshPath(pkg, filename);
                     const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                     const scaleAttr = n.children[0].getAttribute('scale');
                     if (scaleAttr) scale = this._processTuple(scaleAttr);
