@@ -335,8 +335,22 @@ class URDFViewer extends HTMLElement {
 
     _scheduleLoad() {
 
+        // if our current model is already what's being requested
+        // or has been loaded then early out
+        if (this._prevload === `${ this.package }|${ this.urdf }`) return;
+        this._prevload = `${ this.package }|${ this.urdf }`;
+
+        // if we're already waiting on a load then early out
         if (this._loadScheduled) return;
         this._loadScheduled = true;
+
+        if (this.robot) {
+
+            this.robot.traverse(c => c.dispose && c.dispose());
+            this.robot.parent.remove(this.robot);
+            this.robot = null;
+
+        }
 
         requestAnimationFrame(() => {
 
@@ -347,29 +361,14 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    // Watch the package and urdf field and load the
+    // Watch the package and urdf field and load the robot model.
+    // This should _only_ be called from _scheduleLoad because that
+    // ensures the that current robot has been removed
     _loadUrdf(pkg, urdf) {
-
-        // disposes of the robot
-        const _dispose = item => {
-
-            if (!item) return;
-            if (item.parent) item.parent.remove(item);
-            if (item.dispose) item.dispose();
-            item.children.forEach(c => _dispose(c));
-
-        };
-
-        if (this._prevload === `${ pkg }|${ urdf }`) return;
-
-        _dispose(this.robot);
-        this.robot = null;
 
         this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }));
 
         if (urdf) {
-
-            this._prevload = `${ pkg }|${ urdf }`;
 
             // Keep track of this request and make
             // sure it doesn't get overwritten by
@@ -450,7 +449,7 @@ class URDFViewer extends HTMLElement {
                     // robot, then ignore this one
                     if (this._requestId !== requestId) {
 
-                        _dispose(robot);
+                        robot.traverse(c => c.dispose && c.dispose());
                         return;
 
                     }
