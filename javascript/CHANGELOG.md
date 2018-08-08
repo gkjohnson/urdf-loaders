@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.5] - 2018-08-07
 ### Added
 - Add support for providing multiple package paths
 
@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Debounce urdf load so errors are not printed when changing models
 - Create mesh primitives immediately instead of waiting a frame
 
-## [0.3.4] - 2018-08-31
+## [0.3.4] - 2018-07-31
 ### Fixed
 - Fixed sphere primitives not being added to the model
 - Fixed cylinder primitive rotation
