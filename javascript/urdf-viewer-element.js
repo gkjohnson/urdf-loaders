@@ -439,8 +439,8 @@ class URDFViewer extends HTMLElement {
             }
 
             this.urdfLoader.load(
-                pkg,
                 urdf,
+                pkg,
 
                 // Callback with array of robots
                 robot => {
@@ -467,29 +467,34 @@ class URDFViewer extends HTMLElement {
 
                 },
 
-                // Load meshes and enable shadow casting
-                (path, ext, done) => {
+                // options
+                {
+                    loadMeshCb: (path, ext, done) => {
 
-                    totalMeshes++;
-                    this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
+                        // Load meshes and enable shadow casting
+                        totalMeshes++;
+                        this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
 
-                        updateMaterials(mesh);
+                            updateMaterials(mesh);
 
-                        done(mesh);
+                            done(mesh);
 
-                        meshesLoaded++;
-                        if (meshesLoaded === totalMeshes && this._requestId === requestId) {
+                            meshesLoaded++;
+                            if (meshesLoaded === totalMeshes && this._requestId === requestId) {
 
-                            this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
+                                this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
 
-                        }
+                            }
 
-                        this._dirty = true;
+                            this._dirty = true;
 
-                    });
+                        });
 
-                },
-                { mode: 'cors', credentials: 'same-origin' });
+                    },
+
+                    fetchOptions: { mode: 'cors', credentials: 'same-origin' },
+
+                });
 
         }
 

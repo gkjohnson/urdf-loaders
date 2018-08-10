@@ -87,26 +87,40 @@ class URDFLoader {
     }
 
     /* Public API */
-    // pkg:     The equivelant of a (list of) ROS package(s):// directory
     // urdf:    The path to the URDF within the package OR absolute
-    // cb:      Callback that is passed the model once loaded
-    load(pkg, urdf, cb, loadMeshCb, fetchOptions) {
+    // packages:     The equivelant of a (list of) ROS package(s):// directory
+    // onComplete:      Callback that is passed the model once loaded
+    load(urdf, packages, onComplete, options) {
+
+        options = Object.assign({}, options);
 
         // Check if a full URI is specified before
         // prepending the package info
-
-        const workingPath = this.path === undefined ? THREE.LoaderUtils.extractUrlBase(urdf) : this.path;
+        const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
 
-        fetch(urdfPath, fetchOptions)
+        fetch(urdfPath, options.fetchOptions)
             .then(res => res.text())
-            .then(data => this.parse(pkg, data, cb, loadMeshCb, workingPath));
+            .then(data => this.parse(data, packages, workingPath, onComplete, options));
 
     }
 
-    parse(pkg, content, cb, loadMeshCb, path) {
+    parse(content, packages, path, onComplete, options) {
 
-        cb(this._processUrdf(pkg, content, path, loadMeshCb || this.defaultMeshLoader.bind(this)));
+        options = Object.assign({
+
+            loadMeshCb: this.defaultMeshLoader.bind(this),
+
+        }, options);
+
+        const result = this._processUrdf(content, packages, path, options.loadMeshCb);
+
+        if (typeof onComplete === 'function') {
+
+            onComplete(result);
+        }
+
+        return result;
 
     }
 
@@ -138,7 +152,7 @@ class URDFLoader {
     /* Private Functions */
 
     // Resolves the path of mesh files
-    _resolveMeshPath(pkg, meshPath, currPath) {
+    _resolvePackagePath(pkg, meshPath, currPath) {
 
         if (!/^package:\/\//.test(meshPath)) {
 
@@ -179,18 +193,18 @@ class URDFLoader {
     }
 
     // Process the URDF text format
-    _processUrdf(pkg, data, path, loadMeshCb) {
+    _processUrdf(data, packages, path, loadMeshCb) {
 
         const parser = new DOMParser();
         const urdf = parser.parseFromString(data, 'text/xml');
 
         const robottag = this.filter(urdf.children, c => c.nodeName === 'robot').pop();
-        return this._processRobot(pkg, robottag, path, loadMeshCb);
+        return this._processRobot(robottag, packages, path, loadMeshCb);
 
     }
 
     // Process the <robot> node
-    _processRobot(pkg, robot, path, loadMeshCb) {
+    _processRobot(robot, packages, path, loadMeshCb) {
 
         const links = [];
         const joints = [];
@@ -212,7 +226,7 @@ class URDFLoader {
         this.forEach(links, l => {
 
             const name = l.getAttribute('name');
-            linkMap[name] = this._processLink(pkg, l, path, loadMeshCb);
+            linkMap[name] = this._processLink(l, packages, path, loadMeshCb);
 
         });
 
@@ -379,21 +393,21 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    _processLink(pkg, link, path, loadMeshCb) {
+    _processLink(link, packages, path, loadMeshCb) {
 
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
         obj.name = link.getAttribute('name');
         obj.urdf = { node: link };
 
-        this.forEach(visualNodes, vn => this._processVisualNode(pkg, vn, obj, path, loadMeshCb));
+        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
 
         return obj;
 
     }
 
     // Process the visual nodes into meshes
-    _processVisualNode(pkg, vn, linkObj, path, loadMeshCb) {
+    _processVisualNode(vn, linkObj, packages, path, loadMeshCb) {
 
         let xyz = [0, 0, 0];
         let rpy = [0, 0, 0];
@@ -410,7 +424,7 @@ class URDFLoader {
                 if (geoType === 'mesh') {
 
                     const filename = n.children[0].getAttribute('filename');
-                    const filePath = this._resolveMeshPath(pkg, filename, path);
+                    const filePath = this._resolvePackagePath(packages, filename, path);
                     const ext = filePath.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                     const scaleAttr = n.children[0].getAttribute('scale');
                     if (scaleAttr) scale = this._processTuple(scaleAttr);
@@ -503,8 +517,9 @@ class URDFLoader {
                     } else if (c.nodeName.toLowerCase() === 'texture') {
 
                         const filename = c.getAttribute('filename').replace(/^(package:\/\/)/, '');
-                        const path = pkg + '/' + filename;
-                        material.map = this._textureloader.load(path);
+                        const filePath = this._resolvePackagePath(packages, filename, path);
+
+                        material.map = this._textureloader.load(filePath);
 
                     }
 
