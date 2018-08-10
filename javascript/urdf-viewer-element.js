@@ -439,8 +439,8 @@ class URDFViewer extends HTMLElement {
             }
 
             this.urdfLoader.load(
-                pkg,
                 urdf,
+                pkg,
 
                 // Callback with array of robots
                 robot => {
