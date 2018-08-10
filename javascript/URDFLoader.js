@@ -95,28 +95,18 @@ class URDFLoader {
         // Check if a full URI is specified before
         // prepending the package info
 
-        let path = urdf;
+        const workingPath = this.path === undefined ? THREE.LoaderUtils.extractUrlBase(urdf) : this.path;
+        const urdfPath = this.manager.resolveURL(urdf);
 
-        // If path is relative
-        if (!/^[^:]+:\/\//.test(path)) {
-
-            // make sure we don't insert a double slash by cleaning
-            // the package and urdf paths
-            path = `${ pkg.replace(/(\\|\/)$/, '') }/${ urdf.replace(/^(\\|\/)/, '') }`;
-
-        }
-
-        path = this.manager.resolveURL(path);
-
-        fetch(path, fetchOptions)
+        fetch(urdfPath, fetchOptions)
             .then(res => res.text())
-            .then(data => this.parse(pkg, data, cb, loadMeshCb));
+            .then(data => this.parse(pkg, data, cb, loadMeshCb, workingPath));
 
     }
 
-    parse(pkg, content, cb, loadMeshCb) {
+    parse(pkg, content, cb, loadMeshCb, path) {
 
-        cb(this._processUrdf(pkg, content, loadMeshCb || this.defaultMeshLoader.bind(this)));
+        cb(this._processUrdf(pkg, content, path, loadMeshCb || this.defaultMeshLoader.bind(this)));
 
     }
 
@@ -148,9 +138,13 @@ class URDFLoader {
     /* Private Functions */
 
     // Resolves the path of mesh files
-    _resolveMeshPath(pkg, meshPath) {
+    _resolveMeshPath(pkg, meshPath, currPath) {
 
-        if (!/^package:\/\//.test(meshPath)) return meshPath;
+        if (!/^package:\/\//.test(meshPath)) {
+
+            return currPath !== undefined ? currPath + meshPath : meshPath;
+
+        }
 
         // Remove "package://" keyword and split meshPath at the first slash
         const [targetPkg, relPath] = meshPath.replace(/^package:\/\//, '').split(/\/(.+)/);
@@ -185,18 +179,18 @@ class URDFLoader {
     }
 
     // Process the URDF text format
-    _processUrdf(pkg, data, loadMeshCb) {
+    _processUrdf(pkg, data, path, loadMeshCb) {
 
         const parser = new DOMParser();
         const urdf = parser.parseFromString(data, 'text/xml');
 
         const robottag = this.filter(urdf.children, c => c.nodeName === 'robot').pop();
-        return this._processRobot(pkg, robottag, loadMeshCb);
+        return this._processRobot(pkg, robottag, path, loadMeshCb);
 
     }
 
     // Process the <robot> node
-    _processRobot(pkg, robot, loadMeshCb) {
+    _processRobot(pkg, robot, path, loadMeshCb) {
 
         const links = [];
         const joints = [];
@@ -218,7 +212,7 @@ class URDFLoader {
         this.forEach(links, l => {
 
             const name = l.getAttribute('name');
-            linkMap[name] = this._processLink(pkg, l, loadMeshCb);
+            linkMap[name] = this._processLink(pkg, l, path, loadMeshCb);
 
         });
 
@@ -385,21 +379,21 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    _processLink(pkg, link, loadMeshCb) {
+    _processLink(pkg, link, path, loadMeshCb) {
 
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
         obj.name = link.getAttribute('name');
         obj.urdf = { node: link };
 
-        this.forEach(visualNodes, vn => this._processVisualNode(pkg, vn, obj, loadMeshCb));
+        this.forEach(visualNodes, vn => this._processVisualNode(pkg, vn, obj, path, loadMeshCb));
 
         return obj;
 
     }
 
     // Process the visual nodes into meshes
-    _processVisualNode(pkg, vn, linkObj, loadMeshCb) {
+    _processVisualNode(pkg, vn, linkObj, path, loadMeshCb) {
 
         let xyz = [0, 0, 0];
         let rpy = [0, 0, 0];
@@ -416,12 +410,12 @@ class URDFLoader {
                 if (geoType === 'mesh') {
 
                     const filename = n.children[0].getAttribute('filename');
-                    const path = this._resolveMeshPath(pkg, filename);
-                    const ext = path.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
+                    const filePath = this._resolveMeshPath(pkg, filename, path);
+                    const ext = filePath.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                     const scaleAttr = n.children[0].getAttribute('scale');
                     if (scaleAttr) scale = this._processTuple(scaleAttr);
 
-                    loadMeshCb(path, ext, obj => {
+                    loadMeshCb(filePath, ext, obj => {
 
                         if (obj) {
 

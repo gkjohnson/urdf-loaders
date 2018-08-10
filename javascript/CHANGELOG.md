@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Add "path" variable to parse function signature
+- URDF paths are no longer resolved relative to the package path
+
 ## [0.3.5] - 2018-08-07
 ### Added
 - Add support for providing multiple package paths
