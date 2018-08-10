@@ -90,7 +90,7 @@ class URDFLoader {
     // urdf:    The path to the URDF within the package OR absolute
     // packages:     The equivelant of a (list of) ROS package(s):// directory
     // cb:      Callback that is passed the model once loaded
-    load(urdf, packages, cb, loadMeshCb, fetchOptions) {
+    load(urdf, packages, onComplete, loadMeshCb, fetchOptions) {
 
         // Check if a full URI is specified before
         // prepending the package info
@@ -100,13 +100,20 @@ class URDFLoader {
 
         fetch(urdfPath, fetchOptions)
             .then(res => res.text())
-            .then(data => this.parse(data, packages, cb, loadMeshCb, workingPath));
+            .then(data => this.parse(data, packages, workingPath, onComplete, loadMeshCb));
 
     }
 
-    parse(content, packages, cb, loadMeshCb, path) {
+    parse(content, packages, path, onComplete, loadMeshCb) {
 
-        cb(this._processUrdf(content, packages, path, loadMeshCb || this.defaultMeshLoader.bind(this)));
+        const result = this._processUrdf(content, packages, path, loadMeshCb || this.defaultMeshLoader.bind(this));
+
+        if (typeof onComplete === 'function') {
+
+            onComplete(result);
+        }
+
+        return result;
 
     }
 

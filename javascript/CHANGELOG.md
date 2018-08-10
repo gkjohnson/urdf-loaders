@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Add "path" variable to parse function signature
 - URDF paths are no longer resolved relative to the package path
+- `parse` function signature changed
+- `parse` returns the robot now
 
 ## [0.3.5] - 2018-08-07
 ### Added
