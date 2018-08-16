@@ -73,8 +73,6 @@ viewer.addEventListener('joint-mouseout', e => {
 
 viewer.addEventListener('manipulate-start', e => {
 
-    // stop the animation if user tried to manipulate the model
-    animToggle.classList.remove('checked');
     const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
     if (j) {
         j.scrollIntoView({ block: 'nearest' });
