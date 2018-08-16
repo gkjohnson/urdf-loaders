@@ -6,6 +6,13 @@
     "start": "cd .. && static-server",
     "build": "cd example && webpack"
   },
+  "files": [
+    "URDFLoader.js",
+    "urdf-viewer-element.js",
+    "urdf-manipulator-element.js",
+    "example/index.js",
+    "example/dragAndDrop.js"
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
