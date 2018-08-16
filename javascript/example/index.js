@@ -1,10 +1,9 @@
-/* globals animToggle viewer THREE */
+/* globals viewer THREE */
 
 // declare these globally for the sake of the example.
 // Hack to make the build work with webpack for now.
 // TODO: Remove this once modules or parcel is being used
 viewer = document.querySelector('urdf-viewer');
-animToggle = document.getElementById('do-animate');
 
 const limitsToggle = document.getElementById('ignore-joint-limits');
 const upSelect = document.getElementById('up-select');
@@ -23,52 +22,8 @@ window.setColor = color => {
 
 };
 
-// Functions
-const lerp = (from, to, ratio) => from + (to - from) * ratio;
-
-const updateAngles = () => {
-
-    if (!viewer.setAngle) return;
-
-    // reset everything to 0 first
-    const resetangles = viewer.angles;
-    for (const name in resetangles) resetangles[name] = 0;
-    viewer.setAngles(resetangles);
-
-    // animate the legs
-    const time = Date.now() / 3e2;
-    for (let i = 1; i <= 6; i++) {
-
-        const offset = i * Math.PI / 3;
-        const ratio = Math.max(0, Math.sin(time + offset));
-
-        viewer.setAngle(`HP${ i }`, lerp(30, 0, ratio) * DEG2RAD);
-        viewer.setAngle(`KP${ i }`, lerp(90, 150, ratio) * DEG2RAD);
-        viewer.setAngle(`AP${ i }`, lerp(-30, -60, ratio) * DEG2RAD);
-
-        viewer.setAngle(`TC${ i }A`, lerp(0, 0.065, ratio));
-        viewer.setAngle(`TC${ i }B`, lerp(0, 0.065, ratio));
-
-        viewer.setAngle(`W${ i }`, window.performance.now() * 0.001);
-
-    }
-
-};
-
-const updateLoop = () => {
-
-    if (animToggle.classList.contains('checked')) {
-        updateAngles();
-    }
-
-    requestAnimationFrame(updateLoop);
-
-};
-
 // Events
 // toggle checkbox
-animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
-
 limitsToggle.addEventListener('click', () => {
     limitsToggle.classList.toggle('checked');
     viewer.ignoreLimits = limitsToggle.classList.contains('checked');
@@ -238,12 +193,10 @@ document.addEventListener('WebComponentsReady', () => {
         modelLoader.load(path, res => done(res.model));
     };
 
-    viewer.addEventListener('urdf-processed', e => updateAngles());
     document.querySelector('li[urdf]').dispatchEvent(new Event('click'));
 
     if (/javascript\/example\/build/i.test(window.location)) {
         viewer.package = '../../../urdf';
     }
 
-    updateLoop();
 });
