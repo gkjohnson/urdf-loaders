@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `parse` returns the robot now
 - `meshLoadCb` and `fetchOptions` have been moved into an `options` argument object
 
+### Added
+- Add `isURDFRobot`, `isURDFJoint`, `isURDFLink` fields to the robot, joints, and links
+- Set the `type` field of the `Object3D` to `URDFRobot`, `URDFJoint`, and `URDFLink`
+
 ## [0.3.5] - 2018-08-07
 ### Added
 - Add support for providing multiple package paths

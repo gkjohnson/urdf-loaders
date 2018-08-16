@@ -118,6 +118,7 @@ class URDFLoader {
         if (typeof onComplete === 'function') {
 
             onComplete(result);
+
         }
 
         return result;
@@ -251,6 +252,8 @@ class URDFLoader {
 
         obj.urdf.joints = jointMap;
         obj.urdf.links = linkMap;
+        obj.isURDFRobot = true;
+        obj.type = 'URDFRobot';
 
         return obj;
 
@@ -387,6 +390,8 @@ class URDFLoader {
         // TODO: Remove the 'setAngle' function
         // TODO: Figure out how to handle setting and getting angles of other types
         obj.urdf.set = obj.urdf.setAngle;
+        obj.isURDFJoint = true;
+        obj.type = 'URDFJoint';
 
         return obj;
 
@@ -401,6 +406,8 @@ class URDFLoader {
         obj.urdf = { node: link };
 
         this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
+        obj.isURDFLink = true;
+        obj.type = 'URDFLink';
 
         return obj;
 

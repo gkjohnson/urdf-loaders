@@ -71,7 +71,6 @@
             <div id="controls" class="hidden">
                 <div id="toggle-controls"></div>
                 <div id="ignore-joint-limits" class="toggle">Ignore Joint Limits</div>
-                <div id="do-animate" class="toggle">Animate Joints</div>
                 <label>
                     Up Axis
                     <select id="up-select">
@@ -91,7 +90,7 @@
         <script src="./index.js"></script>
         <script>
             /* eslint-disable */
-            /* globals viewer animToggle */
+            /* globals viewer */
             document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
 
                 el.addEventListener('click', e => {
