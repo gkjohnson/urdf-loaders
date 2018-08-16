@@ -131,6 +131,8 @@ class URDFViewer extends HTMLElement {
         this.directionalLight = dirLight;
         this.ambientLight = ambientLight;
 
+        this._setUp(this.up);
+
         // redraw when something new has loaded
         this.loadingManager.onLoad = () => this._dirty = true;
 
@@ -428,10 +430,12 @@ class URDFViewer extends HTMLElement {
                 // { "pkg_name": "path/to/pkg_name",
                 //   "pk2":      "path2/to/pk2"      }
 
-                pkg = pkg.split(',').reduce(function(map, value) {
+                pkg = pkg.split(',').reduce((map, value) => {
 
-                    const [pkgName, pkgPath] = value.split(/:(.+)/).filter(x => !!x);
-                    map[pkgName.trim()] = pkgPath.trim();
+                    const split = value.split(/:/).filter(x => !!x);
+                    const pkgName = split.shift().trim();
+                    const pkgPath = split.join(':').trim();
+                    map[pkgName] = pkgPath;
 
                     return map;
 
