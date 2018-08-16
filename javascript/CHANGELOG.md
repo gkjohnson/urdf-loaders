@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `isURDFRobot`, `isURDFJoint`, `isURDFLink` fields to the robot, joints, and links
 - Set the `type` field of the `Object3D` to `URDFRobot`, `URDFJoint`, and `URDFLink`
 
+### Removed
+- `node` field from the urdf info on joints, links, and the robot
+
 ## [0.3.5] - 2018-08-07
 ### Added
 - Add support for providing multiple package paths

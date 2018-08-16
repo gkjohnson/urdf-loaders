@@ -211,7 +211,7 @@ class URDFLoader {
         const joints = [];
         const obj = new THREE.Object3D();
         obj.name = robot.getAttribute('name');
-        obj.urdf = { node: robot };
+        obj.urdf = {};
 
         // Process the <joint> and <link> nodes
         this.forEach(robot.children, n => {
@@ -266,7 +266,6 @@ class URDFLoader {
         const obj = new THREE.Object3D();
         obj.name = joint.getAttribute('name');
         obj.urdf = {
-            node: joint,
             name: joint.getAttribute('name'),
             type: jointType,
             angle: 0,
@@ -403,7 +402,7 @@ class URDFLoader {
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
         obj.name = link.getAttribute('name');
-        obj.urdf = { node: link };
+        obj.urdf = {};
 
         this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
         obj.isURDFLink = true;
