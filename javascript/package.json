@@ -5,7 +5,8 @@
   "scripts": {
     "start": "cd .. && static-server",
     "build": "cd example && webpack",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "nyc report --reporter=html & opn coverage/index.html"
   },
   "files": [
     "URDFLoader.js",
@@ -39,7 +40,10 @@
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "jest": "^23.5.0",
     "jest-cli": "^23.5.0",
+    "nyc": "^12.0.2",
+    "opn-cli": "^3.1.0",
     "puppeteer": "^1.7.0",
+    "puppeteer-to-istanbul": "^1.2.2",
     "script-loader": "^0.7.0",
     "static-server": "^3.0.0",
     "three": "^0.94.0",

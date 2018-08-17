@@ -3,6 +3,7 @@
     describe it beforeAll afterAll beforeEach afterEach expect
 */
 const puppeteer = require('puppeteer');
+const pti = require('puppeteer-to-istanbul');
 const path = require('path');
 const { loadURDF, testJointAngles } = require('./utils.js');
 
@@ -12,6 +13,8 @@ beforeAll(async() => {
 
     browser = await puppeteer.launch({ headless: true });
     page = await browser.newPage();
+
+    await page.coverage.startJSCoverage();
     await page.goto(path.join(__dirname, './test-setup.html'));
 
     page.on('error', e => { throw new Error(e); });
@@ -166,8 +169,12 @@ describe('TriATHLETE Climbing URDF', async() => {
 
 });
 
-afterAll(() => {
+afterAll(async() => {
 
-    // browser.close();
+    const coverage = await page.coverage.stopJSCoverage();
+    const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
+    pti.write(urdfLoaderCoverage);
+
+    browser.close();
 
 });
