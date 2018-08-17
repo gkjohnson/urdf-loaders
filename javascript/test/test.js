@@ -130,7 +130,7 @@ describe('TriATHLETE Climbing URDF', async() => {
     },
     {
         desc: 'Multipackage',
-        urdf: 'https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf'  ,
+        urdf: 'https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf',
         pkg: {
             blending_end_effector:
             'https://rawgit.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',

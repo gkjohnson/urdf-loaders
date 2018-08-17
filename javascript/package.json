@@ -6,6 +6,7 @@
     "start": "cd .. && static-server",
     "build": "cd example && webpack",
     "test": "jest",
+    "lint": "eslint *.js ./test/*.js",
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
   },
   "files": [

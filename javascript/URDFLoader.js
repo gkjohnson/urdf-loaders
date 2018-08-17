@@ -464,7 +464,6 @@ class URDFLoader {
 
                     }
 
-
                 } else if (geoType === 'box') {
 
                     primitiveModel = new THREE.Mesh();
