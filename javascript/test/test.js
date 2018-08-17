@@ -28,11 +28,10 @@ beforeAll(async() => {
 });
 
 // TODO: Add tests for multipackage loading, other files
-// TODO: Don't load from the web?
-// TODO: Test model with fixed joints
+// TODO: Don't load from the web
 // TODO: Test that joint functions rotate the joints properly
 
-describe('TriATHLETE Climbing', async() => {
+describe('TriATHLETE Climbing URDF', async() => {
 
     beforeEach(async() => {
 
@@ -84,8 +83,60 @@ describe('TriATHLETE Climbing', async() => {
 
 });
 
+[
+    {
+        desc: 'Robonaut',
+        urdf: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
+        pkg: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/',
+    },
+    {
+        desc: 'Valkyrie',
+        urdf: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf',
+        pkg: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/',
+    },
+    {
+        desc: 'Multipackage',
+        urdf: 'https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf'  ,
+        pkg: {
+            blending_end_effector:
+            'https://rawgit.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',
+
+            abb_irb1200_support:
+            'https://rawgit.com/ros-industrial/abb_experimental/kinetic-devel/abb_irb1200_support',
+
+            godel_irb1200_support:
+            'https://rawgit.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/abb/godel_irb1200/godel_irb1200_support',
+        },
+    },
+].forEach(data => {
+
+    describe(`${ data.desc } URDF`, async() => {
+
+        beforeEach(async() => {
+
+            // Model loads STL files and has continuous, prismatic, and revolute joints
+            await loadURDF(page, data.urdf, data.pkg);
+
+        });
+
+        it('should respect joint limits for different joint types', async() => {
+
+            await testJointAngles(page);
+
+        });
+
+        afterEach(async() => {
+
+            await page.evaluate(() => window.robot = null);
+
+        });
+
+    });
+
+});
+
 afterAll(() => {
 
-    browser.close();
+    // browser.close();
 
 });

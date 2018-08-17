@@ -144,7 +144,7 @@ class URDFLoader {
 
         } else {
 
-            console.warn(`Could note load model at ${ path }:\nNo loader available`);
+            console.warn(`URDFLoader: Could not load model at ${ path }.\nNo loader available`);
 
         }
 
@@ -165,29 +165,31 @@ class URDFLoader {
         const [targetPkg, relPath] = meshPath.replace(/^package:\/\//, '').split(/\/(.+)/);
 
         if (typeof pkg === 'string') {
+
             // "pkg" is one single package
-
             if (pkg.endsWith(targetPkg)) {
-                // "pkg" is the target package
 
+                // "pkg" is the target package
                 return pkg + '/' + relPath;
 
             } else {
-                // Assume "pkg" is the target package's parent directory
 
+                // Assume "pkg" is the target package's parent directory
                 return pkg + '/' + targetPkg + '/' + relPath;
+
             }
 
         } else if (typeof pkg === 'object') {
-            // "pkg" is a map of packages
 
+            // "pkg" is a map of packages
             if (targetPkg in pkg) {
 
                 return pkg[targetPkg] + '/' + relPath;
 
             } else {
 
-                console.warn(`Error: ${ targetPkg } not found in provided pkgs!`);
+                console.error(`URDFLoader : ${ targetPkg } not found in provided package list!`);
+                return null;
 
             }
         }
@@ -431,30 +433,37 @@ class URDFLoader {
 
                     const filename = n.children[0].getAttribute('filename');
                     const filePath = this._resolvePackagePath(packages, filename, path);
-                    const ext = filePath.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
-                    const scaleAttr = n.children[0].getAttribute('scale');
-                    if (scaleAttr) scale = this._processTuple(scaleAttr);
 
-                    loadMeshCb(filePath, ext, obj => {
+                    // file path is null if a package directory is not provided.
+                    if (filePath !== null) {
 
-                        if (obj) {
+                        const ext = filePath.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
+                        const scaleAttr = n.children[0].getAttribute('scale');
+                        if (scaleAttr) scale = this._processTuple(scaleAttr);
 
-                            if (obj instanceof THREE.Mesh) {
+                        loadMeshCb(filePath, ext, obj => {
 
-                                obj.material.copy(material);
+                            if (obj) {
+
+                                if (obj instanceof THREE.Mesh) {
+
+                                    obj.material.copy(material);
+
+                                }
+
+                                linkObj.add(obj);
+
+                                obj.position.set(xyz[0], xyz[1], xyz[2]);
+                                obj.rotation.set(0, 0, 0);
+                                obj.scale.set(scale[0], scale[1], scale[2]);
+                                this._applyRotation(obj, rpy);
 
                             }
 
-                            linkObj.add(obj);
+                        });
 
-                            obj.position.set(xyz[0], xyz[1], xyz[2]);
-                            obj.rotation.set(0, 0, 0);
-                            obj.scale.set(scale[0], scale[1], scale[2]);
-                            this._applyRotation(obj, rpy);
+                    }
 
-                        }
-
-                    });
 
                 } else if (geoType === 'box') {
 

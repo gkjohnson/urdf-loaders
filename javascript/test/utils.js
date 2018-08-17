@@ -1,4 +1,31 @@
 /* global URDFLoader expect */
+
+// Using custom `looseEquals` instead of `toEqual` here because with `toEqual`, -0 does not equal 0,
+// which can cause some of these cases to fail.
+// Related discussion for jasmine expect is here: https://github.com/jasmine/jasmine/issues/579
+expect.extend({
+    looseEquals(recieved, argument) {
+
+        const pass = recieved === argument;
+        if (pass) {
+
+            return {
+                message: () => `expected ${ recieved } to not equal ${ argument }`,
+                pass: true,
+            };
+
+        } else {
+
+            return {
+                message: () => `expected ${ recieved } to equal ${ argument }`,
+                pass: false,
+            };
+
+        }
+
+    },
+});
+
 function loadURDF(page, urdf, pkg, options = {}) {
 
     return page.evaluate(async(urdf2, pkg2, options2) => {
@@ -76,27 +103,27 @@ async function testJointAngles(page) {
 
             const angle = 10000 * Math.random();
             const res = await setAngle(page, key, angle);
-            expect(res).toEqual(angle);
+            expect(res).looseEquals(angle);
 
         } else if (info.type === 'fixed') {
 
             const angle = Math.random() * 1000;
             const res = await setAngle(page, key, angle);
-            expect(res).toEqual(0);
+            expect(res).looseEquals(0);
 
         } else if (info.type === 'revolute' || info.type === 'prismatic') {
 
             const min = info.limit.lower - Math.random() * 1000 - 0.01;
             const minres = await setAngle(page, key, min);
-            expect(minres).toEqual(info.limit.lower);
+            expect(minres).looseEquals(info.limit.lower);
 
             const max = info.limit.upper + Math.random() * 1000 + 0.01;
             const maxres = await setAngle(page, key, max);
-            expect(maxres).toEqual(info.limit.upper);
+            expect(maxres).looseEquals(info.limit.upper);
 
             const angle = info.limit.lower + (info.limit.upper - info.limit.lower) * Math.random();
             const res = await setAngle(page, key, angle);
-            expect(res).toEqual(angle);
+            expect(res).looseEquals(angle);
 
         } else if (info.type === 'planar' || info.type === 'floating') {
 
