@@ -1,4 +1,5 @@
 /* global
+    URDFLoader
     describe it beforeAll afterAll beforeEach afterEach expect
 */
 const puppeteer = require('puppeteer');
@@ -30,6 +31,36 @@ beforeAll(async() => {
 // TODO: Add tests for multipackage loading, other files
 // TODO: Don't load from the web
 // TODO: Test that joint functions rotate the joints properly
+
+describe('Options', () => {
+
+    describe('loadMeshCb', () => {
+
+        it('should get called to load all meshes', async() => {
+
+            const meshesLoaded = await page.evaluate(() => {
+
+                return new Promise(resolve => {
+                    let meshes = 0;
+                    const loader = new URDFLoader();
+                    loader.load(
+                        'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
+                        'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
+                        () => resolve(meshes),
+                        {
+                            loadMeshCb: (path, ext, done) => meshes++,
+                        }
+                    );
+                });
+            });
+
+            expect(meshesLoaded).toEqual(28);
+
+        });
+
+    });
+
+});
 
 describe('TriATHLETE Climbing URDF', async() => {
 
