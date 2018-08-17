@@ -4,7 +4,8 @@
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "scripts": {
     "start": "cd .. && static-server",
-    "build": "cd example && webpack"
+    "build": "cd example && webpack",
+    "test": "jest"
   },
   "files": [
     "URDFLoader.js",
@@ -36,6 +37,9 @@
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.0.0",
+    "jest": "^23.5.0",
+    "jest-cli": "^23.5.0",
+    "puppeteer": "^1.7.0",
     "script-loader": "^0.7.0",
     "static-server": "^3.0.0",
     "three": "^0.94.0",
