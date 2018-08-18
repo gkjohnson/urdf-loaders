@@ -134,8 +134,8 @@ __webpack_require__(26);
 
 
             /* eslint-disable */
-            /* globals viewer animToggle */
-
+            /* globals viewer */
+            const DEG2RAD = Math.PI / 180;
             const animToggle = document.getElementById('do-animate');
 
             const lerp = (from, to, ratio) => from + (to - from) * ratio;
