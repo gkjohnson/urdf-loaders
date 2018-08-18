@@ -22,6 +22,9 @@ beforeAll(async() => {
     });
     page = await browser.newPage();
 
+    console.log(__dirname);
+    console.log(path.join(__dirname, './test-setup.html'));
+
     await page.coverage.startJSCoverage();
     await page.goto(path.join(__dirname, './test-setup.html'));
 
