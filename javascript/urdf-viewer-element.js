@@ -80,7 +80,6 @@ class URDFViewer extends HTMLElement {
         dirLight.position.set(4, 10, 1);
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.000025;
         dirLight.castShadow = true;
         scene.add(dirLight);
         scene.add(dirLight.target);
@@ -90,6 +89,7 @@ class URDFViewer extends HTMLElement {
         renderer.setClearColor(0xffffff);
         renderer.setClearAlpha(0);
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.gammaOutput = true;
 
         // Camera setup
