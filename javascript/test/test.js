@@ -11,6 +11,8 @@ let browser = null, page = null;
 
 beforeAll(async() => {
 
+    console.log('BEFORE ALL');
+
     browser = await puppeteer.launch({ headless: true });
     page = await browser.newPage();
 
@@ -170,11 +172,16 @@ describe('TriATHLETE Climbing URDF', async() => {
 });
 
 afterAll(async() => {
+    console.log('AFTER ALL');
 
-    // const coverage = await page.coverage.stopJSCoverage();
-    // const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
-    // pti.write(urdfLoaderCoverage);
+    if (page) {
+        const coverage = await page.coverage.stopJSCoverage();
+        const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
+        pti.write(urdfLoaderCoverage);
+    }
 
-    browser.close();
+    if (browser) {
+        browser.close();
+    }
 
 });
