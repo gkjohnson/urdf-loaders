@@ -13,7 +13,13 @@ beforeAll(async() => {
 
     console.log('BEFORE ALL');
 
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({
+        headless: true,
+
+        // --no-sandbox is required to run puppeteer in Travis.
+        // https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-on-travis-ci
+        args: ['--no-sandbox'],
+    });
     page = await browser.newPage();
 
     await page.coverage.startJSCoverage();
