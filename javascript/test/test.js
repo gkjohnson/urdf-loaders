@@ -1,5 +1,5 @@
 /* global
-    URDFLoader
+    THREE URDFLoader
     jest
     describe it beforeAll afterAll beforeEach afterEach expect
 */
@@ -54,14 +54,34 @@ describe('Options', () => {
             const meshesLoaded = await page.evaluate(() => {
 
                 return new Promise(resolve => {
-                    let meshes = 0;
+
                     const loader = new URDFLoader();
                     loader.load(
                         'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
                         'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
-                        () => resolve(meshes),
+                        robot => {
+                            let ct = 0;
+                            robot.traverse(c => {
+
+                                if (c.fromCallback) {
+
+                                    ct++;
+
+                                }
+
+                            });
+
+                            resolve(ct);
+
+                        },
                         {
-                            loadMeshCb: (path, ext, done) => meshes++,
+                            loadMeshCb: (path, ext, done) => {
+
+                                const mesh = new THREE.Mesh();
+                                mesh.fromCallback = true;
+                                done(mesh);
+
+                            },
                         }
                     );
                 });
@@ -180,16 +200,11 @@ describe('TriATHLETE Climbing URDF', async() => {
 });
 
 afterAll(async() => {
-    console.log('AFTER ALL');
 
-    if (page) {
-        const coverage = await page.coverage.stopJSCoverage();
-        const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
-        pti.write(urdfLoaderCoverage);
-    }
+    const coverage = await page.coverage.stopJSCoverage();
+    const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
+    pti.write(urdfLoaderCoverage);
 
-    if (browser) {
-        browser.close();
-    }
+    browser.close();
 
 });
