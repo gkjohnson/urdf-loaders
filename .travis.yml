@@ -1,10 +1,8 @@
 language: node_js
 node_js:
   - "8.9.4"
-install:
+before_install:
   - cd javascript
-  - npm install
 script:
-  - cd javascript
   - npm run lint
   - npm test
