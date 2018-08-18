@@ -171,9 +171,9 @@ describe('TriATHLETE Climbing URDF', async() => {
 
 afterAll(async() => {
 
-    const coverage = await page.coverage.stopJSCoverage();
-    const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
-    pti.write(urdfLoaderCoverage);
+    // const coverage = await page.coverage.stopJSCoverage();
+    // const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
+    // pti.write(urdfLoaderCoverage);
 
     browser.close();
 
