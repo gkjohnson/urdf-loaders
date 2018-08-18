@@ -1,5 +1,6 @@
 /* global
     URDFLoader
+    jest
     describe it beforeAll afterAll beforeEach afterEach expect
 */
 const puppeteer = require('puppeteer');
@@ -7,11 +8,16 @@ const pti = require('puppeteer-to-istanbul');
 const path = require('path');
 const { loadURDF, testJointAngles } = require('./utils.js');
 
+// TODO: Add tests for multipackage loading, other files
+// TODO: Don't load from the web
+// TODO: Test that joint functions rotate the joints properly
+
+// set the timeout to 30s because we download geometry from the web
+// which could overrun the timer.
+jest.setTimeout(30000);
+
 let browser = null, page = null;
-
 beforeAll(async() => {
-
-    console.log('BEFORE ALL');
 
     browser = await puppeteer.launch({
         headless: true,
@@ -21,9 +27,6 @@ beforeAll(async() => {
         args: ['--no-sandbox'],
     });
     page = await browser.newPage();
-
-    console.log(__dirname);
-    console.log(`file:${ path.join(__dirname, './test-setup.html') }`);
 
     await page.coverage.startJSCoverage();
     await page.goto(`file:${ path.join(__dirname, './test-setup.html') }`);
@@ -41,10 +44,6 @@ beforeAll(async() => {
     });
 
 });
-
-// TODO: Add tests for multipackage loading, other files
-// TODO: Don't load from the web
-// TODO: Test that joint functions rotate the joints properly
 
 describe('Options', () => {
 
