@@ -23,10 +23,10 @@ beforeAll(async() => {
     page = await browser.newPage();
 
     console.log(__dirname);
-    console.log(path.join(__dirname, './test-setup.html'));
+    console.log(`file:${ path.join(__dirname, './test-setup.html') }`);
 
     await page.coverage.startJSCoverage();
-    await page.goto(path.join(__dirname, './test-setup.html'));
+    await page.goto(`file:${ path.join(__dirname, './test-setup.html') }`);
 
     page.on('error', e => { throw new Error(e); });
     page.on('pageerror', e => { throw new Error(e); });
