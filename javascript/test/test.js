@@ -1,5 +1,6 @@
 /* global
     URDFLoader
+    jest
     describe it beforeAll afterAll beforeEach afterEach expect
 */
 const puppeteer = require('puppeteer');
@@ -7,15 +8,28 @@ const pti = require('puppeteer-to-istanbul');
 const path = require('path');
 const { loadURDF, testJointAngles } = require('./utils.js');
 
-let browser = null, page = null;
+// TODO: Add tests for multipackage loading, other files
+// TODO: Don't load from the web
+// TODO: Test that joint functions rotate the joints properly
 
+// set the timeout to 30s because we download geometry from the web
+// which could overrun the timer.
+jest.setTimeout(30000);
+
+let browser = null, page = null;
 beforeAll(async() => {
 
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({
+        headless: true,
+
+        // --no-sandbox is required to run puppeteer in Travis.
+        // https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-on-travis-ci
+        args: ['--no-sandbox'],
+    });
     page = await browser.newPage();
 
     await page.coverage.startJSCoverage();
-    await page.goto(path.join(__dirname, './test-setup.html'));
+    await page.goto(`file:${ path.join(__dirname, './test-setup.html') }`);
 
     page.on('error', e => { throw new Error(e); });
     page.on('pageerror', e => { throw new Error(e); });
@@ -30,10 +44,6 @@ beforeAll(async() => {
     });
 
 });
-
-// TODO: Add tests for multipackage loading, other files
-// TODO: Don't load from the web
-// TODO: Test that joint functions rotate the joints properly
 
 describe('Options', () => {
 
@@ -170,11 +180,16 @@ describe('TriATHLETE Climbing URDF', async() => {
 });
 
 afterAll(async() => {
+    console.log('AFTER ALL');
 
-    const coverage = await page.coverage.stopJSCoverage();
-    const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
-    pti.write(urdfLoaderCoverage);
+    if (page) {
+        const coverage = await page.coverage.stopJSCoverage();
+        const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
+        pti.write(urdfLoaderCoverage);
+    }
 
-    browser.close();
+    if (browser) {
+        browser.close();
+    }
 
 });

@@ -1,4 +1,6 @@
-# javascript urdf-loader [![npm version](https://badge.fury.io/js/urdf-loader.svg)](https://www.npmjs.com/package/urdf-loader)
+# javascript urdf-loader
+
+[![npm version](https://badge.fury.io/js/urdf-loader.svg)](https://www.npmjs.com/package/urdf-loader)
 
 Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model.
 
