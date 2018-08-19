@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.IO;
 using System.Collections;
+using System;
 
 public class LoadWebRobot : LoadRobot {
 
@@ -25,8 +26,11 @@ public class LoadWebRobot : LoadRobot {
                 Debug.LogError(www.error);
 
             } else {
-                
-                URDFParser.BuildRobot(package, www.downloadHandler.text, (path, ext, done) => StartCoroutine(DownloadModel(path, ext, done)), ujl);
+
+                Uri uri = new Uri(urdf);
+                string workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
+
+                URDFParser.BuildRobot(package, www.downloadHandler.text, workingPath, (path, ext, done) => StartCoroutine(DownloadModel(path, ext, done)), ujl);
 
             }
 

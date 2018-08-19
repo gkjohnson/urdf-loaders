@@ -20,6 +20,7 @@ ROS URDf
 */
 
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Xml;
 using System.IO;
@@ -31,7 +32,7 @@ public class URDFParser : MonoBehaviour
 {
     // Default mesh loading function that can
     // load STLs from file
-    public static void LoadMesh(string path, string ext, System.Action<GameObject[]> done)
+    public static void LoadMesh(string path, string ext, Action<GameObject[]> done)
     {
         Mesh[] meshes = null;
         if (ext == "stl")
@@ -49,7 +50,7 @@ public class URDFParser : MonoBehaviour
 
         if (meshes == null) {
 
-            throw new System.Exception("Filetype '" + ext + "' not supported");
+            throw new Exception("Filetype '" + ext + "' not supported");
 
         } else {
 
@@ -68,23 +69,37 @@ public class URDFParser : MonoBehaviour
         }
     }
 
+    public static string ResolveMeshPath(string path, string package, string workingPath) {
+
+        if (path.IndexOf("package://") != 0) {
+
+            return Path.Combine(workingPath, path);
+
+        }
+
+        return Path.Combine(package, path.Replace("package://", ""));
+
+    }
+
     // Load the URDF from file and build the robot
     public static URDFJointList LoadURDFRobot(string package, string urdfpath,
-        System.Action<string, string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
     {
-        string path = Path.Combine(package, urdfpath);
-        StreamReader reader = new StreamReader(path);
+        StreamReader reader = new StreamReader(urdfpath);
         string content = reader.ReadToEnd();
 
-        return BuildRobot(package, content, loadMesh, urdfjointlist);
+        Uri uri = new Uri(urdfpath);
+        string workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
+
+        return BuildRobot(package, content, workingPath, loadMesh, urdfjointlist);
     }
 
     // create the robot
-    public static URDFJointList BuildRobot(string package, string urdfContent,
-        System.Action<string, string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+    public static URDFJointList BuildRobot(string package, string urdfContent, string workingPath = "",
+        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
     {
         if (loadMesh == null) loadMesh = LoadMesh;
-
+        
         // load the XML doc
         XmlDocument doc = new XmlDocument();
         doc.LoadXml(urdfContent);
@@ -232,9 +247,7 @@ public class URDFParser : MonoBehaviour
                             {
                                 // load the STL file if possible
                                 // get the file path and split it
-                                string fileName = meshNode.Attributes["filename"].Value;
-                                fileName = Path.Combine(package, fileName.Replace("package://", ""));
-
+                                string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, package, workingPath);
                                 // load all meshes
                                 string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
                                 loadMesh(fileName, ext, models =>
@@ -275,7 +288,7 @@ public class URDFParser : MonoBehaviour
                                 urdfLink.geometry = renderers;
                             }
                         }
-                        catch (System.Exception e)
+                        catch (Exception e)
                         {
                             Debug.LogError("Error loading model for " + urdfLink.name + " : " + e.Message);
                         }
@@ -443,7 +456,7 @@ public class URDFParser : MonoBehaviour
                 v.y = float.Parse(nums[1]);
                 v.z = float.Parse(nums[2]);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.Log(s);
                 Debug.LogError(e.Message);
@@ -469,7 +482,7 @@ public class URDFParser : MonoBehaviour
                 c.b = float.Parse(nums[2]);
                 c.a = float.Parse(nums[3]);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.Log(s);
                 Debug.LogError(e.Message);
