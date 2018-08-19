@@ -47,7 +47,7 @@ class URDFViewer extends HTMLElement {
         const angles = {};
         if (this.robot) {
 
-            for (const name in this.robot.urdf.joints) angles[name] = this.robot.urdf.joints[name].urdf.angle;
+            for (const name in this.robot.joints) angles[name] = this.robot.joints[name].angle;
 
         }
 
@@ -279,10 +279,10 @@ class URDFViewer extends HTMLElement {
 
         if (!this.robot) return;
 
-        const joint = this.robot.urdf.joints[jointname];
-        if (joint && joint.urdf.angle !== angle) {
+        const joint = this.robot.joints[jointname];
+        if (joint && joint.angle !== angle) {
 
-            joint.urdf.setAngle(angle);
+            joint.setAngle(angle);
             this._dirty = true;
 
         }
@@ -528,11 +528,11 @@ class URDFViewer extends HTMLElement {
         if (this.robot) {
 
             Object
-                .values(this.robot.urdf.joints)
+                .values(this.robot.joints)
                 .forEach(joint => {
 
-                    joint.urdf.ignoreLimits = ignore;
-                    joint.urdf.setAngle(joint.urdf.angle);
+                    joint.ignoreLimits = ignore;
+                    joint.setAngle(joint.angle);
 
                 });
 

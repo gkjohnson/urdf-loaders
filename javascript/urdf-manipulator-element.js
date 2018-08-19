@@ -76,7 +76,7 @@ class URDFManipulator extends URDFViewer {
 
         const isJoint = j => {
 
-            return j.urdf && j.urdf.type && j.urdf.type !== 'fixed';
+            return j.isURDFJoint && j.jointType !== 'fixed';
 
         };
 
@@ -149,7 +149,7 @@ class URDFManipulator extends URDFViewer {
         const getAngle = (tg, m1, m2) => {
 
             // TODO: Why is the constant negated?
-            plane.normal.copy(tg.urdf.axis).transformDirection(tg.matrixWorld).normalize();
+            plane.normal.copy(tg.axis).transformDirection(tg.matrixWorld).normalize();
             plane.constant = -plane.normal.dot(clickPoint);
 
             // If the camera is looking at the rotation axis at a skewed angle
@@ -225,7 +225,7 @@ class URDFManipulator extends URDFViewer {
 
             temp.copy(intersect2).sub(intersect1);
 
-            plane.normal.copy(tg.urdf.axis).transformDirection(tg.parent.matrixWorld).normalize();
+            plane.normal.copy(tg.axis).transformDirection(tg.parent.matrixWorld).normalize();
 
             return temp.length() * -Math.sign(temp.dot(plane.normal));
 
@@ -248,7 +248,7 @@ class URDFManipulator extends URDFViewer {
                 if (dragging) {
 
                     clickPoint.copy(target.point);
-                    this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
+                    this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.name }));
                     this.controls.enabled = false;
 
                 }
@@ -293,14 +293,14 @@ class URDFManipulator extends URDFViewer {
                 if (wasHovered) {
 
                     highlightLinkGeometry(wasHovered, true);
-                    this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: wasHovered.urdf.name }));
+                    this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: wasHovered.name }));
 
                 }
 
                 if (hovered) {
 
                     highlightLinkGeometry(hovered, false);
-                    this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.urdf.name }));
+                    this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.name }));
 
                 }
 
@@ -312,11 +312,11 @@ class URDFManipulator extends URDFViewer {
             if (dragging !== null) {
 
                 let delta = null;
-                if (dragging.urdf.type === 'revolute' || dragging.urdf.type === 'continuous') {
+                if (dragging.jointType === 'revolute' || dragging.jointType === 'continuous') {
 
                     delta = getAngle(dragging, mouse, lastMouse);
 
-                } else if (dragging.urdf.type === 'prismatic') {
+                } else if (dragging.jointType === 'prismatic') {
 
                     delta = getMove(dragging, mouse, lastMouse);
 
@@ -328,7 +328,7 @@ class URDFManipulator extends URDFViewer {
 
                 if (delta) {
 
-                    this.setAngle(dragging.urdf.name, dragging.urdf.angle + delta);
+                    this.setAngle(dragging.name, dragging.angle + delta);
 
                 }
 
@@ -343,7 +343,7 @@ class URDFManipulator extends URDFViewer {
 
             if (dragging) {
 
-                this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: dragging.urdf.name }));
+                this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: dragging.name }));
                 dragging = null;
                 this.controls.enabled = true;
 

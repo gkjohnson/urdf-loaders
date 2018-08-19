@@ -213,7 +213,6 @@ class URDFLoader {
         const joints = [];
         const obj = new THREE.Object3D();
         obj.name = robot.getAttribute('name');
-        obj.urdf = {};
 
         // Process the <joint> and <link> nodes
         this.forEach(robot.children, n => {
@@ -252,8 +251,8 @@ class URDFLoader {
 
         }
 
-        obj.urdf.joints = jointMap;
-        obj.urdf.links = linkMap;
+        obj.joints = jointMap;
+        obj.links = linkMap;
         obj.isURDFRobot = true;
         obj.type = 'URDFRobot';
 
@@ -266,16 +265,28 @@ class URDFLoader {
 
         const jointType = joint.getAttribute('type');
         const obj = new THREE.Object3D();
+        obj.isURDFJoint = true;
+        obj.type = 'URDFJoint';
+
         obj.name = joint.getAttribute('name');
-        obj.urdf = {
-            name: joint.getAttribute('name'),
-            type: jointType,
-            angle: 0,
-            axis: null,
-            limit: { lower: 0, upper: 0 },
-            ignoreLimits: false,
-            setAngle: () => {},
-        };
+        obj.jointType = jointType;
+        obj.axis = null;
+        obj.angle = 0;
+        obj.limit = { lower: 0, upper: 0 };
+        obj.ignoreLimits = false;
+        obj.setOffset = () => {};
+
+        // copy the 'setOffset' function over to 'setAngle' so
+        // it makes sense for other joint types (prismatic, planar)
+        // TODO: Remove the 'setOffset' function
+        // TODO: Figure out how to handle setting and getting angles of other types
+        Object.defineProperties(
+            obj,
+            {
+
+                setAngle: { get() { return this.setOffset; } },
+
+            });
 
         let parent = null;
         let child = null;
@@ -301,8 +312,8 @@ class URDFLoader {
 
             } else if (type === 'limit') {
 
-                obj.urdf.limit.lower = parseFloat(n.getAttribute('lower') || obj.urdf.limit.lower);
-                obj.urdf.limit.upper = parseFloat(n.getAttribute('upper') || obj.urdf.limit.upper);
+                obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
+                obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
 
             }
 
@@ -322,8 +333,8 @@ class URDFLoader {
         if (axisnode) {
 
             const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num));
-            obj.urdf.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2]);
-            obj.urdf.axis.normalize();
+            obj.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2]);
+            obj.axis.normalize();
 
         }
 
@@ -331,12 +342,12 @@ class URDFLoader {
 
             case 'fixed': break;
             case 'continuous':
-                obj.urdf.limit.lower = -Infinity;
-                obj.urdf.limit.upper = Infinity;
+                obj.limit.lower = -Infinity;
+                obj.limit.upper = Infinity;
 
-                // fall through to revolute joint 'setAngle' function
+                // fall through to revolute joint 'setOffset' function
             case 'revolute':
-                obj.urdf.setAngle = function(angle = null) {
+                obj.setOffset = function(angle = null) {
 
                     if (!this.axis) return;
                     if (angle == null) return;
@@ -359,7 +370,7 @@ class URDFLoader {
                 break;
 
             case 'prismatic':
-                obj.urdf.setAngle = function(angle = null) {
+                obj.setOffset = function(angle = null) {
 
                     if (!this.axis) return;
                     if (angle == null) return;
@@ -386,14 +397,6 @@ class URDFLoader {
 
         }
 
-        // copy the 'setAngle' function over to 'set' so
-        // it makes sense for other joint types (prismatic, planar)
-        // TODO: Remove the 'setAngle' function
-        // TODO: Figure out how to handle setting and getting angles of other types
-        obj.urdf.set = obj.urdf.setAngle;
-        obj.isURDFJoint = true;
-        obj.type = 'URDFJoint';
-
         return obj;
 
     }
@@ -404,11 +407,10 @@ class URDFLoader {
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
         obj.name = link.getAttribute('name');
-        obj.urdf = {};
-
-        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
         obj.isURDFLink = true;
         obj.type = 'URDFLink';
+
+        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
 
         return obj;
 

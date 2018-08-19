@@ -10,7 +10,7 @@ const upSelect = document.getElementById('up-select');
 const sliderList = document.querySelector('#controls ul');
 const controlsel = document.getElementById('controls');
 const controlsToggle = document.getElementById('toggle-controls');
-const DEG2RAD = Math.PI / 180;
+var DEG2RAD = Math.PI / 180;
 const RAD2DEG = 1 / DEG2RAD;
 let sliders = {};
 
@@ -86,7 +86,7 @@ viewer.addEventListener('urdf-processed', () => {
 
     const r = viewer.robot;
     Object
-        .keys(r.urdf.joints)
+        .keys(r.joints)
         .sort((a, b) => {
 
             const da = a.split(/[^\d]+/g).filter(v => !!v).pop();
@@ -102,18 +102,18 @@ viewer.addEventListener('urdf-processed', () => {
             return 0;
 
         })
-        .map(key => r.urdf.joints[key])
+        .map(key => r.joints[key])
         .forEach(joint => {
 
             const li = document.createElement('li');
             li.innerHTML =
             `
-            <span title="${ joint.urdf.name }">${ joint.urdf.name }</span>
+            <span title="${ joint.name }">${ joint.name }</span>
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.0001" />
             `;
-            li.setAttribute('joint-type', joint.urdf.type);
-            li.setAttribute('joint-name', joint.urdf.name);
+            li.setAttribute('joint-type', joint.jointType);
+            li.setAttribute('joint-name', joint.name);
 
             sliderList.appendChild(li);
 
@@ -121,9 +121,9 @@ viewer.addEventListener('urdf-processed', () => {
             const slider = li.querySelector('input[type="range"]');
             const input = li.querySelector('input[type="number"]');
             li.update = () => {
-                let degVal = joint.urdf.angle;
+                let degVal = joint.angle;
 
-                if (joint.urdf.type === 'revolute' || joint.urdf.type === 'continuous') {
+                if (joint.jointType === 'revolute' || joint.jointType === 'continuous') {
                     degVal *= RAD2DEG;
                 }
 
@@ -136,24 +136,24 @@ viewer.addEventListener('urdf-processed', () => {
                 input.value = parseFloat(degVal);
 
                 // directly input the value
-                slider.value = joint.urdf.angle;
+                slider.value = joint.angle;
 
-                if (viewer.ignoreLimits || joint.urdf.type === 'continuous') {
+                if (viewer.ignoreLimits || joint.jointType === 'continuous') {
                     slider.min = -6.28;
                     slider.max = 6.28;
 
                     input.min = -6.28 * RAD2DEG;
                     input.max = 6.28 * RAD2DEG;
                 } else {
-                    slider.min = joint.urdf.limit.lower;
-                    slider.max = joint.urdf.limit.upper;
+                    slider.min = joint.limit.lower;
+                    slider.max = joint.limit.upper;
 
-                    input.min = joint.urdf.limit.lower * RAD2DEG;
-                    input.max = joint.urdf.limit.upper * RAD2DEG;
+                    input.min = joint.limit.lower * RAD2DEG;
+                    input.max = joint.limit.upper * RAD2DEG;
                 }
             };
 
-            switch (joint.urdf.type) {
+            switch (joint.jointType) {
 
                 case 'continuous':
                 case 'prismatic':

@@ -84,9 +84,9 @@ function setAngle(page, jointName, angle) {
 
     return page.evaluate((jointName, angle) => {
 
-        const joint = window.robot.urdf.joints[jointName];
-        joint.urdf.set(angle);
-        return joint.urdf.angle;
+        const joint = window.robot.joints[jointName];
+        joint.setAngle(angle);
+        return joint.angle;
 
     }, jointName, angle);
 
@@ -94,24 +94,29 @@ function setAngle(page, jointName, angle) {
 
 async function testJointAngles(page) {
 
-    const joints = await page.evaluate(() => Object.keys(window.robot.urdf.joints));
+    const joints = await page.evaluate(() => Object.keys(window.robot.joints));
     for (var key of joints) {
 
-        const info = await page.evaluate(`window.robot.urdf.joints['${ key }'].urdf`);
+        const info = await page.evaluate(jointName => {
 
-        if (info.type === 'continuous') {
+            const joint = window.robot.joints[jointName];
+            return { jointType: joint.jointType, limit: joint.limit };
+
+        }, key);
+
+        if (info.jointType === 'continuous') {
 
             const angle = 10000 * Math.random();
             const res = await setAngle(page, key, angle);
             expect(res).looseEquals(angle);
 
-        } else if (info.type === 'fixed') {
+        } else if (info.jointType === 'fixed') {
 
             const angle = Math.random() * 1000;
             const res = await setAngle(page, key, angle);
             expect(res).looseEquals(0);
 
-        } else if (info.type === 'revolute' || info.type === 'prismatic') {
+        } else if (info.jointType === 'revolute' || info.jointType === 'prismatic') {
 
             const min = info.limit.lower - Math.random() * 1000 - 0.01;
             const minres = await setAngle(page, key, min);
@@ -125,7 +130,7 @@ async function testJointAngles(page) {
             const res = await setAngle(page, key, angle);
             expect(res).looseEquals(angle);
 
-        } else if (info.type === 'planar' || info.type === 'floating') {
+        } else if (info.jointType === 'planar' || info.jointType === 'floating') {
 
             // TODO: these joints are not supported
 

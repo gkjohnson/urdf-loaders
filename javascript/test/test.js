@@ -110,8 +110,8 @@ describe('TriATHLETE Climbing URDF', async() => {
 
     it('should have the correct number of links', async() => {
 
-        const jointCt = await page.evaluate(() => Object.keys(window.robot.urdf.joints).length);
-        const linkCt = await page.evaluate(() => Object.keys(window.robot.urdf.links).length);
+        const jointCt = await page.evaluate(() => Object.keys(window.robot.joints).length);
+        const linkCt = await page.evaluate(() => Object.keys(window.robot.links).length);
 
         expect(jointCt).toEqual(27);
         expect(linkCt).toEqual(28);
@@ -120,14 +120,14 @@ describe('TriATHLETE Climbing URDF', async() => {
 
     it('should load the correct joint types', async() => {
 
-        const joints = await page.evaluate(() => Object.keys(window.robot.urdf.joints));
+        const joints = await page.evaluate(() => Object.keys(window.robot.joints));
         for (var key of joints) {
 
-            const info = await page.evaluate(`window.robot.urdf.joints['${ key }'].urdf`);
+            const jointType = await page.evaluate(`window.robot.joints['${ key }'].jointType`);
 
-            if (/^W/.test(key)) expect(info.type).toEqual('continuous');
-            else if (/^TC\d/.test(key)) expect(info.type).toEqual('prismatic');
-            else expect(info.type).toEqual('revolute');
+            if (/^W/.test(key)) expect(jointType).toEqual('continuous');
+            else if (/^TC\d/.test(key)) expect(jointType).toEqual('prismatic');
+            else expect(jointType).toEqual('revolute');
 
         }
 
