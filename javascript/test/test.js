@@ -11,6 +11,8 @@ const { loadURDF, testJointAngles } = require('./utils.js');
 // TODO: Add tests for multipackage loading, other files
 // TODO: Don't load from the web
 // TODO: Test that joint functions rotate the joints properly
+// TODO: Verify joint limits, names, etc
+// TODO: Verify that the workingPath option works
 
 // set the timeout to 30s because we download geometry from the web
 // which could overrun the timer.

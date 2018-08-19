@@ -89,7 +89,13 @@ An optional function that can be used to override the default mesh loading funct
 
 An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
 
-### parse(urdfContent, packages, workingPath, onComplete, options) : THREE.Object3D
+##### workingPath : String
+
+The path to load geometry relative to.
+
+Defaults to the path relative to the loaded URDF file.
+
+### parse(urdfContent, packages, onComplete, options) : THREE.Object3D
 
 Parses URDF content and returns the robot model.
 
@@ -104,12 +110,6 @@ The xml content of a URDF file.
 _required_
 
 See `load`.
-
-#### workingPath : String
-
-_required_
-
-The path to load geometry relative to.
 
 #### onComplete(robot) : Function
 

@@ -92,12 +92,12 @@ class URDFLoader {
     // onComplete:      Callback that is passed the model once loaded
     load(urdf, packages, onComplete, options) {
 
-        options = Object.assign({}, options);
-
         // Check if a full URI is specified before
         // prepending the package info
         const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
+
+        options = Object.assign({ workingPath }, options);
 
         fetch(urdfPath, options.fetchOptions)
             .then(res => res.text())
@@ -105,15 +105,16 @@ class URDFLoader {
 
     }
 
-    parse(content, packages, path, onComplete, options) {
+    parse(content, packages, onComplete, options) {
 
         options = Object.assign({
 
             loadMeshCb: this.defaultMeshLoader.bind(this),
+            workingPath: '',
 
         }, options);
 
-        const result = this._processUrdf(content, packages, path, options.loadMeshCb);
+        const result = this._processUrdf(content, packages, options.workingPath, options.loadMeshCb);
 
         if (typeof onComplete === 'function') {
 
