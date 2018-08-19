@@ -30,7 +30,13 @@ public class LoadWebRobot : LoadRobot {
                 Uri uri = new Uri(urdfPath);
                 string workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
 
-                URDFLoader.BuildRobot(www.downloadHandler.text, package, workingPath, (path, ext, done) => StartCoroutine(DownloadModel(path, ext, done)), ur);
+                URDFLoader.Options opt = new URDFLoader.Options() {
+                    workingPath = workingPath,
+                    loadMeshCb = (path, ext, done) => StartCoroutine(DownloadModel(path, ext, done)),
+                    target = ur
+                };
+
+                URDFLoader.BuildRobot(www.downloadHandler.text, package, opt);
 
             }
 

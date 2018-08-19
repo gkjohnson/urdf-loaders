@@ -13,7 +13,7 @@ URDFRobot ur = URDFLoader.BuildRobot(".../package/dir", content);
 
 ## API
 ### URDFLoader
-#### LoadRobot(urdfPath, package, loadmeshFunction) : URDFRobot
+#### LoadRobot(urdfPath, package, options) : URDFRobot
 Reads and processes the urdf at the given path, returning a `URDFRobot` that describes the whole robot.
 
 ##### urdfpath : String
@@ -22,12 +22,13 @@ The path to the URDF file relative to the specified package directory.
 ##### package : String
 The path representing the package:// directory to load package:// relative files.
 
-##### loadmeshFunction : System.Action<string, string, System.Action<GameObject[]>>
-An optional function for loading geometry in a custom way or in unsupported formats. `URDFLoader.LoadMesh` is used by default.
+##### options : URDFLoader.Options
 
-The function is passed a path to the model, the models file extension and a callback to pass an array of game objects when finished.
+_optional_
 
-#### BuildRobot(urdfContent, package, workingPath, loadMeshFunction, jointList) : URDFRobot
+Set of options for the loader.
+
+#### BuildRobot(urdfContent, package, options) : URDFRobot
 Same function as above, but this function takes the raw contents of the urdf file rather than a path.
 
 ##### urdfContent : String
@@ -38,28 +39,39 @@ The urdf content to parse into a robot.
 
 See `LoadURDFRobot`.
 
-##### workingPath : String
+##### options : URDFLoader.Options
 
-The directory to use to resolve relative file paths in the URDF.
+_optional_
 
-##### loadMeshFunction : System.Action<string, string, System.Action<GameObject[]>>
+Set of options for the loader.
 
-See `LoadURDFRobot`.
+### URDFLoader.Options
 
-##### jointList : URDFRobot
+Struct with a set of optional fields to augment the behavior of the loader.
 
+##### loadMeshCb : System.Action<string, string, System.Action<GameObject[]>>
+A function for loading geometry in a custom way or in unsupported formats. `URDFLoader.LoadMesh` is used by default.
+
+The function is passed a path to the model, the models file extension and a callback to pass an array of game objects when finished.
+
+##### target : URDFRobot
 An existing URDFRobot to build the robot in to.
 
-#### URDFRobot.SetAngle(name, rad)
+##### workingPath : String
+
+The directory to use to resolve relative file paths in the URDF. Defaults to the URDF directory when using `LoadRobot`.
+
+### URDFRobot
+#### SetAngle(name, rad)
 Sets the angle (in radians) of the joint with the given name. Throws an error if the joint does not exist.
 
-#### URDFRobot.TrySetAngle(name, rad) : Boolean
+#### TrySetAngle(name, rad) : Boolean
 Same as above, but does not throw an error. Returns `true` if it was able to set the angle.
 
-#### URDFRobot.GetAnglesAsDictionary() : Dictionary<string, float>
+#### GetAnglesAsDictionary() : Dictionary<string, float>
 Returns a new `Dictionary<string, float>` with the current angle of all the joints on the robot.
 
-#### URDFRobot.SetAnglesFromDictionary(angles)
+#### SetAnglesFromDictionary(angles)
 Takes a `Dictionary<string, float>` and sets all the angles on the robot that are listed in the dictionary.
 
 ## Limitations

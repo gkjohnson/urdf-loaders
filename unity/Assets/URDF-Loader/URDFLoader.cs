@@ -30,10 +30,20 @@ using URDFLink = URDFRobot.URDFLink;
 
 public class URDFLoader : MonoBehaviour
 {
+
+    public struct Options {
+
+        public Action<string, string, Action<GameObject[]>> loadMeshCb;
+        public string workingPath;
+        public URDFRobot target;
+
+    }
+
     // Default mesh loading function that can
     // load STLs from file
     public static void LoadMesh(string path, string ext, Action<GameObject[]> done)
     {
+
         Mesh[] meshes = null;
         if (ext == "stl")
         {
@@ -82,23 +92,25 @@ public class URDFLoader : MonoBehaviour
     }
 
     // Load the URDF from file and build the robot
-    public static URDFRobot LoadRobot(string urdfPath, string package,
-        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFRobot jointList = null)
+    public static URDFRobot LoadRobot(string urdfPath, string package, Options options = new Options())
     {
+
         StreamReader reader = new StreamReader(urdfPath);
         string content = reader.ReadToEnd();
 
-        Uri uri = new Uri(urdfPath);
-        string workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
+        if (options.workingPath == null) {
+            Uri uri = new Uri(urdfPath);
+            options.workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
+        }
 
-        return BuildRobot(content, package, workingPath, loadMesh, jointList);
+        return BuildRobot(content, package, options);
     }
 
     // create the robot
-    public static URDFRobot BuildRobot(string urdfContent, string package, string workingPath = "",
-        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFRobot urdfjointlist = null)
+    public static URDFRobot BuildRobot(string urdfContent, string package, Options options = new Options())
     {
-        if (loadMesh == null) loadMesh = LoadMesh;
+
+        if (options.loadMeshCb == null) options.loadMeshCb = LoadMesh;
         
         // load the XML doc
         XmlDocument doc = new XmlDocument();
@@ -247,10 +259,10 @@ public class URDFLoader : MonoBehaviour
                             {
                                 // load the STL file if possible
                                 // get the file path and split it
-                                string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, package, workingPath);
+                                string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, package, options.workingPath);
                                 // load all meshes
                                 string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
-                                loadMesh(fileName, ext, models =>
+                                options.loadMeshCb(fileName, ext, models =>
                                 {
                                     // create the rest of the meshes and child them to the click target
                                     for (int i = 0; i < models.Length; i++)
@@ -381,6 +393,7 @@ public class URDFLoader : MonoBehaviour
         }
 
         // loop through all the transforms until we find the one that has no parent
+        URDFRobot robot = options.target;
         foreach (KeyValuePair<string, URDFLink> kv in urdfLinks)
         {
             // TODO : if there are multiple robots described, then we'll only be getting
@@ -388,22 +401,22 @@ public class URDFLoader : MonoBehaviour
             if (kv.Value.parent == null)
             {
                 // find the top most node and add a joint list to it
-                if (urdfjointlist == null)
+                if (robot == null)
                 {
-                    urdfjointlist = kv.Value.transform.gameObject.AddComponent<URDFRobot>();
+                    robot = kv.Value.transform.gameObject.AddComponent<URDFRobot>();
                 }
                 else
                 {
-                    kv.Value.transform.parent = urdfjointlist.transform;
+                    kv.Value.transform.parent = robot.transform;
                     kv.Value.transform.localPosition = Vector3.zero;
                     kv.Value.transform.localRotation = Quaternion.identity;
                 }
 
-                urdfjointlist.links = urdfLinks;
-                urdfjointlist.joints = urdfJoints;
+                robot.links = urdfLinks;
+                robot.joints = urdfJoints;
 
-                urdfjointlist.IsConsistent();
-                return urdfjointlist;
+                robot.IsConsistent();
+                return robot;
             }
         }
 
