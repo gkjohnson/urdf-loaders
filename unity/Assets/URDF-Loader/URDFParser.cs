@@ -82,16 +82,16 @@ public class URDFParser : MonoBehaviour
     }
 
     // Load the URDF from file and build the robot
-    public static URDFJointList LoadURDFRobot(string package, string urdfpath,
-        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+    public static URDFJointList LoadURDFRobot(string package, string urdfPath,
+        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFJointList jointList = null)
     {
-        StreamReader reader = new StreamReader(urdfpath);
+        StreamReader reader = new StreamReader(urdfPath);
         string content = reader.ReadToEnd();
 
-        Uri uri = new Uri(urdfpath);
+        Uri uri = new Uri(urdfPath);
         string workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
 
-        return BuildRobot(package, content, workingPath, loadMesh, urdfjointlist);
+        return BuildRobot(package, content, workingPath, loadMesh, jointList);
     }
 
     // create the robot

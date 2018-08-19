@@ -38,7 +38,7 @@ public class LoadWebRobot : LoadRobot {
         
     }
 
-    IEnumerator DownloadModel(string path, string ext, System.Action<GameObject[]> done) {
+    IEnumerator DownloadModel(string path, string ext, Action<GameObject[]> done) {
 
         using (UnityWebRequest www = UnityWebRequest.Get(path)) {
 
