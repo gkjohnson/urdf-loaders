@@ -1,14 +1,8 @@
 # javascript urdf-loader
 
-[
-    ![npm version](https://img.shields.io/npm/v/urdf-loader.svg?style=flat-square)
-](https://www.npmjs.com/package/urdf-loader)
-[
-    ![travis build](https://img.shields.io/travis/gkjohnson/urdf-loaders.svg?style=flat-square)
-](https://travis-ci.org/gkjohnson/urdf-loaders)
-[
-    ![lgtm code quality](https://img.shields.io/lgtm/grade/javascript/g/gkjohnson/urdf-loaders.svg?style=flat-square&label=code-quality)
-](https://lgtm.com/projects/g/gkjohnson/urdf-loaders/)
+[![npm version](https://img.shields.io/npm/v/urdf-loader.svg?style=flat-square)](https://www.npmjs.com/package/urdf-loader)
+[![travis build](https://img.shields.io/travis/gkjohnson/urdf-loaders.svg?style=flat-square)](https://travis-ci.org/gkjohnson/urdf-loaders)
+[![lgtm code quality](https://img.shields.io/lgtm/grade/javascript/g/gkjohnson/urdf-loaders.svg?style=flat-square&label=code-quality)](https://lgtm.com/projects/g/gkjohnson/urdf-loaders/)
 
 Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model.
 
