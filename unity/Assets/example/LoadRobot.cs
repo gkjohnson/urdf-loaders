@@ -46,9 +46,8 @@ public class LoadRobot : MonoBehaviour {
     }
 
     virtual protected URDFRobot CreateRobot(string urdf, string package) {
-        StreamReader reader = new StreamReader(urdf);
-        string content = reader.ReadToEnd();
-        URDFRobot ur = URDFParser.BuildRobot(content, package);
+
+        URDFRobot ur = URDFParser.LoadRobot(urdf, package);
         ur.name = urdf;
 
         return ur;
