@@ -193,11 +193,13 @@ public class URDFParser : MonoBehaviour
 
                                             var length = float.Parse(primitiveNode.Attributes[0].Value);
                                             var radius = float.Parse(primitiveNode.Attributes[1].Value);
-                                            go.transform.localScale = new Vector3(radius * 2, length, radius * 2);
+                                            go.transform.localScale = new Vector3(radius * 2, length / 2, radius * 2);
                                             break;
                                     }
 
-                                    Renderer r = go.GetComponent<Renderer>() ?? go.GetComponentInChildren<Renderer>();
+                                    Renderer r = go.GetComponent<Renderer>();
+                                    if (r == null) r = go.GetComponentInChildren<Renderer>();
+
                                     go.transform.parent = urdfLink.transform;
                                     go.transform.localPosition = visPos;
                                     go.transform.localRotation = Quaternion.Euler(visRot);
@@ -206,6 +208,7 @@ public class URDFParser : MonoBehaviour
 
                                     if (r)
                                     {
+
                                         r.material.color = col;
 
                                         renderers.Add(r.gameObject);
