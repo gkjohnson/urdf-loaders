@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 // A Joint list for URDF robots 
-public class URDFJointList : MonoBehaviour {
+public class URDFRobot : MonoBehaviour {
 
     // an object describing a URDF joint (joint transform, associated geometry, more?)
     public class URDFJoint {

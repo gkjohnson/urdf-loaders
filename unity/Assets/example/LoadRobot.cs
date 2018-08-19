@@ -20,7 +20,7 @@ public class LoadRobot : MonoBehaviour {
     [SerializeField]
     Axis _upAxis = Axis.POS_Y;
 
-    public URDFJointList robot;
+    public URDFRobot robot;
 
     void Awake() {
         string packagePath = _packagePath;
@@ -45,13 +45,13 @@ public class LoadRobot : MonoBehaviour {
         robot.transform.rotation = Quaternion.Euler(angles);
     }
 
-    virtual protected URDFJointList CreateRobot(string urdf, string package) {
+    virtual protected URDFRobot CreateRobot(string urdf, string package) {
         StreamReader reader = new StreamReader(urdf);
         string content = reader.ReadToEnd();
-        URDFJointList ujl = URDFParser.BuildRobot(content, package);
-        ujl.name = urdf;
+        URDFRobot ur = URDFParser.BuildRobot(content, package);
+        ur.name = urdf;
 
-        return ujl;
+        return ur;
     }
 
     virtual protected void Update() {

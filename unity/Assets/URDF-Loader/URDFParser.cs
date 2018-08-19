@@ -25,8 +25,8 @@ using System.Collections.Generic;
 using System.Xml;
 using System.IO;
 
-using URDFJoint = URDFJointList.URDFJoint;
-using URDFLink = URDFJointList.URDFLink;
+using URDFJoint = URDFRobot.URDFJoint;
+using URDFLink = URDFRobot.URDFLink;
 
 public class URDFParser : MonoBehaviour
 {
@@ -82,8 +82,8 @@ public class URDFParser : MonoBehaviour
     }
 
     // Load the URDF from file and build the robot
-    public static URDFJointList LoadRobot(string urdfPath, string package,
-        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFJointList jointList = null)
+    public static URDFRobot LoadRobot(string urdfPath, string package,
+        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFRobot jointList = null)
     {
         StreamReader reader = new StreamReader(urdfPath);
         string content = reader.ReadToEnd();
@@ -95,8 +95,8 @@ public class URDFParser : MonoBehaviour
     }
 
     // create the robot
-    public static URDFJointList BuildRobot(string urdfContent, string package, string workingPath = "",
-        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+    public static URDFRobot BuildRobot(string urdfContent, string package, string workingPath = "",
+        Action<string, string, Action<GameObject[]>> loadMesh = null, URDFRobot urdfjointlist = null)
     {
         if (loadMesh == null) loadMesh = LoadMesh;
         
@@ -390,7 +390,7 @@ public class URDFParser : MonoBehaviour
                 // find the top most node and add a joint list to it
                 if (urdfjointlist == null)
                 {
-                    urdfjointlist = kv.Value.transform.gameObject.AddComponent<URDFJointList>();
+                    urdfjointlist = kv.Value.transform.gameObject.AddComponent<URDFRobot>();
                 }
                 else
                 {

@@ -6,16 +6,16 @@ using System;
 
 public class LoadWebRobot : LoadRobot {
 
-    override protected URDFJointList CreateRobot(string urdfPath, string package) {
+    override protected URDFRobot CreateRobot(string urdfPath, string package) {
 
-        URDFJointList ujl = new GameObject("Pending Robot").AddComponent<URDFJointList>();
+        URDFRobot ujl = new GameObject("Pending Robot").AddComponent<URDFRobot>();
         StartCoroutine(DownloadRobot(urdfPath, package, ujl));
 
         return ujl;
 
     }
 
-    IEnumerator DownloadRobot(string urdfPath, string package, URDFJointList ujl) {
+    IEnumerator DownloadRobot(string urdfPath, string package, URDFRobot ur) {
 
         using (UnityWebRequest www = UnityWebRequest.Get(urdfPath)) {
 
@@ -30,7 +30,7 @@ public class LoadWebRobot : LoadRobot {
                 Uri uri = new Uri(urdfPath);
                 string workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
 
-                URDFParser.BuildRobot(www.downloadHandler.text, package, workingPath, (path, ext, done) => StartCoroutine(DownloadModel(path, ext, done)), ujl);
+                URDFParser.BuildRobot(www.downloadHandler.text, package, workingPath, (path, ext, done) => StartCoroutine(DownloadModel(path, ext, done)), ur);
 
             }
 

@@ -8,13 +8,13 @@ Utilities for loading URDF files and STL geometry into Unity
 ```cs
 StreamReader reader = new StreamReader(".../path/to/urdf");
 string content = reader.ReadToEnd();
-URDFJointList ujl = URDFParser.BuildRobot(".../package/dir", content);
+URDFRobot ujl = URDFParser.BuildRobot(".../package/dir", content);
 ```
 
 ## API
 ### URDFParser
-#### LoadRobot(urdfPath, package, loadmeshFunction) : URDFJointList
-Reads and processes the urdf at the given path, returning a `URDFJointList` that describes the whole robot.
+#### LoadRobot(urdfPath, package, loadmeshFunction) : URDFRobot
+Reads and processes the urdf at the given path, returning a `URDFRobot` that describes the whole robot.
 
 ##### urdfpath : String
 The path to the URDF file relative to the specified package directory.
@@ -27,7 +27,7 @@ An optional function for loading geometry in a custom way or in unsupported form
 
 The function is passed a path to the model, the models file extension and a callback to pass an array of game objects when finished.
 
-#### BuildRobot(urdfContent, package, workingPath, loadMeshFunction, jointList) : URDFJointList
+#### BuildRobot(urdfContent, package, workingPath, loadMeshFunction, jointList) : URDFRobot
 Same function as above, but this function takes the raw contents of the urdf file rather than a path.
 
 ##### urdfContent : String
@@ -46,20 +46,20 @@ The directory to use to resolve relative file paths in the URDF.
 
 See `LoadURDFRobot`.
 
-##### jointList : URDFJointList
+##### jointList : URDFRobot
 
-An existing URDFJointList to build the robot in to.
+An existing URDFRobot to build the robot in to.
 
-#### URDFJointList.SetAngle(name, rad)
+#### URDFRobot.SetAngle(name, rad)
 Sets the angle (in radians) of the joint with the given name. Throws an error if the joint does not exist.
 
-#### URDFJointList.TrySetAngle(name, rad) : Boolean
+#### URDFRobot.TrySetAngle(name, rad) : Boolean
 Same as above, but does not throw an error. Returns `true` if it was able to set the angle.
 
-#### URDFJointList.GetAnglesAsDictionary() : Dictionary<string, float>
+#### URDFRobot.GetAnglesAsDictionary() : Dictionary<string, float>
 Returns a new `Dictionary<string, float>` with the current angle of all the joints on the robot.
 
-#### URDFJointList.SetAnglesFromDictionary(angles)
+#### URDFRobot.SetAnglesFromDictionary(angles)
 Takes a `Dictionary<string, float>` and sets all the angles on the robot that are listed in the dictionary.
 
 ## Limitations

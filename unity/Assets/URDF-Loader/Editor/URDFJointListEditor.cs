@@ -4,15 +4,15 @@ using UnityEngine;
 using UnityEditor;
 using System.Text.RegularExpressions;
 
-[CustomEditor(typeof(URDFJointList))]
-public class URDFJointListEditor : Editor {
+[CustomEditor(typeof(URDFRobot))]
+public class URDFRobotEditor : Editor {
     List<string> _list = new List<string>();
     bool _useDeg = true;
     bool _sort = true;
     string _filter = "";
     public override void OnInspectorGUI() {
 
-        URDFJointList ujl = (URDFJointList)target;
+        URDFRobot robot = (URDFRobot)target;
 
         // Options
         EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
@@ -22,7 +22,7 @@ public class URDFJointListEditor : Editor {
         
         // Get the joints as a list so we can srot
         _list.Clear();
-        _list.AddRange(ujl.joints.Keys);
+        _list.AddRange(robot.joints.Keys);
         if (_sort) _list.Sort();
 
         // Joints
@@ -35,11 +35,11 @@ public class URDFJointListEditor : Editor {
 
             // Display the joint fields
             EditorGUI.BeginChangeCheck();
-            float angle = ujl.joints[key].angle * (_useDeg ? Mathf.Rad2Deg : 1);
+            float angle = robot.joints[key].angle * (_useDeg ? Mathf.Rad2Deg : 1);
             float newAngle = EditorGUILayout.FloatField(key, angle);
             if (EditorGUI.EndChangeCheck()) {
                 newAngle *= (_useDeg ? Mathf.Deg2Rad : 1);
-                ujl.SetAngle(key, newAngle);
+                robot.SetAngle(key, newAngle);
             }
         }
     }
