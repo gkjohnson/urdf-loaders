@@ -75,11 +75,7 @@ _required_
 
 Callback that is called once the urdf robots have been loaded. The loaded robot is passed to the function.
 
-The available joints are specified on `robot.joints`.
-
-To set a joint angle, call `robot.joint.setAngle(angle)`.
-
-Note that the link geometry will not necessarily have finished being processed when this is called.
+See `URDFRobot` documentation.
 
 #### options : Object
 
@@ -123,17 +119,69 @@ Called immediately with the generated robot. This is the same object that is ret
 
 Note that the link geometry will not necessarily have finished being processed when this is called.
 
+See `URDFRobot` documentation.
+
 #### options : Object
 
 See `load`.
 
 ## URDFRobot
 
-TODO
+Object that describes the URDF Robot. An extension of `THREE.Object3D`.
+
+### name : String
+
+The name of the robot described in the `<robot>` tag.
+
+### links : Object
+
+A dictionary of `linkName : URDFLink` with all links in the robot.
+
+### joints : Object
+
+A dictionary of `jointName : URDFJoint` with all joints in the robot.
 
 ## URDFJoint
 
-TODO
+An object representing a robot joint. An extension of `THREE.Object3D`.
+
+### name : String
+
+The name of the joint.
+
+### jointType : String
+
+The type of joint. Can only be the URDF types of joints.
+
+### limit : Object
+
+An object containing the `lower` and `upper` constraints for the joint.
+
+### axis : THREE.Vector3
+
+The axis described for the joint.
+
+### angle : Number
+
+_readonly_
+
+The current position or angle for joint.
+
+### ignoreLimits : Boolean
+
+Whether or not to ignore the joint limits when setting a the joint position.
+
+### setAngle(angle) | setOffset(position)
+
+#### angle | position : Number
+
+The position off of the starting position to rotate or move the joint to.
+
+### URDFLink
+
+#### name
+
+The name of the link.
 
 ## urdf-viewer Element
 ```html
