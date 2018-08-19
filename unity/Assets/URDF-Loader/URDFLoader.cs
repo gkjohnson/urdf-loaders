@@ -31,6 +31,8 @@ using URDFLink = URDFRobot.URDFLink;
 public class URDFLoader : MonoBehaviour
 {
 
+    const string SINGLE_PACKAGE_KEY = "<DEFAULT>";
+
     public struct Options {
 
         public Action<string, string, Action<GameObject[]>> loadMeshCb;
@@ -38,7 +40,7 @@ public class URDFLoader : MonoBehaviour
         public URDFRobot target;
 
     }
-
+    
     // Default mesh loading function that can
     // load STLs from file
     public static void LoadMesh(string path, string ext, Action<GameObject[]> done)
@@ -79,7 +81,7 @@ public class URDFLoader : MonoBehaviour
         }
     }
 
-    public static string ResolveMeshPath(string path, string package, string workingPath) {
+    public static string ResolveMeshPath(string path, Dictionary<string, string> packages, string workingPath) {
 
         if (path.IndexOf("package://") != 0) {
 
@@ -87,12 +89,48 @@ public class URDFLoader : MonoBehaviour
 
         }
 
-        return Path.Combine(package, path.Replace("package://", ""));
+        string[] spl = path.Replace("package://", "").Split(new char[] { '/', '\\' }, 2);
+        string targetPackage = spl[0];
+        string remaining = spl[1];
+
+        if (packages.ContainsKey(targetPackage)) {
+
+            return Path.Combine(packages[targetPackage], remaining);
+
+        } else if (packages.ContainsKey(SINGLE_PACKAGE_KEY)) {
+
+            string packagePath = packages[SINGLE_PACKAGE_KEY];
+            if (packagePath.EndsWith(targetPackage)) {
+
+                return Path.Combine(packagePath, remaining);
+
+            } else {
+                
+                return Path.Combine(
+                    Path.Combine(packagePath, targetPackage),
+                    remaining
+                );
+                
+            }
+
+        }
+
+        Debug.LogError("URDFLoader: " + targetPackage + " not found in provided package list!");
+        return null;
 
     }
 
     // Load the URDF from file and build the robot
-    public static URDFRobot LoadRobot(string urdfPath, string package, Options options = new Options())
+    public static URDFRobot LoadRobot(string urdfPath, string package, Options options = new Options()) {
+
+        Dictionary<string, string> packages = new Dictionary<string, string>();
+        packages.Add(SINGLE_PACKAGE_KEY, package);
+
+        return LoadRobot(urdfPath, packages, options);
+
+    }
+
+    public static URDFRobot LoadRobot(string urdfPath, Dictionary<string, string> packages, Options options = new Options())
     {
 
         StreamReader reader = new StreamReader(urdfPath);
@@ -103,11 +141,20 @@ public class URDFLoader : MonoBehaviour
             options.workingPath = uri.Host + Path.GetDirectoryName(uri.PathAndQuery);
         }
 
-        return BuildRobot(content, package, options);
+        return BuildRobot(content, packages, options);
     }
 
     // create the robot
-    public static URDFRobot BuildRobot(string urdfContent, string package, Options options = new Options())
+    public static URDFRobot BuildRobot(string urdfPath, string package, Options options = new Options()) {
+
+        Dictionary<string, string> packages = new Dictionary<string, string>();
+        packages.Add(SINGLE_PACKAGE_KEY, package);
+
+        return BuildRobot(urdfPath, packages, options);
+
+    }
+
+    public static URDFRobot BuildRobot(string urdfContent, Dictionary<string, string> packages, Options options = new Options())
     {
 
         if (options.loadMeshCb == null) options.loadMeshCb = LoadMesh;
@@ -259,7 +306,8 @@ public class URDFLoader : MonoBehaviour
                             {
                                 // load the STL file if possible
                                 // get the file path and split it
-                                string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, package, options.workingPath);
+                                string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, packages, options.workingPath);
+
                                 // load all meshes
                                 string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
                                 options.loadMeshCb(fileName, ext, models =>
