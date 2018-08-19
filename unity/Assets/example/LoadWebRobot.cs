@@ -2,20 +2,21 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
 public class LoadWebRobot : LoadRobot {
 
-    override protected URDFRobot CreateRobot(string urdfPath, string package) {
+    override protected URDFRobot CreateRobot(string urdfPath, Dictionary<string, string> packages) {
 
         URDFRobot ujl = new GameObject("Pending Robot").AddComponent<URDFRobot>();
-        StartCoroutine(DownloadRobot(urdfPath, package, ujl));
+        StartCoroutine(DownloadRobot(urdfPath, packages, ujl));
 
         return ujl;
 
     }
 
-    IEnumerator DownloadRobot(string urdfPath, string package, URDFRobot ur) {
+    IEnumerator DownloadRobot(string urdfPath, Dictionary<string, string> packages, URDFRobot ur) {
 
         using (UnityWebRequest www = UnityWebRequest.Get(urdfPath)) {
 
@@ -36,7 +37,7 @@ public class LoadWebRobot : LoadRobot {
                     target = ur
                 };
 
-                URDFLoader.BuildRobot(www.downloadHandler.text, package, opt);
+                URDFLoader.BuildRobot(www.downloadHandler.text, packages, opt);
 
             }
 

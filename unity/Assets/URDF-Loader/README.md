@@ -19,8 +19,10 @@ Reads and processes the urdf at the given path, returning a `URDFRobot` that des
 ##### urdfpath : String
 The path to the URDF file relative to the specified package directory.
 
-##### package : String
-The path representing the package:// directory to load package:// relative files.
+##### package : String | Dictionary<string, string>
+If the package is just a string then it replaces the `package://` portion of the path.
+
+If it is a dictionary then it represents a list of packages by `packageName : packagePath` so that multiple packages can be specified.
 
 ##### options : URDFLoader.Options
 
@@ -35,7 +37,7 @@ Same function as above, but this function takes the raw contents of the urdf fil
 
 The urdf content to parse into a robot.
 
-##### package : String
+##### package : String | Dictionary<string, string>
 
 See `LoadURDFRobot`.
 

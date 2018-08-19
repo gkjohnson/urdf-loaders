@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.IO;
+using System.Collections.Generic;
+using System;
 
 public class LoadRobot : MonoBehaviour {
     enum Axis {
@@ -11,8 +13,14 @@ public class LoadRobot : MonoBehaviour {
         NEG_Z = -3
     }
 
+    [Serializable]
+    struct Package {
+        public string name;
+        public string path;
+    }
+    
     [SerializeField]
-    string _packagePath = "";
+    List<Package> _packages;
 
     [SerializeField]
     string _fileName = "";
@@ -23,16 +31,23 @@ public class LoadRobot : MonoBehaviour {
     public URDFRobot robot;
 
     void Awake() {
-        string packagePath = _packagePath;
-        if (packagePath.IndexOf("https://") != 0 && packagePath.IndexOf("https://") != 0) {
-            packagePath = Path.Combine(Application.dataPath, packagePath);
+
+        Dictionary<string, string> packages = new Dictionary<string, string>();
+        foreach (var pkg in _packages) {
+
+            string packagePath = pkg.path;
+            if (packagePath.IndexOf("https://") != 0 && packagePath.IndexOf("https://") != 0) {
+                packagePath = Path.Combine(Application.dataPath, packagePath);
+            }
+            packages[pkg.name] = packagePath;
+
         }
 
         string urdfPath = _fileName;
         if (urdfPath.IndexOf("https://") != 0 && urdfPath.IndexOf("https://") != 0) {
             urdfPath = Path.Combine(Application.dataPath, urdfPath);
         }
-        robot = CreateRobot(urdfPath, packagePath);
+        robot = CreateRobot(urdfPath, packages);
 
         bool positive = _upAxis > 0;
         Axis axis = !positive ? (Axis)(-1 * (int)_upAxis) : _upAxis;
@@ -45,9 +60,9 @@ public class LoadRobot : MonoBehaviour {
         robot.transform.rotation = Quaternion.Euler(angles);
     }
 
-    virtual protected URDFRobot CreateRobot(string urdf, string package) {
+    virtual protected URDFRobot CreateRobot(string urdf, Dictionary<string, string> packages) {
 
-        URDFRobot ur = URDFLoader.LoadRobot(urdf, package);
+        URDFRobot ur = URDFLoader.LoadRobot(urdf, packages);
         ur.name = urdf;
 
         return ur;
