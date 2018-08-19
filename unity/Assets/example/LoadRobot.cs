@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.IO;
 
 public class LoadRobot : MonoBehaviour {
@@ -23,7 +23,11 @@ public class LoadRobot : MonoBehaviour {
     public URDFJointList robot;
 
     void Awake() {
-        string path = Application.dataPath + _packagePath;
+        string path = _packagePath;
+        if (path.IndexOf("https://") != 0 && path.IndexOf("https://") != 0) {
+            path = Application.dataPath + path;
+        }
+
         robot = CreateRobot(path, _fileName);
 
         bool positive = _upAxis > 0;
@@ -37,7 +41,7 @@ public class LoadRobot : MonoBehaviour {
         robot.transform.rotation = Quaternion.Euler(angles);
     }
 
-    URDFJointList CreateRobot(string package, string urdf) {
+    virtual protected URDFJointList CreateRobot(string package, string urdf) {
         StreamReader reader = new StreamReader(package + urdf);
         string content = reader.ReadToEnd();
         URDFJointList ujl = URDFParser.BuildRobot(package, content);
@@ -46,7 +50,7 @@ public class LoadRobot : MonoBehaviour {
         return ujl;
     }
 
-    void Update() {
+    virtual protected void Update() {
         float time = Time.timeSinceLevelLoad * 1000.0f / 3e2f;
         for(int i = 1; i <= 6; i ++) {
             float offset = i * Mathf.PI / 3;

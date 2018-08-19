@@ -1,4 +1,4 @@
-﻿/*
+/*
 Reference coordinate frames for Unity and ROS.
 The Unity coordinate frame is left handed and ROS is right handed, so
 the axes are transformed to line up appropriately. See the "URDFToUnityPos"
@@ -31,17 +31,16 @@ public class URDFParser : MonoBehaviour
 {
     // Default mesh loading function that can
     // load STLs from file
-    public static void LoadMesh(string path, System.Action<GameObject[]> done)
+    public static void LoadMesh(string path, string ext, System.Action<GameObject[]> done)
     {
-        string fileType = Path.GetExtension(path).ToLower().Replace(".", "");
         Mesh[] meshes = null;
-        if (fileType == "stl")
+        if (ext == "stl")
         {
             print("building stl file " + path);
             meshes = StlLoader.Load(path);
 
         }
-        else if (fileType == "dae")
+        else if (ext == "dae")
         {
             print("building dae file " + path);
             var empty = new string[0];
@@ -50,7 +49,7 @@ public class URDFParser : MonoBehaviour
 
         if (meshes == null) {
 
-            throw new System.Exception("Filetype '" + fileType + "' not supported");
+            throw new System.Exception("Filetype '" + ext + "' not supported");
 
         } else {
 
@@ -71,7 +70,7 @@ public class URDFParser : MonoBehaviour
 
     // Load the URDF from file and build the robot
     public static URDFJointList LoadURDFRobot(string package, string urdfpath,
-        System.Action<string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+        System.Action<string, string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
     {
         string path = Path.Combine(package, urdfpath);
         StreamReader reader = new StreamReader(path);
@@ -82,7 +81,7 @@ public class URDFParser : MonoBehaviour
 
     // create the robot
     public static URDFJointList BuildRobot(string package, string urdfContent,
-        System.Action<string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
+        System.Action<string, string, System.Action<GameObject[]>> loadMesh = null, URDFJointList urdfjointlist = null)
     {
         if (loadMesh == null) loadMesh = LoadMesh;
 
@@ -233,8 +232,9 @@ public class URDFParser : MonoBehaviour
                                 string fileName = meshNode.Attributes["filename"].Value;
                                 fileName = Path.Combine(package, fileName.Replace("package://", ""));
 
-                                // load all meshes 
-                                loadMesh(fileName, models =>
+                                // load all meshes
+                                string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
+                                loadMesh(fileName, ext, models =>
                                 {
                                     // create the rest of the meshes and child them to the click target
                                     for (int i = 0; i < models.Length; i++)
