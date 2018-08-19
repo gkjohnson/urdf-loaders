@@ -16,7 +16,7 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 
 ![Example](/javascript/docs/javascript-example.gif)
 
-## URDFLoader
+## Use
 ```html
 <script src=".../URDFLoader.js"></script>
 <script>
@@ -35,20 +35,26 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 - Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
 - Collision tags are not parsed.
 
-### API
-#### URDFLoader(manager)
+## URDFLoader API
+### constructor(manager)
 
 Constructor
 
-##### manager
+#### manager : THREE.LoadingManager
 
 THREE.LoadingManager. Used for transforming load URLs.
 
-#### URDFLoader.load(package, urdfpath, robotsCallback, geometryLoader, fetchOptions)
+### load(urdfpath, packages, onComplete, options)
 
 Loads and builds the specified URDF robot in THREE.js
 
-##### package
+#### urdfpath : String
+
+_required_
+
+The path to the URDF file relative to the specified package directory.
+
+#### packages : String | Object
 
 _required_
 
@@ -63,33 +69,71 @@ If the argument is a string, then it is used to replace the `package://` prefix 
 }
 ```
 
-##### urdf
-
-_required_
-
-The path to the URDF file relative to the specified package directory.
-
-##### robotCallback(robot)
+#### onComplete(robot) : Function
 
 _required_
 
 Callback that is called once the urdf robots have been loaded. The loaded robot is passed to the function.
 
-The available joints are specified on `robot.urdf.joints`.
+The available joints are specified on `robot.joints`.
 
-To set a joint angle, call `robot.urdf.joint.setAngle(angle)`.
+To set a joint angle, call `robot.joint.setAngle(angle)`.
 
-##### geometryLoader(pathToModel, fileExtension, doneCallback)
+Note that the link geometry will not necessarily have finished being processed when this is called.
 
-_optional_
-
-An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `doneCallback` is called with the mesh once the geometry has been loaded.
-
-##### fetchOptions
+#### options : Object
 
 _optional_
+
+##### options.loadMeshCallback(pathToModel, fileExtension, onComplete) : Function
+
+An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
+
+##### options.fetchOptions : Object
 
 An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
+
+### parse(urdfContent, packages, workingPath, onComplete, options) : THREE.Object3D
+
+Parses URDF content and returns the robot model.
+
+#### urdfContent : String
+
+_required_
+
+The xml content of a URDF file.
+
+#### packages : String | Object
+
+_required_
+
+See `load`.
+
+#### workingPath : String
+
+_required_
+
+The path to load geometry relative to.
+
+#### onComplete(robot) : Function
+
+_optional_
+
+Called immediately with the generated robot. This is the same object that is returned from the function.
+
+Note that the link geometry will not necessarily have finished being processed when this is called.
+
+#### options : Object
+
+See `load`.
+
+## URDFRobot
+
+TODO
+
+## URDFJoint
+
+TODO
 
 ## urdf-viewer Element
 ```html
@@ -132,8 +176,6 @@ Corresponds to the `package` parameter in `URDFLoader.load`. Supported are:
     // 2. Example for serialized package map that contains `package1` and `package2`
     <urdf-viewer package="package1:.../path/to/package1, package2:.../path/to/package1" ...></urdf-viewer>
     ```
-
-
 
 #### urdf
 
