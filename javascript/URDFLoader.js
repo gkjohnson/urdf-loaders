@@ -101,7 +101,7 @@ class URDFLoader {
 
         fetch(urdfPath, options.fetchOptions)
             .then(res => res.text())
-            .then(data => this.parse(data, packages, workingPath, onComplete, options));
+            .then(data => this.parse(data, packages, onComplete, options));
 
     }
 
