@@ -131,15 +131,15 @@ See `load`.
 
 Object that describes the URDF Robot. An extension of `THREE.Object3D`.
 
-### name : String
+#### name : String
 
 The name of the robot described in the `<robot>` tag.
 
-### links : Object
+#### links : Object
 
 A dictionary of `linkName : URDFLink` with all links in the robot.
 
-### joints : Object
+#### joints : Object
 
 A dictionary of `jointName : URDFJoint` with all joints in the robot.
 
@@ -147,29 +147,29 @@ A dictionary of `jointName : URDFJoint` with all joints in the robot.
 
 An object representing a robot joint. An extension of `THREE.Object3D`.
 
-### name : String
+#### name : String
 
 The name of the joint.
 
-### jointType : String
+#### jointType : String
 
 The type of joint. Can only be the URDF types of joints.
 
-### limit : Object
+#### limit : Object
 
 An object containing the `lower` and `upper` constraints for the joint.
 
-### axis : THREE.Vector3
+#### axis : THREE.Vector3
 
 The axis described for the joint.
 
-### angle : Number
+#### angle : Number
 
 _readonly_
 
 The current position or angle for joint.
 
-### ignoreLimits : Boolean
+#### ignoreLimits : Boolean
 
 Whether or not to ignore the joint limits when setting a the joint position.
 
@@ -179,7 +179,7 @@ Whether or not to ignore the joint limits when setting a the joint position.
 
 The position off of the starting position to rotate or move the joint to.
 
-### URDFLink
+## URDFLink
 
 #### name
 
