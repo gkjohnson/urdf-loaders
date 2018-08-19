@@ -60,7 +60,9 @@ _required_
 
 The path representing the `package://` directory(s) to load `package://` relative files.
 
-If the argument is a string, then it is used to replace the `package://` prefix when loading geometry. To specify multiple packages an object syntax used defining the package name to the package path:
+If the argument is a string, then it is used to replace the `package://` prefix when loading geometry.
+
+To specify multiple packages an object syntax is used defining the package name to the package path:
 ```js
 {
   "package1": ".../path/to/package1",
