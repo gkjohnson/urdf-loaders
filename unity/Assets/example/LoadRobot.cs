@@ -23,12 +23,16 @@ public class LoadRobot : MonoBehaviour {
     public URDFJointList robot;
 
     void Awake() {
-        string path = _packagePath;
-        if (path.IndexOf("https://") != 0 && path.IndexOf("https://") != 0) {
-            path = Application.dataPath + path;
+        string packagePath = _packagePath;
+        if (packagePath.IndexOf("https://") != 0 && packagePath.IndexOf("https://") != 0) {
+            packagePath = Path.Combine(Application.dataPath, packagePath);
         }
 
-        robot = CreateRobot(path, _fileName);
+        string urdfPath = _fileName;
+        if (urdfPath.IndexOf("https://") != 0 && urdfPath.IndexOf("https://") != 0) {
+            urdfPath = Path.Combine(Application.dataPath, urdfPath);
+        }
+        robot = CreateRobot(urdfPath, packagePath);
 
         bool positive = _upAxis > 0;
         Axis axis = !positive ? (Axis)(-1 * (int)_upAxis) : _upAxis;
@@ -41,10 +45,10 @@ public class LoadRobot : MonoBehaviour {
         robot.transform.rotation = Quaternion.Euler(angles);
     }
 
-    virtual protected URDFJointList CreateRobot(string package, string urdf) {
-        StreamReader reader = new StreamReader(package + urdf);
+    virtual protected URDFJointList CreateRobot(string urdf, string package) {
+        StreamReader reader = new StreamReader(urdf);
         string content = reader.ReadToEnd();
-        URDFJointList ujl = URDFParser.BuildRobot(package, content);
+        URDFJointList ujl = URDFParser.BuildRobot(content, package);
         ujl.name = urdf;
 
         return ujl;

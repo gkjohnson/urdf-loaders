@@ -13,30 +13,30 @@ URDFJointList ujl = URDFParser.BuildRobot(".../package/dir", content);
 
 ## API
 ### URDFParser
-#### LoadURDFRobot(package, urdfPath, loadmeshFunction) : URDFJointList
+#### LoadRobot(urdfPath, package, loadmeshFunction) : URDFJointList
 Reads and processes the urdf at the given path, returning a `URDFJointList` that describes the whole robot.
-
-##### package : String
-The path representing the package:// directory to load package:// relative files.
 
 ##### urdfpath : String
 The path to the URDF file relative to the specified package directory.
+
+##### package : String
+The path representing the package:// directory to load package:// relative files.
 
 ##### loadmeshFunction : System.Action<string, string, System.Action<GameObject[]>>
 An optional function for loading geometry in a custom way or in unsupported formats. `URDFLoader.LoadMesh` is used by default.
 
 The function is passed a path to the model, the models file extension and a callback to pass an array of game objects when finished.
 
-#### BuildRobot(package, urdfContent, workingPath, loadMeshFunction, jointList) : URDFJointList
+#### BuildRobot(urdfContent, package, workingPath, loadMeshFunction, jointList) : URDFJointList
 Same function as above, but this function takes the raw contents of the urdf file rather than a path.
-
-##### package : String
-
-See `LoadURDFRobot`.
 
 ##### urdfContent : String
 
 The urdf content to parse into a robot.
+
+##### package : String
+
+See `LoadURDFRobot`.
 
 ##### workingPath : String
 
