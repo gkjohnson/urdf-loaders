@@ -14,7 +14,8 @@
     "urdf-viewer-element.js",
     "urdf-manipulator-element.js",
     "example/index.js",
-    "example/dragAndDrop.js"
+    "example/dragAndDrop.js",
+    "example/styles.css"
   ],
   "license": "Apache-2.0",
   "repository": {
