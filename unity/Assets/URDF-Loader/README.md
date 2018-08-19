@@ -8,11 +8,11 @@ Utilities for loading URDF files and STL geometry into Unity
 ```cs
 StreamReader reader = new StreamReader(".../path/to/urdf");
 string content = reader.ReadToEnd();
-URDFRobot ur = URDFParser.BuildRobot(".../package/dir", content);
+URDFRobot ur = URDFLoader.BuildRobot(".../package/dir", content);
 ```
 
 ## API
-### URDFParser
+### URDFLoader
 #### LoadRobot(urdfPath, package, loadmeshFunction) : URDFRobot
 Reads and processes the urdf at the given path, returning a `URDFRobot` that describes the whole robot.
 

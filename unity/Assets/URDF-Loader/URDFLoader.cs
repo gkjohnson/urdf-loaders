@@ -28,7 +28,7 @@ using System.IO;
 using URDFJoint = URDFRobot.URDFJoint;
 using URDFLink = URDFRobot.URDFLink;
 
-public class URDFParser : MonoBehaviour
+public class URDFLoader : MonoBehaviour
 {
     // Default mesh loading function that can
     // load STLs from file

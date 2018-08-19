@@ -52,7 +52,7 @@ public class ColladaLite
             {
                 if (childNode.HasChildNodes)
                 {
-                    var fc = URDFParser.GetXmlNodeChildByName(childNode, "geometry");
+                    var fc = URDFLoader.GetXmlNodeChildByName(childNode, "geometry");
                     foreach (XmlNode mesh in fc.ChildNodes)
                     {
                         if (mesh.Name != "mesh") continue;
@@ -68,7 +68,7 @@ public class ColladaLite
                         {
                             if (node.Name == "source")
                             {
-                                var fa = URDFParser.GetXmlNodeChildByName(node, "float_array");
+                                var fa = URDFLoader.GetXmlNodeChildByName(node, "float_array");
                                 if (fa != null)
                                 {
                                     sources.Add(node.Attributes["id"].Value,
@@ -79,7 +79,7 @@ public class ColladaLite
                             }
                             else if (node.Name == "vertices")
                             {
-                                var vs = URDFParser.GetXmlNodeChildByName(node, "input");
+                                var vs = URDFLoader.GetXmlNodeChildByName(node, "input");
                                 if (vs != null)
                                 {
                                     vertsSource = vs.Attributes["source"].Value.Replace("#", "");
@@ -88,14 +88,14 @@ public class ColladaLite
                             else if (node.Name == "triangles")
                             {
                                 triCount = int.Parse(node.Attributes["count"].Value) * 3;
-                                inputs.AddRange(URDFParser.GetXmlNodeChildrenByName(node, "input")
+                                inputs.AddRange(URDFLoader.GetXmlNodeChildrenByName(node, "input")
                                     .Select(inputNode => new DaeInput
                                     {
                                         semantic = inputNode.Attributes["semantic"].Value,
                                         source = inputNode.Attributes["source"].Value,
                                         offset = int.Parse(inputNode.Attributes["offset"].Value)
                                     }));
-                                indices = URDFParser.GetXmlNodeChildByName(node, "p").InnerText
+                                indices = URDFLoader.GetXmlNodeChildByName(node, "p").InnerText
                                     .Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i))
                                     .ToArray();
                             }
@@ -124,7 +124,7 @@ public class ColladaLite
                                 var temp = new List<Vector3>();
                                 for (int i = 0; i < sources[vertsSource].Length; i += 3)
                                 {
-                                    temp.Add(URDFParser.URDFToUnityPos(new Vector3(sources[vertsSource][i],
+                                    temp.Add(URDFLoader.URDFToUnityPos(new Vector3(sources[vertsSource][i],
                                         sources[vertsSource][i + 1],
                                         sources[vertsSource][i + 2])));
                                 }

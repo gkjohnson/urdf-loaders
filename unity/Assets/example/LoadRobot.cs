@@ -47,7 +47,7 @@ public class LoadRobot : MonoBehaviour {
 
     virtual protected URDFRobot CreateRobot(string urdf, string package) {
 
-        URDFRobot ur = URDFParser.LoadRobot(urdf, package);
+        URDFRobot ur = URDFLoader.LoadRobot(urdf, package);
         ur.name = urdf;
 
         return ur;
