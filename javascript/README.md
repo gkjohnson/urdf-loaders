@@ -25,9 +25,9 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
   loader.load(
     'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
     {
-        packageName : '.../package/dir/'
-    },           // The equivelant of a (list of) ROS package(s):// directory
-    robot => { },                 // The robot is loaded!
+        packageName : '.../package/dir/'    // The equivelant of a (list of) ROS package(s):// directory
+    },
+    robot => { },                           // The robot is loaded!
     {
         loadMeshCb: (path, ext, done) => { },     // Callback for each mesh for custom mesh processing and loading code
     }
