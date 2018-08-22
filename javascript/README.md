@@ -81,7 +81,7 @@ See `URDFRobot` documentation.
 
 _optional_
 
-##### options.loadMeshCallback(pathToModel, fileExtension, onComplete) : Function
+##### options.loadMeshCb(pathToModel, fileExtension, onComplete) : Function
 
 An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
 
