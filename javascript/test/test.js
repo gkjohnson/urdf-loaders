@@ -30,9 +30,13 @@ beforeAll(async() => {
         args: ['--no-sandbox'],
     });
     page = await browser.newPage();
-
+    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/build/three.min.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/GLTFLoader.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/OBJLoader.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/STLLoader.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/ColladaLoader.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../URDFLoader.js') });
     await page.coverage.startJSCoverage();
-    await page.goto(`file:${ path.join(__dirname, './test-setup.html') }`);
 
     page.on('error', e => { throw new Error(e); });
     page.on('pageerror', e => { throw new Error(e); });
