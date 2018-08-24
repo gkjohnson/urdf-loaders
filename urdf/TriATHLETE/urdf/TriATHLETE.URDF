@@ -22,7 +22,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Body.STL" />
+          filename="../meshes/Body.STL" />
       </geometry>
       <material
         name="">
@@ -36,7 +36,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Body.STL" />
+          filename="../meshes/Body.STL" />
       </geometry>
     </collision>
   </link>
@@ -62,7 +62,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Hip1.STL" />
+          filename="../meshes/Hip1.STL" />
       </geometry>
       <material
         name="">
@@ -76,7 +76,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Hip1.STL" />
+          filename="../meshes/Hip1.STL" />
       </geometry>
     </collision>
   </link>
@@ -120,7 +120,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Thigh1.STL" />
+          filename="../meshes/Thigh1.STL" />
       </geometry>
       <material
         name="">
@@ -134,7 +134,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Thigh1.STL" />
+          filename="../meshes/Thigh1.STL" />
       </geometry>
     </collision>
   </link>
@@ -178,7 +178,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Knee1.STL" />
+          filename="../meshes/Knee1.STL" />
       </geometry>
       <material
         name="">
@@ -192,7 +192,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Knee1.STL" />
+          filename="../meshes/Knee1.STL" />
       </geometry>
     </collision>
   </link>
@@ -236,7 +236,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Shin1.STL" />
+          filename="../meshes/Shin1.STL" />
       </geometry>
       <material
         name="">
@@ -250,7 +250,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Shin1.STL" />
+          filename="../meshes/Shin1.STL" />
       </geometry>
     </collision>
   </link>
@@ -294,7 +294,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Ankle1.STL" />
+          filename="../meshes/Ankle1.STL" />
       </geometry>
       <material
         name="">
@@ -308,7 +308,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Ankle1.STL" />
+          filename="../meshes/Ankle1.STL" />
       </geometry>
     </collision>
   </link>
@@ -352,7 +352,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Foot1.STL" />
+          filename="../meshes/Foot1.STL" />
       </geometry>
       <material
         name="">
@@ -366,7 +366,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Foot1.STL" />
+          filename="../meshes/Foot1.STL" />
       </geometry>
     </collision>
   </link>
@@ -410,7 +410,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Wheel1.STL" />
+          filename="../meshes/Wheel1.STL" />
       </geometry>
       <material
         name="">
@@ -424,7 +424,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Wheel1.STL" />
+          filename="../meshes/Wheel1.STL" />
       </geometry>
     </collision>
   </link>
@@ -463,7 +463,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolCam1.STL" />
+          filename="../meshes/ToolCam1.STL" />
       </geometry>
       <material
         name="">
@@ -477,7 +477,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolCam1.STL" />
+          filename="../meshes/ToolCam1.STL" />
       </geometry>
     </collision>
   </link>
@@ -519,7 +519,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp1A.STL" />
+          filename="../meshes/ToolClamp1A.STL" />
       </geometry>
       <material
         name="">
@@ -533,7 +533,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp1A.STL" />
+          filename="../meshes/ToolClamp1A.STL" />
       </geometry>
     </collision>
   </link>
@@ -577,7 +577,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp1B.STL" />
+          filename="../meshes/ToolClamp1B.STL" />
       </geometry>
       <material
         name="">
@@ -591,7 +591,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp1B.STL" />
+          filename="../meshes/ToolClamp1B.STL" />
       </geometry>
     </collision>
   </link>
@@ -635,7 +635,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Hip2.STL" />
+          filename="../meshes/Hip2.STL" />
       </geometry>
       <material
         name="">
@@ -649,7 +649,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Hip2.STL" />
+          filename="../meshes/Hip2.STL" />
       </geometry>
     </collision>
   </link>
@@ -693,7 +693,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Thigh2.STL" />
+          filename="../meshes/Thigh2.STL" />
       </geometry>
       <material
         name="">
@@ -707,7 +707,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Thigh2.STL" />
+          filename="../meshes/Thigh2.STL" />
       </geometry>
     </collision>
   </link>
@@ -751,7 +751,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Knee2.STL" />
+          filename="../meshes/Knee2.STL" />
       </geometry>
       <material
         name="">
@@ -765,7 +765,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Knee2.STL" />
+          filename="../meshes/Knee2.STL" />
       </geometry>
     </collision>
   </link>
@@ -809,7 +809,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Shin2.STL" />
+          filename="../meshes/Shin2.STL" />
       </geometry>
       <material
         name="">
@@ -823,7 +823,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Shin2.STL" />
+          filename="../meshes/Shin2.STL" />
       </geometry>
     </collision>
   </link>
@@ -867,7 +867,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Ankle2.STL" />
+          filename="../meshes/Ankle2.STL" />
       </geometry>
       <material
         name="">
@@ -881,7 +881,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Ankle2.STL" />
+          filename="../meshes/Ankle2.STL" />
       </geometry>
     </collision>
   </link>
@@ -925,7 +925,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Foot2.STL" />
+          filename="../meshes/Foot2.STL" />
       </geometry>
       <material
         name="">
@@ -939,7 +939,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Foot2.STL" />
+          filename="../meshes/Foot2.STL" />
       </geometry>
     </collision>
   </link>
@@ -983,7 +983,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Wheel2.STL" />
+          filename="../meshes/Wheel2.STL" />
       </geometry>
       <material
         name="">
@@ -997,7 +997,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Wheel2.STL" />
+          filename="../meshes/Wheel2.STL" />
       </geometry>
     </collision>
   </link>
@@ -1036,7 +1036,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolCam2.STL" />
+          filename="../meshes/ToolCam2.STL" />
       </geometry>
       <material
         name="">
@@ -1050,7 +1050,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolCam2.STL" />
+          filename="../meshes/ToolCam2.STL" />
       </geometry>
     </collision>
   </link>
@@ -1092,7 +1092,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp2A.STL" />
+          filename="../meshes/ToolClamp2A.STL" />
       </geometry>
       <material
         name="">
@@ -1106,7 +1106,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp2A.STL" />
+          filename="../meshes/ToolClamp2A.STL" />
       </geometry>
     </collision>
   </link>
@@ -1150,7 +1150,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp2B.STL" />
+          filename="../meshes/ToolClamp2B.STL" />
       </geometry>
       <material
         name="">
@@ -1164,7 +1164,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp2B.STL" />
+          filename="../meshes/ToolClamp2B.STL" />
       </geometry>
     </collision>
   </link>
@@ -1208,7 +1208,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Hip3.STL" />
+          filename="../meshes/Hip3.STL" />
       </geometry>
       <material
         name="">
@@ -1222,7 +1222,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Hip3.STL" />
+          filename="../meshes/Hip3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1266,7 +1266,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Thigh3.STL" />
+          filename="../meshes/Thigh3.STL" />
       </geometry>
       <material
         name="">
@@ -1280,7 +1280,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Thigh3.STL" />
+          filename="../meshes/Thigh3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1324,7 +1324,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Knee3.STL" />
+          filename="../meshes/Knee3.STL" />
       </geometry>
       <material
         name="">
@@ -1338,7 +1338,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Knee3.STL" />
+          filename="../meshes/Knee3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1382,7 +1382,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Shin3.STL" />
+          filename="../meshes/Shin3.STL" />
       </geometry>
       <material
         name="">
@@ -1396,7 +1396,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Shin3.STL" />
+          filename="../meshes/Shin3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1440,7 +1440,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Ankle3.STL" />
+          filename="../meshes/Ankle3.STL" />
       </geometry>
       <material
         name="">
@@ -1454,7 +1454,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Ankle3.STL" />
+          filename="../meshes/Ankle3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1498,7 +1498,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Foot3.STL" />
+          filename="../meshes/Foot3.STL" />
       </geometry>
       <material
         name="">
@@ -1512,7 +1512,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Foot3.STL" />
+          filename="../meshes/Foot3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1556,7 +1556,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Wheel3.STL" />
+          filename="../meshes/Wheel3.STL" />
       </geometry>
       <material
         name="">
@@ -1570,7 +1570,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/Wheel3.STL" />
+          filename="../meshes/Wheel3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1609,7 +1609,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolCam3.STL" />
+          filename="../meshes/ToolCam3.STL" />
       </geometry>
       <material
         name="">
@@ -1623,7 +1623,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolCam3.STL" />
+          filename="../meshes/ToolCam3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1665,7 +1665,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp3A.STL" />
+          filename="../meshes/ToolClamp3A.STL" />
       </geometry>
       <material
         name="">
@@ -1679,7 +1679,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp3A.STL" />
+          filename="../meshes/ToolClamp3A.STL" />
       </geometry>
     </collision>
   </link>
@@ -1723,7 +1723,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp3B.STL" />
+          filename="../meshes/ToolClamp3B.STL" />
       </geometry>
       <material
         name="">
@@ -1737,7 +1737,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://TriATHLETE/meshes/ToolClamp3B.STL" />
+          filename="../meshes/ToolClamp3B.STL" />
       </geometry>
     </collision>
   </link>

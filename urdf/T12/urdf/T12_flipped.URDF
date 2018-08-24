@@ -22,7 +22,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Body.STL" />
+          filename="../meshes/Body.STL" />
       </geometry>
       <material
         name="">
@@ -36,7 +36,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Body.STL" />
+          filename="../meshes/Body.STL" />
       </geometry>
     </collision>
   </link>
@@ -62,7 +62,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip1.STL" />
+          filename="../meshes/Hip1.STL" />
       </geometry>
       <material
         name="">
@@ -76,7 +76,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip1.STL" />
+          filename="../meshes/Hip1.STL" />
       </geometry>
     </collision>
   </link>
@@ -120,7 +120,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh1.STL" />
+          filename="../meshes/Thigh1.STL" />
       </geometry>
       <material
         name="">
@@ -134,7 +134,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh1.STL" />
+          filename="../meshes/Thigh1.STL" />
       </geometry>
     </collision>
   </link>
@@ -178,7 +178,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee1.STL" />
+          filename="../meshes/Knee1.STL" />
       </geometry>
       <material
         name="">
@@ -192,7 +192,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee1.STL" />
+          filename="../meshes/Knee1.STL" />
       </geometry>
     </collision>
   </link>
@@ -236,7 +236,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin1.STL" />
+          filename="../meshes/Shin1.STL" />
       </geometry>
       <material
         name="">
@@ -250,7 +250,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin1.STL" />
+          filename="../meshes/Shin1.STL" />
       </geometry>
     </collision>
   </link>
@@ -294,7 +294,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle1.STL" />
+          filename="../meshes/Ankle1.STL" />
       </geometry>
       <material
         name="">
@@ -308,7 +308,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle1.STL" />
+          filename="../meshes/Ankle1.STL" />
       </geometry>
     </collision>
   </link>
@@ -352,7 +352,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot1.STL" />
+          filename="../meshes/Foot1.STL" />
       </geometry>
       <material
         name="">
@@ -366,7 +366,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot1.STL" />
+          filename="../meshes/Foot1.STL" />
       </geometry>
     </collision>
   </link>
@@ -410,7 +410,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip2.STL" />
+          filename="../meshes/Hip2.STL" />
       </geometry>
       <material
         name="">
@@ -424,7 +424,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip2.STL" />
+          filename="../meshes/Hip2.STL" />
       </geometry>
     </collision>
   </link>
@@ -468,7 +468,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh2.STL" />
+          filename="../meshes/Thigh2.STL" />
       </geometry>
       <material
         name="">
@@ -482,7 +482,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh2.STL" />
+          filename="../meshes/Thigh2.STL" />
       </geometry>
     </collision>
   </link>
@@ -526,7 +526,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee2.STL" />
+          filename="../meshes/Knee2.STL" />
       </geometry>
       <material
         name="">
@@ -540,7 +540,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee2.STL" />
+          filename="../meshes/Knee2.STL" />
       </geometry>
     </collision>
   </link>
@@ -584,7 +584,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin2.STL" />
+          filename="../meshes/Shin2.STL" />
       </geometry>
       <material
         name="">
@@ -598,7 +598,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin2.STL" />
+          filename="../meshes/Shin2.STL" />
       </geometry>
     </collision>
   </link>
@@ -642,7 +642,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle2.STL" />
+          filename="../meshes/Ankle2.STL" />
       </geometry>
       <material
         name="">
@@ -656,7 +656,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle2.STL" />
+          filename="../meshes/Ankle2.STL" />
       </geometry>
     </collision>
   </link>
@@ -700,7 +700,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot2.STL" />
+          filename="../meshes/Foot2.STL" />
       </geometry>
       <material
         name="">
@@ -714,7 +714,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot2.STL" />
+          filename="../meshes/Foot2.STL" />
       </geometry>
     </collision>
   </link>
@@ -758,7 +758,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip3.STL" />
+          filename="../meshes/Hip3.STL" />
       </geometry>
       <material
         name="">
@@ -772,7 +772,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip3.STL" />
+          filename="../meshes/Hip3.STL" />
       </geometry>
     </collision>
   </link>
@@ -816,7 +816,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh3.STL" />
+          filename="../meshes/Thigh3.STL" />
       </geometry>
       <material
         name="">
@@ -830,7 +830,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh3.STL" />
+          filename="../meshes/Thigh3.STL" />
       </geometry>
     </collision>
   </link>
@@ -874,7 +874,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee3.STL" />
+          filename="../meshes/Knee3.STL" />
       </geometry>
       <material
         name="">
@@ -888,7 +888,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee3.STL" />
+          filename="../meshes/Knee3.STL" />
       </geometry>
     </collision>
   </link>
@@ -932,7 +932,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin3.STL" />
+          filename="../meshes/Shin3.STL" />
       </geometry>
       <material
         name="">
@@ -946,7 +946,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin3.STL" />
+          filename="../meshes/Shin3.STL" />
       </geometry>
     </collision>
   </link>
@@ -990,7 +990,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle3.STL" />
+          filename="../meshes/Ankle3.STL" />
       </geometry>
       <material
         name="">
@@ -1004,7 +1004,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle3.STL" />
+          filename="../meshes/Ankle3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1048,7 +1048,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot3.STL" />
+          filename="../meshes/Foot3.STL" />
       </geometry>
       <material
         name="">
@@ -1062,7 +1062,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot3.STL" />
+          filename="../meshes/Foot3.STL" />
       </geometry>
     </collision>
   </link>
@@ -1106,7 +1106,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip4.STL" />
+          filename="../meshes/Hip4.STL" />
       </geometry>
       <material
         name="">
@@ -1120,7 +1120,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip4.STL" />
+          filename="../meshes/Hip4.STL" />
       </geometry>
     </collision>
   </link>
@@ -1164,7 +1164,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh4.STL" />
+          filename="../meshes/Thigh4.STL" />
       </geometry>
       <material
         name="">
@@ -1178,7 +1178,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh4.STL" />
+          filename="../meshes/Thigh4.STL" />
       </geometry>
     </collision>
   </link>
@@ -1222,7 +1222,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee4.STL" />
+          filename="../meshes/Knee4.STL" />
       </geometry>
       <material
         name="">
@@ -1236,7 +1236,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee4.STL" />
+          filename="../meshes/Knee4.STL" />
       </geometry>
     </collision>
   </link>
@@ -1280,7 +1280,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin4.STL" />
+          filename="../meshes/Shin4.STL" />
       </geometry>
       <material
         name="">
@@ -1294,7 +1294,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin4.STL" />
+          filename="../meshes/Shin4.STL" />
       </geometry>
     </collision>
   </link>
@@ -1338,7 +1338,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle4.STL" />
+          filename="../meshes/Ankle4.STL" />
       </geometry>
       <material
         name="">
@@ -1352,7 +1352,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle4.STL" />
+          filename="../meshes/Ankle4.STL" />
       </geometry>
     </collision>
   </link>
@@ -1396,7 +1396,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot4.STL" />
+          filename="../meshes/Foot4.STL" />
       </geometry>
       <material
         name="">
@@ -1410,7 +1410,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot4.STL" />
+          filename="../meshes/Foot4.STL" />
       </geometry>
     </collision>
   </link>
@@ -1454,7 +1454,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip5.STL" />
+          filename="../meshes/Hip5.STL" />
       </geometry>
       <material
         name="">
@@ -1468,7 +1468,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip5.STL" />
+          filename="../meshes/Hip5.STL" />
       </geometry>
     </collision>
   </link>
@@ -1512,7 +1512,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh5.STL" />
+          filename="../meshes/Thigh5.STL" />
       </geometry>
       <material
         name="">
@@ -1526,7 +1526,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh5.STL" />
+          filename="../meshes/Thigh5.STL" />
       </geometry>
     </collision>
   </link>
@@ -1570,7 +1570,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee5.STL" />
+          filename="../meshes/Knee5.STL" />
       </geometry>
       <material
         name="">
@@ -1584,7 +1584,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee5.STL" />
+          filename="../meshes/Knee5.STL" />
       </geometry>
     </collision>
   </link>
@@ -1628,7 +1628,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin5.STL" />
+          filename="../meshes/Shin5.STL" />
       </geometry>
       <material
         name="">
@@ -1642,7 +1642,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin5.STL" />
+          filename="../meshes/Shin5.STL" />
       </geometry>
     </collision>
   </link>
@@ -1686,7 +1686,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle5.STL" />
+          filename="../meshes/Ankle5.STL" />
       </geometry>
       <material
         name="">
@@ -1700,7 +1700,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle5.STL" />
+          filename="../meshes/Ankle5.STL" />
       </geometry>
     </collision>
   </link>
@@ -1744,7 +1744,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot5.STL" />
+          filename="../meshes/Foot5.STL" />
       </geometry>
       <material
         name="">
@@ -1758,7 +1758,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot5.STL" />
+          filename="../meshes/Foot5.STL" />
       </geometry>
     </collision>
   </link>
@@ -1802,7 +1802,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip6.STL" />
+          filename="../meshes/Hip6.STL" />
       </geometry>
       <material
         name="">
@@ -1816,7 +1816,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Hip6.STL" />
+          filename="../meshes/Hip6.STL" />
       </geometry>
     </collision>
   </link>
@@ -1860,7 +1860,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh6.STL" />
+          filename="../meshes/Thigh6.STL" />
       </geometry>
       <material
         name="">
@@ -1874,7 +1874,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Thigh6.STL" />
+          filename="../meshes/Thigh6.STL" />
       </geometry>
     </collision>
   </link>
@@ -1918,7 +1918,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee6.STL" />
+          filename="../meshes/Knee6.STL" />
       </geometry>
       <material
         name="">
@@ -1932,7 +1932,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Knee6.STL" />
+          filename="../meshes/Knee6.STL" />
       </geometry>
     </collision>
   </link>
@@ -1976,7 +1976,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin6.STL" />
+          filename="../meshes/Shin6.STL" />
       </geometry>
       <material
         name="">
@@ -1990,7 +1990,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Shin6.STL" />
+          filename="../meshes/Shin6.STL" />
       </geometry>
     </collision>
   </link>
@@ -2034,7 +2034,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle6.STL" />
+          filename="../meshes/Ankle6.STL" />
       </geometry>
       <material
         name="">
@@ -2048,7 +2048,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Ankle6.STL" />
+          filename="../meshes/Ankle6.STL" />
       </geometry>
     </collision>
   </link>
@@ -2092,7 +2092,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot6.STL" />
+          filename="../meshes/Foot6.STL" />
       </geometry>
       <material
         name="">
@@ -2106,7 +2106,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://T12/meshes/Foot6.STL" />
+          filename="../meshes/Foot6.STL" />
       </geometry>
     </collision>
   </link>
