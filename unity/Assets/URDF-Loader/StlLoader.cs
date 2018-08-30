@@ -23,16 +23,17 @@ public class StlLoader {
         BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
 
         // Read and throw out the header
-        byte[] headerBytes = reader.ReadBytes(80);
-        string header = Encoding.ASCII.GetString(headerBytes);
+        byte[] fileTypeBytes = reader.ReadBytes(5);
+        string fileType = Encoding.ASCII.GetString(fileTypeBytes);
 
-        if (header.Substring(0, 5) == "solid") {
+        if (fileType == "solid") {
 
             Debug.LogWarning("ASCII STL files are not supported.");
             return null;
 
         } else {
 
+            reader.ReadBytes(75);
             return LoadBinary(reader);
 
         }
@@ -52,6 +53,11 @@ public class StlLoader {
 
         for (int i = 0; i < trianglesCount; i++){
             Vector3 n = ReadBinaryVectory(reader);
+
+            normals.Add(n);
+            normals.Add(n);
+            normals.Add(n);
+
             Vector3 v0 = ReadBinaryVectory(reader);
             Vector3 v1 = ReadBinaryVectory(reader);
             Vector3 v2 = ReadBinaryVectory(reader);
@@ -59,10 +65,6 @@ public class StlLoader {
             vertices.Add(v0);
             vertices.Add(v1);
             vertices.Add(v2);
-
-            normals.Add(n);
-            normals.Add(n);
-            normals.Add(n);
 
             // Add vertices in reverse order because of Unity frame conversion
             triangles.Add(currTri + 2);
