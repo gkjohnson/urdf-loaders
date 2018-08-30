@@ -14,15 +14,17 @@ public class StlLoader {
     // the given STL
     public static Mesh[] Load(string fileName) {
 
-        return Load(File.ReadAllBytes(fileName));
+        return Parse(File.ReadAllBytes(fileName));
 
     }
 
-    public static Mesh[] Load(byte[] bytes) {
+    // Parse the file into meshes
+    public static Mesh[] Parse(byte[] bytes) {
         
         // Read and throw out the header
         string fileType = Encoding.ASCII.GetString(bytes, 0, 5);
 
+        // Check if ASCII or binary
         if (fileType == "solid") {
 
             string content = Encoding.ASCII.GetString(bytes);
@@ -37,6 +39,7 @@ public class StlLoader {
         
     }
 
+    // Parse the ascii stl contents
     static Mesh[] LoadAscii(string[] lines) {
 
         List<Mesh> meshes = new List<Mesh>();
@@ -47,45 +50,43 @@ public class StlLoader {
 
         for(int i = 1; i < lines.Length; i ++) {
 
-            // facet normal x y z
+            // "facet normal <x> <y> <z>" or
+            // "endsolid <name>"
             string line = lines[i].Trim();
             string[] tokens = line.Split(' ');
 
+            // finish if we hit the end of the file
             if (tokens[0] == "endsolid") break;
 
-            Vector3 normal = Vector3.zero;
+            // if a normal is provided
+            Vector3 n = Vector3.zero;
             if (tokens.Length == 5 && tokens[1] == "normal") {
 
-                normal = ReadAsciiVector(tokens[2], tokens[3], tokens[4]);
-
-                Debug.Log(normal);
+                n = ReadAsciiVector(tokens[2], tokens[3], tokens[4]);
 
             }
 
-            normals.Add(normal);
-            normals.Add(normal);
-            normals.Add(normal);
-
-            // outer loop
+            // "outer loop"
             i++;
 
             // iterate over the vertices
             for(int j = 0; j < 3; j ++) {
 
-                // vertex x y z
+                // "vertex <x> <y> <z>"
                 i++;
                 string vline = lines[i].Trim();
                 string[] vtokens = vline.Split(' ');
 
                 Vector3 vertex = ReadAsciiVector(vtokens[1], vtokens[2], vtokens[3]);
                 vertices.Add(vertex);
+                normals.Add(n);
 
             }
 
-            // get to endloop
+            // get to "endloop"
             while (!lines[i].Contains("endloop")) i++;
 
-            // endfacet
+            // "endfacet"
             i++;
 
             // Add vertices in reverse order because of Unity frame conversion
@@ -119,7 +120,11 @@ public class StlLoader {
 
     }
 
+    // Load a binary implementation
     static Mesh[] LoadBinary(byte[] bytes) {
+
+        // Some implementation referenced from
+        // https://forum.unity.com/threads/stl-file-and-vertex-normals.159844/
 
         BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
         reader.ReadBytes(80);
@@ -133,20 +138,17 @@ public class StlLoader {
         int currTri = 0;
         int meshIndex = 0;
 
-        for (int i = 0; i < trianglesCount; i++){
+        for (int i = 0; i < trianglesCount; i++) {
+
             Vector3 n = ReadBinaryVector(reader);
 
-            normals.Add(n);
-            normals.Add(n);
-            normals.Add(n);
+            for (int j = 0; j < 3; j++) {
 
-            Vector3 v0 = ReadBinaryVector(reader);
-            Vector3 v1 = ReadBinaryVector(reader);
-            Vector3 v2 = ReadBinaryVector(reader);
+                Vector3 v = ReadBinaryVector(reader);
+                vertices.Add(v);
+                normals.Add(n);
 
-            vertices.Add(v0);
-            vertices.Add(v1);
-            vertices.Add(v2);
+            }
 
             // Add vertices in reverse order because of Unity frame conversion
             triangles.Add(currTri + 2);

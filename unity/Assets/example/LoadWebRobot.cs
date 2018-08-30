@@ -59,7 +59,7 @@ public class LoadWebRobot : LoadRobot {
 
                 if (ext == "stl") {
 
-                    Mesh[] meshes = StlLoader.Load(www.downloadHandler.data);
+                    Mesh[] meshes = StlLoader.Parse(www.downloadHandler.data);
 
                     GameObject[] res = new GameObject[meshes.Length];
                     for (int i = 0; i < meshes.Length; i++) {
