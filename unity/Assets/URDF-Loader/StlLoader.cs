@@ -1,24 +1,45 @@
-﻿using System.IO;
+using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Text;
 
 // STL Format
 // https://en.wikipedia.org/wiki/STL_(file_format)
 // Loads the Binary STL format
 public class StlLoader {
+
     const int MAX_VERTEX_COUNT = 65000;    
     
     // Returns an array of meshes used to build up
     // the given STL
     public static Mesh[] Load(string fileName) {
+
         return Load(File.ReadAllBytes(fileName));
+
     }
 
-    public static Mesh[] Load(byte[] bytes) {        
+    public static Mesh[] Load(byte[] bytes) {
+
         BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
-        
+
         // Read and throw out the header
-        reader.ReadBytes(80);
+        byte[] headerBytes = reader.ReadBytes(80);
+        string header = Encoding.ASCII.GetString(headerBytes);
+
+        if (header.Substring(0, 5) == "solid") {
+
+            Debug.LogWarning("ASCII STL files are not supported.");
+            return null;
+
+        } else {
+
+            return LoadBinary(reader);
+
+        }
+        
+    }
+
+    static Mesh[] LoadBinary(BinaryReader reader) {
 
         uint trianglesCount = reader.ReadUInt32();
         Mesh[] meshes = new Mesh[Mathf.CeilToInt(trianglesCount * 3.0f / MAX_VERTEX_COUNT)];
@@ -30,10 +51,10 @@ public class StlLoader {
         int meshIndex = 0;
 
         for (int i = 0; i < trianglesCount; i++){
-            Vector3 n = ReadVector(reader);
-            Vector3 v0 = ReadVector(reader);
-            Vector3 v1 = ReadVector(reader);
-            Vector3 v2 = ReadVector(reader);
+            Vector3 n = ReadBinaryVectory(reader);
+            Vector3 v0 = ReadBinaryVectory(reader);
+            Vector3 v1 = ReadBinaryVectory(reader);
+            Vector3 v2 = ReadBinaryVectory(reader);
 
             vertices.Add(v0);
             vertices.Add(v1);
@@ -66,20 +87,24 @@ public class StlLoader {
         if (vertices.Count > 0) meshes[meshIndex++] = ToMesh(vertices, normals, triangles);
 
         return meshes;
+
     }
     
     /* Utilities */
     // Read a vector from the binary reader
-    static Vector3 ReadVector(BinaryReader br) {
+    static Vector3 ReadBinaryVectory(BinaryReader br) {
+
         Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
 
         // convert from STL to Unity frame
         return new Vector3(-v.y, v.z, v.x);
+
     }
 
     // Convert the verts, normals, and triangles
     // to a mesh
     static Mesh ToMesh(List<Vector3> vertices, List<Vector3> normals, List<int> triangles) {
+
         Mesh mesh = new Mesh {
             vertices = vertices.ToArray(),
             triangles = triangles.ToArray(),
@@ -89,5 +114,6 @@ public class StlLoader {
         mesh.RecalculateBounds();
 
         return mesh;
+
     }
 }
