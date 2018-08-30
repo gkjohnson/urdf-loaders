@@ -83,17 +83,18 @@ public class StlLoader {
 
             }
 
+            // Add vertices in reverse order because of Unity frame conversion
+            triangles.Add(currTri + 2);
+            triangles.Add(currTri + 1);
+            triangles.Add(currTri + 0);
+            currTri += 3;
+
             // get to "endloop"
             while (!lines[i].Contains("endloop")) i++;
 
             // "endfacet"
             i++;
 
-            // Add vertices in reverse order because of Unity frame conversion
-            triangles.Add(currTri + 2);
-            triangles.Add(currTri + 1);
-            triangles.Add(currTri + 0);
-            currTri += 3;
 
             if (vertices.Count > MAX_VERTEX_COUNT - 1) {
 
