@@ -305,14 +305,17 @@ class URDFViewer extends HTMLElement {
 
         const dirLight = this.directionalLight;
         dirLight.castShadow = this.displayShadow;
-        if (this.robot && this.displayShadow) {
 
-            this.world.updateMatrixWorld();
+        if (!this.robot) return;
 
-            const bbox = new THREE.Box3().setFromObject(this.robot);
-            const center = bbox.getCenter(new THREE.Vector3());
-            this.controls.target.y = center.y;
-            this.plane.position.y = bbox.min.y - 1e-3;
+        this.world.updateMatrixWorld();
+
+        const bbox = new THREE.Box3().setFromObject(this.robot);
+        const center = bbox.getCenter(new THREE.Vector3());
+        this.controls.target.y = center.y;
+        this.plane.position.y = bbox.min.y - 1e-3;
+
+        if (this.displayShadow) {
 
             // Update the shadow camera rendering bounds to encapsulate the
             // model. We use the bounding sphere of the bounding box for
