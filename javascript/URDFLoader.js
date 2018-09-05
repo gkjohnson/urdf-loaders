@@ -141,7 +141,20 @@ class URDFLoader {
 
         } else if (/\.dae$/i.test(path)) {
 
-            this.DAELoader.load(path, dae => done(dae.scene));
+            this.DAELoader.load(path, dae => {
+
+                for (let i = dae.scene.children.length - 1; i >= 0; i--) {
+
+                    if (dae.scene.children[i].type !== 'Mesh') {
+
+                        dae.scene.remove(dae.scene.children[i]);
+
+                    }
+                }
+
+                done(dae.scene);
+
+            });
 
         } else {
 
