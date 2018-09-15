@@ -251,6 +251,10 @@ The color of the ambient light specified with css colors.
 
 Automatically redraw the model every frame instead of waiting to be dirtied.
 
+#### no-auto-recenter
+
+Recenter the camera only after loading the model or if the window size changes.
+
 ### Properties
 
 All of the above attributes have corresponding camel case properties.
@@ -272,6 +276,10 @@ Sets all joint names specified as keys to radian angle value.
 #### redraw()
 
 Dirty the renderer so the element will redraw next frame.
+
+#### recenter()
+
+Recenter the camera to the model and redraw.
 
 ### Events
 
