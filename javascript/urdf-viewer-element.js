@@ -38,6 +38,9 @@ class URDFViewer extends HTMLElement {
     get autoRedraw() { return this.hasAttribute('auto-redraw') || false; }
     set autoRedraw(val) { val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw'); }
 
+    get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
+    set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
+
     get loadingManager() { return this._loadingManager = this._loadingManager || new THREE.LoadingManager(); }
 
     get urdfLoader() { return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager); }
@@ -120,7 +123,7 @@ class URDFViewer extends HTMLElement {
         controls.enableDamping = false;
         controls.maxDistance = 50;
         controls.minDistance = 0.25;
-        controls.addEventListener('change', () => this._dirty = true);
+        controls.addEventListener('change', () => this.recenter());
 
         this.scene = scene;
         this.world = world;
@@ -134,7 +137,7 @@ class URDFViewer extends HTMLElement {
         this._setUp(this.up);
 
         // redraw when something new has loaded
-        this.loadingManager.onLoad = () => this._dirty = true;
+        this.loadingManager.onLoad = () => this.recenter();
 
         const _renderLoop = () => {
 
@@ -144,20 +147,19 @@ class URDFViewer extends HTMLElement {
 
                 if (this._dirty || this.autoRedraw) {
 
-                    this._updateEnvironment();
+                    if (!this.noAutoRecenter) {
+
+                        this._updateEnvironment();
+                    }
+
+                    this.renderer.render(scene, camera);
+                    this._dirty = false;
 
                 }
 
                 // update controls after the environment in
                 // case the controls are retargeted
                 this.controls.update();
-
-                if (this._dirty || this.autoRedraw) {
-
-                    this.renderer.render(scene, camera);
-                    this._dirty = false;
-
-                }
 
             }
             this._renderLoopId = requestAnimationFrame(_renderLoop);
@@ -207,7 +209,7 @@ class URDFViewer extends HTMLElement {
 
     attributeChangedCallback(attr, oldval, newval) {
 
-        this._dirty = true;
+        this.recenter();
 
         switch (attr) {
 
@@ -255,7 +257,7 @@ class URDFViewer extends HTMLElement {
 
         if (currsize.width !== w || currsize.height !== h) {
 
-            this._dirty = true;
+            this.recenter();
 
         }
 
@@ -270,6 +272,12 @@ class URDFViewer extends HTMLElement {
     redraw() {
 
         this._dirty = true;
+    }
+
+    recenter() {
+
+        this._updateEnvironment();
+        this.redraw();
 
     }
 
@@ -283,7 +291,7 @@ class URDFViewer extends HTMLElement {
         if (joint && joint.angle !== angle) {
 
             joint.setAngle(angle);
-            this._dirty = true;
+            this.redraw();
 
         }
 
@@ -303,16 +311,19 @@ class URDFViewer extends HTMLElement {
     // camera on the center of the scene
     _updateEnvironment() {
 
+        if (!this.robot) return;
+
+        this.world.updateMatrixWorld();
+
+        const bbox = new THREE.Box3().setFromObject(this.robot);
+        const center = bbox.getCenter(new THREE.Vector3());
+        this.controls.target.y = center.y;
+        this.plane.position.y = bbox.min.y - 1e-3;
+
         const dirLight = this.directionalLight;
         dirLight.castShadow = this.displayShadow;
-        if (this.robot && this.displayShadow) {
 
-            this.world.updateMatrixWorld();
-
-            const bbox = new THREE.Box3().setFromObject(this.robot);
-            const center = bbox.getCenter(new THREE.Vector3());
-            this.controls.target.y = center.y;
-            this.plane.position.y = bbox.min.y - 1e-3;
+        if (this.displayShadow) {
 
             // Update the shadow camera rendering bounds to encapsulate the
             // model. We use the bounding sphere of the bounding box for
@@ -467,7 +478,7 @@ class URDFViewer extends HTMLElement {
 
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
 
-                    this._dirty = true;
+                    this.recenter();
 
                 },
 
@@ -490,7 +501,7 @@ class URDFViewer extends HTMLElement {
 
                             }
 
-                            this._dirty = true;
+                            this.recenter();
 
                         });
 
