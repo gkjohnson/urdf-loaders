@@ -253,7 +253,7 @@ Automatically redraw the model every frame instead of waiting to be dirtied.
 
 #### no-auto-recenter
 
-Recenter the camera only after loading the model or if the window size changes.
+Recenter the camera only after loading the model.
 
 ### Properties
 
