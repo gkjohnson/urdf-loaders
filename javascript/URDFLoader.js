@@ -207,7 +207,7 @@ class URDFLoader {
     // Process the <robot> node
     _processRobot(robot, packages, path, loadMeshCb) {
 
-        const materials = [];
+        const materials = robot.querySelectorAll('material');
         const links = [];
         const joints = [];
         const obj = new THREE.Object3D();
@@ -219,7 +219,6 @@ class URDFLoader {
             const type = n.nodeName.toLowerCase();
             if (type === 'link') links.push(n);
             else if (type === 'joint') joints.push(n);
-            else if (type === 'material') materials.push(n);
         });
 
         // Create the <material> map
