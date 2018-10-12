@@ -1,4 +1,4 @@
-/* globals THREE */
+import * as THREE from 'three';
 /*
 Reference coordinate frames for THREE.js and ROS.
 Both coordinate systems are right handed so the URDF is instantiated without
@@ -23,7 +23,7 @@ ROS URDf
 
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
-window.URDFLoader =
+export
 class URDFLoader {
 
     // Cached mesh loaders
