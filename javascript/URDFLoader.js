@@ -132,11 +132,8 @@ class URDFLoader {
         if (/\.stl$/i.test(path)) {
 
             this.STLLoader.load(path, geom => {
-
-                const mesh = new THREE.Mesh();
-                mesh.geometry = geom;
+                const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                 done(mesh);
-
             });
 
         } else if (/\.dae$/i.test(path)) {
@@ -210,6 +207,7 @@ class URDFLoader {
     // Process the <robot> node
     _processRobot(robot, packages, path, loadMeshCb) {
 
+        const materials = [];
         const links = [];
         const joints = [];
         const obj = new THREE.Object3D();
@@ -221,7 +219,19 @@ class URDFLoader {
             const type = n.nodeName.toLowerCase();
             if (type === 'link') links.push(n);
             else if (type === 'joint') joints.push(n);
+            else if (type === 'material') materials.push(n);
+        });
 
+        // Create the <material> map
+        const materialMap = {};
+        this.forEach(materials, m => {
+            const name = m.getAttribute('name');
+            this.forEach(m.children, c => {
+                materialMap[name] = {
+                    type: c.nodeName.toLowerCase(),
+                    value: c.getAttribute('rgba') || c.getAttribute('filename').replace(/^(package:\/\/)/, ''),
+                };
+            });
         });
 
         // Create the <link> map
@@ -229,7 +239,7 @@ class URDFLoader {
         this.forEach(links, l => {
 
             const name = l.getAttribute('name');
-            linkMap[name] = this._processLink(l, packages, path, loadMeshCb);
+            linkMap[name] = this._processLink(l, materialMap, packages, path, loadMeshCb);
 
         });
 
@@ -403,7 +413,7 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    _processLink(link, packages, path, loadMeshCb) {
+    _processLink(link, materials, packages, path, loadMeshCb) {
 
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
@@ -411,15 +421,32 @@ class URDFLoader {
         obj.isURDFLink = true;
         obj.type = 'URDFLink';
 
-        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
+        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, materials, packages, path, loadMeshCb));
 
         return obj;
 
     }
 
-    // Process the visual nodes into meshes
-    _processVisualNode(vn, linkObj, packages, path, loadMeshCb) {
+    _processMaterial(material, type, value, packages, path) {
+        if (type === 'color') {
+            const rgba = value.split(/\s/g)
+                .map(v => parseFloat(v));
 
+            material.color.r = rgba[0];
+            material.color.g = rgba[1];
+            material.color.b = rgba[2];
+            material.opacity = rgba[3];
+
+            if (material.opacity < 1) material.transparent = true;
+        } else if (type === 'texture') {
+            const filename = value.replace(/^(package:\/\/)/, '');
+            const filePath = this._resolvePackagePath(packages, filename, path);
+            material.map = this._textureloader.load(filePath);
+        }
+    }
+
+    // Process the visual nodes into meshes
+    _processVisualNode(vn, linkObj, materialMap, packages, path, loadMeshCb) {
         let xyz = [0, 0, 0];
         let rpy = [0, 0, 0];
         let scale = [1, 1, 1];
@@ -515,33 +542,18 @@ class URDFLoader {
                 rpy = this._processTuple(n.getAttribute('rpy'));
 
             } else if (type === 'material') {
-
-                this.forEach(n.children, c => {
-
-                    if (c.nodeName.toLowerCase() === 'color') {
-
-                        const rgba = c.getAttribute('rgba')
-                            .split(/\s/g)
-                            .map(v => parseFloat(v));
-
-                        material.color.r = rgba[0];
-                        material.color.g = rgba[1];
-                        material.color.b = rgba[2];
-                        material.opacity = rgba[3];
-
-                        if (material.opacity < 1) material.transparent = true;
-
-                    } else if (c.nodeName.toLowerCase() === 'texture') {
-
-                        const filename = c.getAttribute('filename').replace(/^(package:\/\/)/, '');
-                        const filePath = this._resolvePackagePath(packages, filename, path);
-
-                        material.map = this._textureloader.load(filePath);
-
-                    }
-
-                });
-
+                if (n.children.length) {
+                    this.forEach(n.children, c => {
+                        if (c.nodeName.toLowerCase() === 'color') {
+                            this._processMaterial(material, 'color', c.getAttribute('rgba'));
+                        } else if (c.nodeName.toLowerCase() === 'texture') {
+                            this._processMaterial(material, 'texture', c.getAttribute('filename'), packages, path);
+                        }
+                    });
+                } else {
+                    const name = n.getAttribute('name');
+                    this._processMaterial(material, materialMap[name].type, materialMap[name].value, packages, path);
+                }
             }
 
         });
