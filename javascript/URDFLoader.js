@@ -226,10 +226,14 @@ class URDFLoader {
         this.forEach(materials, m => {
             const name = m.getAttribute('name');
             this.forEach(m.children, c => {
-                materialMap[name] = {
-                    type: c.nodeName.toLowerCase(),
-                    value: c.getAttribute('rgba') || c.getAttribute('filename').replace(/^(package:\/\/)/, ''),
-                };
+                const material = new THREE.MeshPhongMaterial();
+                materialMap[name] = materialMap[name] || this._processMaterial(
+                    material,
+                    c.nodeName.toLowerCase(),
+                    c.getAttribute('rgba') || c.getAttribute('filename').replace(/^(package:\/\/)/, ''),
+                    packages,
+                    path
+                );
             });
         });
 
@@ -412,7 +416,7 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    _processLink(link, materials, packages, path, loadMeshCb) {
+    _processLink(link, materialMap, packages, path, loadMeshCb) {
 
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
         const obj = new THREE.Object3D();
@@ -420,7 +424,7 @@ class URDFLoader {
         obj.isURDFLink = true;
         obj.type = 'URDFLink';
 
-        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, materials, packages, path, loadMeshCb));
+        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
 
         return obj;
 
@@ -440,8 +444,9 @@ class URDFLoader {
         } else if (type === 'texture') {
             const filename = value.replace(/^(package:\/\/)/, '');
             const filePath = this._resolvePackagePath(packages, filename, path);
-            material.map = this._textureloader.load(filePath);
+            material.map = this.TextureLoader.load(filePath);
         }
+        return material;
     }
 
     // Process the visual nodes into meshes
@@ -541,20 +546,27 @@ class URDFLoader {
                 rpy = this._processTuple(n.getAttribute('rpy'));
 
             } else if (type === 'material') {
+                const materialName = n.getAttribute('name');
                 if (n.children.length) {
                     this.forEach(n.children, c => {
-                        if (c.nodeName.toLowerCase() === 'color') {
-                            this._processMaterial(material, 'color', c.getAttribute('rgba'));
-                        } else if (c.nodeName.toLowerCase() === 'texture') {
-                            this._processMaterial(material, 'texture', c.getAttribute('filename'), packages, path);
+                        switch (c.nodeName.toLowerCase()) {
+
+                            case 'color':
+                                this._processMaterial(material, 'color', c.getAttribute('rgba'));
+                                break;
+                            case 'texture':
+                                if (materialName in materialMap) {
+                                    material.copy(materialMap[materialName]);
+                                } else {
+                                    this._processMaterial(material, 'texture', c.getAttribute('filename'), packages, path);
+                                }
+
                         }
                     });
                 } else {
-                    const name = n.getAttribute('name');
-                    this._processMaterial(material, materialMap[name].type, materialMap[name].value, packages, path);
+                    material.copy(materialMap[materialName]);
                 }
             }
-
         });
 
         // apply the position and rotation to the primitive geometry after
