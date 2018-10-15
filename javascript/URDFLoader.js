@@ -67,11 +67,6 @@ class URDFLoader {
         return [].filter.call(coll, func);
 
     }
-    copy(destination, source) {
-        for (const key in source) {
-            destination[key] = source[key];
-        }
-    }
 
     // take a vector "x y z" and process it into
     // an array [x, y, z]
@@ -558,19 +553,19 @@ class URDFLoader {
                         switch (c.nodeName.toLowerCase()) {
 
                             case 'color':
-                                this.copy(material, this._processMaterial('color', c.getAttribute('rgba')));
+                                Object.assign(material, this._processMaterial('color', c.getAttribute('rgba')));
                                 break;
                             case 'texture':
                                 if (materialName in materialMap) {
-                                    this.copy(material, materialMap[materialName]);
+                                    Object.assign(material, materialMap[materialName]);
                                 } else {
-                                    this.copy(material, this._processMaterial('texture', c.getAttribute('filename'), packages, path));
+                                    Object.assign(material, this._processMaterial('texture', c.getAttribute('filename'), packages, path));
                                 }
 
                         }
                     });
                 } else {
-                    this.copy(material, materialMap[materialName]);
+                    Object.assign(material, materialMap[materialName]);
                 }
             }
         });
