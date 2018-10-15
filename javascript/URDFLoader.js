@@ -67,6 +67,11 @@ class URDFLoader {
         return [].filter.call(coll, func);
 
     }
+    copy(destination, source) {
+        for (const key in source) {
+            destination[key] = source[key];
+        }
+    }
 
     // take a vector "x y z" and process it into
     // an array [x, y, z]
@@ -226,9 +231,7 @@ class URDFLoader {
         this.forEach(materials, m => {
             const name = m.getAttribute('name');
             this.forEach(m.children, c => {
-                const material = new THREE.MeshPhongMaterial();
                 materialMap[name] = materialMap[name] || this._processMaterial(
-                    material,
                     c.nodeName.toLowerCase(),
                     c.getAttribute('rgba') || c.getAttribute('filename').replace(/^(package:\/\/)/, ''),
                     packages,
@@ -430,23 +433,26 @@ class URDFLoader {
 
     }
 
-    _processMaterial(material, type, value, packages, path) {
+    _processMaterial(type, value, packages, path) {
         if (type === 'color') {
             const rgba = value.split(/\s/g)
                 .map(v => parseFloat(v));
-
-            material.color.r = rgba[0];
-            material.color.g = rgba[1];
-            material.color.b = rgba[2];
-            material.opacity = rgba[3];
-
-            if (material.opacity < 1) material.transparent = true;
+            return {
+                color: {
+                    r: rgba[0],
+                    g: rgba[1],
+                    b: rgba[2],
+                },
+                opacity: rgba[3],
+                transparent: rgba[3] < 1,
+            };
         } else if (type === 'texture') {
             const filename = value.replace(/^(package:\/\/)/, '');
             const filePath = this._resolvePackagePath(packages, filename, path);
-            material.map = this.TextureLoader.load(filePath);
+            return {
+                map: this.TextureLoader.load(filePath),
+            };
         }
-        return material;
     }
 
     // Process the visual nodes into meshes
@@ -552,19 +558,18 @@ class URDFLoader {
                         switch (c.nodeName.toLowerCase()) {
 
                             case 'color':
-                                this._processMaterial(material, 'color', c.getAttribute('rgba'));
+                                this.copy(material, this._processMaterial('color', c.getAttribute('rgba')));
                                 break;
                             case 'texture':
                                 if (materialName in materialMap) {
-                                    material.copy(materialMap[materialName]);
+                                    this.copy(material, materialMap[materialName]);
                                 } else {
-                                    this._processMaterial(material, 'texture', c.getAttribute('filename'), packages, path);
+                                    this.copy(material, this._processMaterial('texture', c.getAttribute('filename'), packages, path));
                                 }
-
                         }
                     });
                 } else {
-                    material.copy(materialMap[materialName]);
+                    this.copy(material, materialMap[materialName]);
                 }
             }
         });
