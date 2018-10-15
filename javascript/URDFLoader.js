@@ -566,6 +566,7 @@ class URDFLoader {
                                 } else {
                                     this.copy(material, this._processMaterial('texture', c.getAttribute('filename'), packages, path));
                                 }
+
                         }
                     });
                 } else {
