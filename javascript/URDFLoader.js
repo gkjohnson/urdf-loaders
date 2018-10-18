@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { STLLoader } from 'three/examples/js/loaders/STLLoader';
+import { ColladaLoader } from 'three/examples/js/loaders/ColladaLoader';
+
 /*
 Reference coordinate frames for THREE.js and ROS.
 Both coordinate systems are right handed so the URDF is instantiated without
@@ -23,20 +26,20 @@ ROS URDf
 
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
-export
+export default
 class URDFLoader {
 
     // Cached mesh loaders
     get STLLoader() {
 
-        this._stlloader = this._stlloader || new THREE.STLLoader(this.manager);
+        this._stlloader = this._stlloader || new STLLoader(this.manager);
         return this._stlloader;
 
     }
 
     get DAELoader() {
 
-        this._daeloader = this._daeloader || new THREE.ColladaLoader(this.manager);
+        this._daeloader = this._daeloader || new ColladaLoader(this.manager);
         return this._daeloader;
 
     }

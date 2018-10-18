@@ -4,7 +4,7 @@
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "scripts": {
     "start": "cd .. && static-server",
-    "build": "cd example && webpack",
+    "build": "rollup -c && cd example && webpack",
     "test": "jest",
     "lint": "eslint *.js ./test/*.js",
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
@@ -47,6 +47,7 @@
     "opn-cli": "^3.1.0",
     "puppeteer": "^1.7.0",
     "puppeteer-to-istanbul": "^1.2.2",
+    "rollup": "^0.66.6",
     "script-loader": "^0.7.0",
     "static-server": "^3.0.0",
     "three": "^0.94.0",
