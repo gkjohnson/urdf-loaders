@@ -35,7 +35,7 @@ beforeAll(async() => {
     await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/OBJLoader.js') });
     await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/STLLoader.js') });
     await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/ColladaLoader.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../URDFLoader.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../umd/URDFLoader.js') });
     await page.coverage.startJSCoverage();
 
     page.on('error', e => { throw new Error(e); });

@@ -1,4 +1,5 @@
-/* globals URDFViewer THREE */
+import * as THREE from 'three';
+import URDFViewer from './urdf-viewer-element.js';
 
 // urdf-manipulator element
 // Displays a URDF model that can be manipulated with the mouse
@@ -8,7 +9,7 @@
 // joint-mouseout: Fired when a joint is no longer hovered over
 // manipulate-start: Fires when a joint is manipulated
 // manipulate-end: Fires when a joint is done being manipulated
-window.URDFManipulator =
+export default
 class URDFManipulator extends URDFViewer {
 
     static get observedAttributes() {

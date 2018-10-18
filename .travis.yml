@@ -5,4 +5,5 @@ before_install:
   - cd javascript
 script:
   - npm run lint
+  - npm run build
   - npm test
