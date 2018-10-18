@@ -394,3 +394,4 @@
     return URDFManipulator;
 
 })));
+//# sourceMappingURL=urdf-manipulator-element.js.map

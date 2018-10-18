@@ -22,6 +22,7 @@ Object.entries({
             extend: true,
             format: 'umd',
             file: outputPath,
+            sourcemap: true,
 
             globals: path => /^three/.test(path) ? 'THREE' : null,
 

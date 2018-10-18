@@ -567,3 +567,4 @@
    return URDFLoader;
 
 })));
+//# sourceMappingURL=URDFLoader.js.map
