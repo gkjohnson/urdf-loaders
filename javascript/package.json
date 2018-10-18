@@ -3,7 +3,7 @@
   "version": "0.4.3",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "scripts": {
-    "start": "cd .. && static-server",
+    "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
     "build": "rollup -c && cd example && webpack",
     "test": "jest",
     "lint": "eslint *.js ./test/*.js",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.0.0",
+    "concurrently": "^4.0.1",
     "eslint": "^5.4.0",
     "jest": "^23.5.0",
     "jest-cli": "^23.5.0",
