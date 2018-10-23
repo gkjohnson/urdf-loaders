@@ -7,8 +7,8 @@
   "scripts": {
     "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
     "build": "rollup -c && cd example && webpack",
-    "test": "jest",
-    "lint": "eslint *.js ./test/*.js",
+    "test": "rollup -c && jest",
+    "lint": "eslint ./src/*.js ./test/*.js",
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
   },
   "files": [
