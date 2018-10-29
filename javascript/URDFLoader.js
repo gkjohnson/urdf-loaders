@@ -225,14 +225,17 @@ class URDFLoader {
         const materialMap = {};
         this.forEach(materials, m => {
             const name = m.getAttribute('name');
-            this.forEach(m.children, c => {
-                materialMap[name] = materialMap[name] || this._processMaterial(
-                    c.nodeName.toLowerCase(),
-                    c.getAttribute('rgba') || c.getAttribute('filename').replace(/^(package:\/\/)/, ''),
-                    packages,
-                    path
-                );
-            });
+            if (!materialMap[name]) {
+                materialMap[name] = {};
+                this.forEach(m.children, c => {
+                    this._processMaterial(
+                        materialMap[name],
+                        c,
+                        packages,
+                        path
+                    );
+                });
+            }
         });
 
         // Create the <link> map
@@ -428,25 +431,33 @@ class URDFLoader {
 
     }
 
-    _processMaterial(type, value, packages, path) {
+    _processMaterial(material, node, packages, path) {
+        const type = node.nodeName.toLowerCase();
         if (type === 'color') {
-            const rgba = value.split(/\s/g)
+            const rgba = node.getAttribute('rgba').split(/\s/g)
                 .map(v => parseFloat(v));
-            return {
-                color: {
-                    r: rgba[0],
-                    g: rgba[1],
-                    b: rgba[2],
-                },
+            this._copyMaterialAttributes(material, {
+                color: new THREE.Color(rgba[0], rgba[1], rgba[2]),
                 opacity: rgba[3],
                 transparent: rgba[3] < 1,
-            };
+            });
         } else if (type === 'texture') {
-            const filename = value.replace(/^(package:\/\/)/, '');
+            const filename = node.getAttribute('filename').replace(/^(package:\/\/)/, '').replace(/^(package:\/\/)/, '');
             const filePath = this._resolvePackagePath(packages, filename, path);
-            return {
+            this._copyMaterialAttributes(material, {
                 map: this.TextureLoader.load(filePath),
-            };
+            });
+        }
+    }
+
+    _copyMaterialAttributes(material, materialAttributes) {
+        if ('color' in materialAttributes) {
+            material.color = materialAttributes.color.clone();
+            material.opacity = materialAttributes.opacity;
+            material.transparent = materialAttributes.transparent;
+        }
+        if ('map' in materialAttributes) {
+            material.map = materialAttributes.map.clone();
         }
     }
 
@@ -553,19 +564,19 @@ class URDFLoader {
                         switch (c.nodeName.toLowerCase()) {
 
                             case 'color':
-                                Object.assign(material, this._processMaterial('color', c.getAttribute('rgba')));
+                                this._processMaterial(material, c);
                                 break;
                             case 'texture':
                                 if (materialName in materialMap) {
-                                    Object.assign(material, materialMap[materialName]);
+                                    this._copyMaterialAttributes(material, materialMap[materialName]);
                                 } else {
-                                    Object.assign(material, this._processMaterial('texture', c.getAttribute('filename'), packages, path));
+                                    this._processMaterial(material, c, packages, path);
                                 }
 
                         }
                     });
                 } else {
-                    Object.assign(material, materialMap[materialName]);
+                    this._copyMaterialAttributes(material, materialMap[materialName]);
                 }
             }
         });
