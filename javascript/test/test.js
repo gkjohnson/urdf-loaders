@@ -35,7 +35,7 @@ beforeAll(async() => {
     await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/OBJLoader.js') });
     await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/STLLoader.js') });
     await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/ColladaLoader.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../URDFLoader.js') });
+    await page.addScriptTag({ path: path.join(__dirname, '../umd/URDFLoader.js') });
     await page.coverage.startJSCoverage();
 
     page.on('error', e => { throw new Error(e); });
@@ -64,8 +64,8 @@ describe('Options', () => {
 
                     const loader = new URDFLoader();
                     loader.load(
-                        'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-                        'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
+                        'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
+                        'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
                         robot => {
                             let ct = 0;
                             robot.traverse(c => {
@@ -109,8 +109,8 @@ describe('TriATHLETE Climbing URDF', async() => {
         // Model loads STL files and has continuous, prismatic, and revolute joints
         await loadURDF(
             page,
-            'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-            'https://rawgit.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing'
+            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
+            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing'
         );
 
     });
@@ -157,26 +157,26 @@ describe('TriATHLETE Climbing URDF', async() => {
 [
     {
         desc: 'Robonaut',
-        urdf: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
-        pkg: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/',
+        urdf: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
+        pkg: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
     },
     {
         desc: 'Valkyrie',
-        urdf: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf',
-        pkg: 'https://rawgit.com/gkjohnson/nasa-urdf-robots/master/',
+        urdf: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf',
+        pkg: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
     },
     {
         desc: 'Multipackage',
         urdf: 'https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf',
         pkg: {
             blending_end_effector:
-            'https://rawgit.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',
+            'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',
 
             abb_irb1200_support:
-            'https://rawgit.com/ros-industrial/abb_experimental/kinetic-devel/abb_irb1200_support',
+            'https://raw.githubusercontent.com/ros-industrial/abb_experimental/kinetic-devel/abb_irb1200_support',
 
             godel_irb1200_support:
-            'https://rawgit.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/abb/godel_irb1200/godel_irb1200_support',
+            'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/abb/godel_irb1200/godel_irb1200_support',
         },
     },
 ].forEach(data => {

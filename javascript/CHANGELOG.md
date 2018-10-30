@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- The root scripts are now es6 import compatible and require a build process to use
+
+### Added
+- Backward compatible umd versions of the scripts in `/umd`
+
 ## [0.4.3] - 2018-10-10
 ### Added
 - Add `no-auto-recenter` field to the `urdf-viewer` web component.

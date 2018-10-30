@@ -2,17 +2,20 @@
   "name": "urdf-loader",
   "version": "0.4.3",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
+  "main": "umd/URDFLoader.js",
+  "module": "URDFLoader.js",
   "scripts": {
-    "start": "cd .. && static-server",
-    "build": "cd example && webpack",
-    "test": "jest",
-    "lint": "eslint *.js ./test/*.js",
+    "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
+    "build": "rollup -c && cd example && webpack",
+    "test": "rollup -c && jest",
+    "lint": "eslint ./*.js ./test/*.js",
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
   },
   "files": [
     "URDFLoader.js",
     "urdf-viewer-element.js",
     "urdf-manipulator-element.js",
+    "umd/*",
     "example/index.js",
     "example/dragAndDrop.js",
     "example/styles.css"
@@ -40,6 +43,7 @@
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.0.0",
+    "concurrently": "^4.0.1",
     "eslint": "^5.4.0",
     "jest": "^23.5.0",
     "jest-cli": "^23.5.0",
@@ -47,6 +51,7 @@
     "opn-cli": "^3.1.0",
     "puppeteer": "^1.7.0",
     "puppeteer-to-istanbul": "^1.2.2",
+    "rollup": "^0.66.6",
     "script-loader": "^0.7.0",
     "static-server": "^3.0.0",
     "three": "^0.94.0",
