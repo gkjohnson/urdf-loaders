@@ -222,23 +222,30 @@ class URDFLoader {
             const type = n.nodeName.toLowerCase();
             if (type === 'link') links.push(n);
             else if (type === 'joint') joints.push(n);
+
         });
 
         // Create the <material> map
         const materialMap = {};
         this.forEach(materials, m => {
+
             const name = m.getAttribute('name');
             if (!materialMap[name]) {
+
                 materialMap[name] = {};
                 this.forEach(m.children, c => {
+
                     this._processMaterial(
                         materialMap[name],
                         c,
                         packages,
                         path
                     );
+
                 });
+
             }
+
         });
 
         // Create the <link> map
@@ -435,37 +442,58 @@ class URDFLoader {
     }
 
     _processMaterial(material, node, packages, path) {
+
         const type = node.nodeName.toLowerCase();
         if (type === 'color') {
-            const rgba = node.getAttribute('rgba').split(/\s/g)
-                .map(v => parseFloat(v));
-            this._copyMaterialAttributes(material, {
-                color: new THREE.Color(rgba[0], rgba[1], rgba[2]),
-                opacity: rgba[3],
-                transparent: rgba[3] < 1,
-            });
+
+            const rgba =
+                node
+                    .getAttribute('rgba')
+                    .split(/\s/g)
+                    .map(v => parseFloat(v));
+
+            this._copyMaterialAttributes(
+                material,
+                {
+                    color: new THREE.Color(rgba[0], rgba[1], rgba[2]),
+                    opacity: rgba[3],
+                    transparent: rgba[3] < 1,
+                });
+
         } else if (type === 'texture') {
-            const filename = node.getAttribute('filename').replace(/^(package:\/\/)/, '').replace(/^(package:\/\/)/, '');
+
+            const filename = node.getAttribute('filename');
             const filePath = this._resolvePackagePath(packages, filename, path);
-            this._copyMaterialAttributes(material, {
-                map: this.TextureLoader.load(filePath),
-            });
+            this._copyMaterialAttributes(
+                material,
+                {
+                    map: this.TextureLoader.load(filePath),
+                });
+
         }
     }
 
     _copyMaterialAttributes(material, materialAttributes) {
+
         if ('color' in materialAttributes) {
+
             material.color = materialAttributes.color.clone();
             material.opacity = materialAttributes.opacity;
             material.transparent = materialAttributes.transparent;
+
         }
+
         if ('map' in materialAttributes) {
+
             material.map = materialAttributes.map.clone();
+
         }
+
     }
 
     // Process the visual nodes into meshes
     _processVisualNode(vn, linkObj, materialMap, packages, path, loadMeshCb) {
+
         let xyz = [0, 0, 0];
         let rpy = [0, 0, 0];
         let scale = [1, 1, 1];
@@ -561,26 +589,22 @@ class URDFLoader {
                 rpy = this._processTuple(n.getAttribute('rpy'));
 
             } else if (type === 'material') {
+
                 const materialName = n.getAttribute('name');
-                if (n.children.length) {
-                    this.forEach(n.children, c => {
-                        switch (c.nodeName.toLowerCase()) {
+                if (materialName) {
 
-                            case 'color':
-                                this._processMaterial(material, c);
-                                break;
-                            case 'texture':
-                                if (materialName in materialMap) {
-                                    this._copyMaterialAttributes(material, materialMap[materialName]);
-                                } else {
-                                    this._processMaterial(material, c, packages, path);
-                                }
-
-                        }
-                    });
-                } else {
                     this._copyMaterialAttributes(material, materialMap[materialName]);
+
+                } else {
+
+                    this.forEach(n.children, c => {
+
+                        this._processMaterial(material, c, packages, path);
+
+                    });
+
                 }
+
             }
         });
 
