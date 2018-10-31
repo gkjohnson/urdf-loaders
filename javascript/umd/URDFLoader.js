@@ -136,11 +136,8 @@
            if (/\.stl$/i.test(path)) {
 
                this.STLLoader.load(path, geom => {
-
-                   const mesh = new THREE.Mesh();
-                   mesh.geometry = geom;
+                   const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                    done(mesh);
-
                });
 
            } else if (/\.dae$/i.test(path)) {
@@ -214,6 +211,7 @@
        // Process the <robot> node
        _processRobot(robot, packages, path, loadMeshCb) {
 
+           const materials = robot.querySelectorAll('material');
            const links = [];
            const joints = [];
            const obj = new THREE.Object3D();
@@ -225,7 +223,23 @@
                const type = n.nodeName.toLowerCase();
                if (type === 'link') links.push(n);
                else if (type === 'joint') joints.push(n);
+           });
 
+           // Create the <material> map
+           const materialMap = {};
+           this.forEach(materials, m => {
+               const name = m.getAttribute('name');
+               if (!materialMap[name]) {
+                   materialMap[name] = {};
+                   this.forEach(m.children, c => {
+                       this._processMaterial(
+                           materialMap[name],
+                           c,
+                           packages,
+                           path
+                       );
+                   });
+               }
            });
 
            // Create the <link> map
@@ -233,7 +247,7 @@
            this.forEach(links, l => {
 
                const name = l.getAttribute('name');
-               linkMap[name] = this._processLink(l, packages, path, loadMeshCb);
+               linkMap[name] = this._processLink(l, materialMap, packages, path, loadMeshCb);
 
            });
 
@@ -407,7 +421,7 @@
        }
 
        // Process the <link> nodes
-       _processLink(link, packages, path, loadMeshCb) {
+       _processLink(link, materialMap, packages, path, loadMeshCb) {
 
            const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
            const obj = new THREE.Object3D();
@@ -415,15 +429,44 @@
            obj.isURDFLink = true;
            obj.type = 'URDFLink';
 
-           this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, packages, path, loadMeshCb));
+           this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
 
            return obj;
 
        }
 
-       // Process the visual nodes into meshes
-       _processVisualNode(vn, linkObj, packages, path, loadMeshCb) {
+       _processMaterial(material, node, packages, path) {
+           const type = node.nodeName.toLowerCase();
+           if (type === 'color') {
+               const rgba = node.getAttribute('rgba').split(/\s/g)
+                   .map(v => parseFloat(v));
+               this._copyMaterialAttributes(material, {
+                   color: new THREE.Color(rgba[0], rgba[1], rgba[2]),
+                   opacity: rgba[3],
+                   transparent: rgba[3] < 1,
+               });
+           } else if (type === 'texture') {
+               const filename = node.getAttribute('filename').replace(/^(package:\/\/)/, '').replace(/^(package:\/\/)/, '');
+               const filePath = this._resolvePackagePath(packages, filename, path);
+               this._copyMaterialAttributes(material, {
+                   map: this.TextureLoader.load(filePath),
+               });
+           }
+       }
 
+       _copyMaterialAttributes(material, materialAttributes) {
+           if ('color' in materialAttributes) {
+               material.color = materialAttributes.color.clone();
+               material.opacity = materialAttributes.opacity;
+               material.transparent = materialAttributes.transparent;
+           }
+           if ('map' in materialAttributes) {
+               material.map = materialAttributes.map.clone();
+           }
+       }
+
+       // Process the visual nodes into meshes
+       _processVisualNode(vn, linkObj, materialMap, packages, path, loadMeshCb) {
            let xyz = [0, 0, 0];
            let rpy = [0, 0, 0];
            let scale = [1, 1, 1];
@@ -519,35 +562,27 @@
                    rpy = this._processTuple(n.getAttribute('rpy'));
 
                } else if (type === 'material') {
+                   const materialName = n.getAttribute('name');
+                   if (n.children.length) {
+                       this.forEach(n.children, c => {
+                           switch (c.nodeName.toLowerCase()) {
 
-                   this.forEach(n.children, c => {
+                               case 'color':
+                                   this._processMaterial(material, c);
+                                   break;
+                               case 'texture':
+                                   if (materialName in materialMap) {
+                                       this._copyMaterialAttributes(material, materialMap[materialName]);
+                                   } else {
+                                       this._processMaterial(material, c, packages, path);
+                                   }
 
-                       if (c.nodeName.toLowerCase() === 'color') {
-
-                           const rgba = c.getAttribute('rgba')
-                               .split(/\s/g)
-                               .map(v => parseFloat(v));
-
-                           material.color.r = rgba[0];
-                           material.color.g = rgba[1];
-                           material.color.b = rgba[2];
-                           material.opacity = rgba[3];
-
-                           if (material.opacity < 1) material.transparent = true;
-
-                       } else if (c.nodeName.toLowerCase() === 'texture') {
-
-                           const filename = c.getAttribute('filename').replace(/^(package:\/\/)/, '');
-                           const filePath = this._resolvePackagePath(packages, filename, path);
-
-                           material.map = this._textureloader.load(filePath);
-
-                       }
-
-                   });
-
+                           }
+                       });
+                   } else {
+                       this._copyMaterialAttributes(material, materialMap[materialName]);
+                   }
                }
-
            });
 
            // apply the position and rotation to the primitive geometry after
