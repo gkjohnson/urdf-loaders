@@ -7,7 +7,7 @@ Object.entries({
     URDFManipulator: 'urdf-manipulator-element.js',
 }).map(([name, file]) => {
 
-    const inputPath = path.join(__dirname, `./${ file }`);
+    const inputPath = path.join(__dirname, `./src/${ file }`);
     const outputPath = path.join(__dirname, `./umd/${ file }`);
 
     return {

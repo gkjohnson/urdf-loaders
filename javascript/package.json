@@ -3,7 +3,7 @@
   "version": "0.4.3",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "main": "umd/URDFLoader.js",
-  "module": "URDFLoader.js",
+  "module": "src/URDFLoader.js",
   "scripts": {
     "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
     "build": "rollup -c && cd example && webpack",
@@ -12,9 +12,7 @@
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
   },
   "files": [
-    "URDFLoader.js",
-    "urdf-viewer-element.js",
-    "urdf-manipulator-element.js",
+    "src/*",
     "umd/*",
     "example/index.js",
     "example/dragAndDrop.js",
