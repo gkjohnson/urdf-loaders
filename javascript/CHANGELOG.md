@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Backward compatible umd versions of the scripts in `/umd`
+- Support for shared, named materials in the URDF
 
 ## [0.4.3] - 2018-10-10
 ### Added
