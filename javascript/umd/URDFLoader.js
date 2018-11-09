@@ -84,9 +84,7 @@
        // applies a rotation a threejs object in URDF order
        _applyRotation(obj, rpy) {
 
-           obj.rotateOnAxis(new THREE.Vector3(0, 0, 1), rpy[2]);
-           obj.rotateOnAxis(new THREE.Vector3(0, 1, 0), rpy[1]);
-           obj.rotateOnAxis(new THREE.Vector3(1, 0, 0), rpy[0]);
+           obj.rotation.set(rpy[0], rpy[1], rpy[2], 'ZYX');
 
        }
 
@@ -545,7 +543,7 @@
                    } else if (geoType === 'box') {
 
                        primitiveModel = new THREE.Mesh();
-                       primitiveModel.geometry = new THREE.BoxGeometry(1, 1, 1);
+                       primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
                        primitiveModel.material = material;
 
                        const size = this._processTuple(n.children[0].getAttribute('size'));
@@ -556,7 +554,7 @@
                    } else if (geoType === 'sphere') {
 
                        primitiveModel = new THREE.Mesh();
-                       primitiveModel.geometry = new THREE.SphereGeometry(1, 30, 30);
+                       primitiveModel.geometry = new THREE.SphereBufferGeometry(1, 30, 30);
                        primitiveModel.material = material;
 
                        const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;

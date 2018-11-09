@@ -83,7 +83,7 @@ class URDFLoader {
     // applies a rotation a threejs object in URDF order
     _applyRotation(obj, rpy) {
 
-        obj.euler.set(rpy[0], rpy[1], rpy[2], 'ZYX');
+        obj.rotation.set(rpy[0], rpy[1], rpy[2], 'ZYX');
 
     }
 
