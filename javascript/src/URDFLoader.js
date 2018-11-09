@@ -542,7 +542,7 @@ class URDFLoader {
                 } else if (geoType === 'box') {
 
                     primitiveModel = new THREE.Mesh();
-                    primitiveModel.geometry = new THREE.BoxGeometry(1, 1, 1);
+                    primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
                     primitiveModel.material = material;
 
                     const size = this._processTuple(n.children[0].getAttribute('size'));
@@ -553,7 +553,7 @@ class URDFLoader {
                 } else if (geoType === 'sphere') {
 
                     primitiveModel = new THREE.Mesh();
-                    primitiveModel.geometry = new THREE.SphereGeometry(1, 30, 30);
+                    primitiveModel.geometry = new THREE.SphereBufferGeometry(1, 30, 30);
                     primitiveModel.material = material;
 
                     const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
