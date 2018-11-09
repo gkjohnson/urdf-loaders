@@ -83,9 +83,7 @@ class URDFLoader {
     // applies a rotation a threejs object in URDF order
     _applyRotation(obj, rpy) {
 
-        obj.rotateOnAxis(new THREE.Vector3(0, 0, 1), rpy[2]);
-        obj.rotateOnAxis(new THREE.Vector3(0, 1, 0), rpy[1]);
-        obj.rotateOnAxis(new THREE.Vector3(1, 0, 0), rpy[0]);
+        obj.euler.set(rpy[0], rpy[1], rpy[2], 'ZYX);
 
     }
 
