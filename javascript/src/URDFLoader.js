@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/js/loaders/STLLoader';
 import { ColladaLoader } from 'three/examples/js/loaders/ColladaLoader';
+import { URDFRobot, URDFJoint, URDFLink } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -211,7 +212,7 @@ class URDFLoader {
         const materials = robot.querySelectorAll('material');
         const links = [];
         const joints = [];
-        const obj = new THREE.Object3D();
+        const obj = new URDFRobot();
         obj.name = robot.getAttribute('name');
 
         // Process the <joint> and <link> nodes
@@ -276,8 +277,6 @@ class URDFLoader {
 
         obj.joints = jointMap;
         obj.links = linkMap;
-        obj.isURDFRobot = true;
-        obj.type = 'URDFRobot';
 
         return obj;
 
@@ -287,29 +286,10 @@ class URDFLoader {
     _processJoint(joint, linkMap) {
 
         const jointType = joint.getAttribute('type');
-        const obj = new THREE.Object3D();
-        obj.isURDFJoint = true;
-        obj.type = 'URDFJoint';
-
+        const obj = new URDFJoint();
+        obj.urdfNode = joint;
         obj.name = joint.getAttribute('name');
         obj.jointType = jointType;
-        obj.axis = null;
-        obj.angle = 0;
-        obj.limit = { lower: 0, upper: 0 };
-        obj.ignoreLimits = false;
-        obj.setOffset = () => {};
-
-        // copy the 'setOffset' function over to 'setAngle' so
-        // it makes sense for other joint types (prismatic, planar)
-        // TODO: Remove the 'setOffset' function
-        // TODO: Figure out how to handle setting and getting angles of other types
-        Object.defineProperties(
-            obj,
-            {
-
-                setAngle: { get() { return this.setOffset; } },
-
-            });
 
         let parent = null;
         let child = null;
@@ -349,8 +329,6 @@ class URDFLoader {
         obj.position.set(xyz[0], xyz[1], xyz[2]);
 
         // Set up the rotate function
-        const origRot = new THREE.Quaternion().copy(obj.quaternion);
-        const origPos = new THREE.Vector3().copy(obj.position);
         const axisnode = this.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0];
 
         if (axisnode) {
@@ -358,65 +336,6 @@ class URDFLoader {
             const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num));
             obj.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2]);
             obj.axis.normalize();
-
-        }
-
-        switch (jointType) {
-
-            case 'fixed': break;
-            case 'continuous':
-                obj.limit.lower = -Infinity;
-                obj.limit.upper = Infinity;
-
-                // fall through to revolute joint 'setOffset' function
-            case 'revolute':
-                obj.setOffset = function(angle = null) {
-
-                    if (!this.axis) return;
-                    if (angle == null) return;
-
-                    if (!this.ignoreLimits) {
-
-                        angle = Math.min(this.limit.upper, angle);
-                        angle = Math.max(this.limit.lower, angle);
-
-                    }
-
-                    // FromAxisAngle seems to rotate the opposite of the
-                    // expected angle for URDF, so negate it here
-                    const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle);
-                    obj.quaternion.multiplyQuaternions(origRot, delta);
-
-                    this.angle = angle;
-
-                };
-                break;
-
-            case 'prismatic':
-                obj.setOffset = function(angle = null) {
-
-                    if (!this.axis) return;
-                    if (angle == null) return;
-
-                    if (!this.ignoreLimits) {
-
-                        angle = Math.min(this.limit.upper, angle);
-                        angle = Math.max(this.limit.lower, angle);
-
-                    }
-
-                    obj.position.copy(origPos);
-                    obj.position.addScaledVector(this.axis, angle);
-
-                    this.angle = angle;
-
-                };
-                break;
-
-            case 'floating':
-            case 'planar':
-                // TODO: Support these joint types
-                console.warn(`'${ jointType }' joint not yet supported`);
 
         }
 
@@ -428,10 +347,9 @@ class URDFLoader {
     _processLink(link, materialMap, packages, path, loadMeshCb) {
 
         const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
-        const obj = new THREE.Object3D();
+        const obj = new URDFLink();
         obj.name = link.getAttribute('name');
-        obj.isURDFLink = true;
-        obj.type = 'URDFLink';
+        obj.urdfNode = link;
 
         this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
 

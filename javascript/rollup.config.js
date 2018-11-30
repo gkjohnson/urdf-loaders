@@ -1,11 +1,19 @@
 const path = require('path');
 
-export default
-Object.entries({
+const files = {
     URDFLoader: 'URDFLoader.js',
     URDFViewer: 'urdf-viewer-element.js',
     URDFManipulator: 'urdf-manipulator-element.js',
-}).map(([name, file]) => {
+};
+
+const isExternal = p => {
+
+    return !!(/^three/.test(p) || Object.values(files).filter(f => p.indexOf(f) !== -1).length);
+
+};
+
+export default
+Object.entries(files).map(([name, file]) => {
 
     const inputPath = path.join(__dirname, `./src/${ file }`);
     const outputPath = path.join(__dirname, `./umd/${ file }`);
@@ -14,7 +22,7 @@ Object.entries({
 
         input: inputPath,
         treeshake: false,
-        external: p => p !== inputPath,
+        external: p => isExternal(p),
 
         output: {
 
