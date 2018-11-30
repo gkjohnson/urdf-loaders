@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - URDF XML Node to URDF Joint, Link, and Robot objects
 - Add clone functionality
 
+### Changed
+- OnComplete callback now fires once all meshes have loaded
+
 ## [0.5.1] - 2018-11-14
 ### Fixed
 - Use buffer variants of Box and Sphere geometry.
