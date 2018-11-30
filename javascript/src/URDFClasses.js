@@ -87,11 +87,11 @@ class URDFJoint extends Object3D {
                 break;
 
             case 'planar':
-                this.jointValue = new Array(2);
+                this.jointValue = new Array(2).fill(0);
                 break;
 
             case 'floating':
-                this.jointValue = new Array(6);
+                this.jointValue = new Array(6).fill(0);
                 break;
 
         }
@@ -111,12 +111,11 @@ class URDFJoint extends Object3D {
         this.type = 'URDFJoint';
 
         this.urdfNode = null;
+        this.jointValue = null;
         this.jointType = 'fixed';
         this.axis = null;
         this.limit = { lower: 0, upper: 0 };
         this.ignoreLimits = false;
-
-        this.jointValue = null;
 
         this.origPosition = null;
         this.origQuaternion = null;
@@ -144,7 +143,7 @@ class URDFJoint extends Object3D {
 
     /* Public Functions */
     setAngle(...values) {
-        this.setOffset(...values);
+        return this.setOffset(...values);
     }
 
     setOffset(...values) {
@@ -209,6 +208,8 @@ class URDFJoint extends Object3D {
                 console.warn(`'${ this.jointType }' joint not yet supported`);
 
         }
+
+        return this.jointValue;
 
     }
 
