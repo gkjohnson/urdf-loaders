@@ -34,7 +34,7 @@ function loadURDF(page, urdf, pkg, options = {}) {
 
             let meshesLoading = 0;
             const loader = new URDFLoader();
-            loader.load(
+            window.robot = loader.load(
 
                 urdf2,
                 pkg2,

@@ -102,7 +102,70 @@ describe('Options', () => {
 
 });
 
-describe('TriATHLETE Climbing URDF', async() => {
+describe('Clone', () => {
+
+    it('should clone the robot exactly', async() => {
+
+        await loadURDF(
+            page,
+            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
+            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing'
+        );
+
+        const robotsAreEqual = await page.evaluate(async() => {
+
+            let areEqual = true;
+            function compareRobots(ra, rb) {
+
+                areEqual = areEqual && ra.name === rb.name;
+                areEqual = areEqual && ra.type === rb.type;
+                areEqual = areEqual && ra.geometry === rb.geometry;
+                areEqual = areEqual && ra.material === rb.material;
+                areEqual = areEqual && ra.urdfNode === rb.urdfNode;
+
+                switch (ra.type) {
+
+                    case 'URDFRobot':
+                        areEqual = areEqual && Object.keys(ra.joints).join() === Object.keys(rb.joints).join();
+                        areEqual = areEqual && Object.keys(ra.links).join() === Object.keys(rb.links).join();
+                        break;
+                    case 'URDFJoint':
+                        areEqual = areEqual && ra.jointType === rb.jointType;
+                        if (ra.axis) areEqual = areEqual && ra.axis.toArray().join() === rb.axis.toArray().join();
+                        areEqual = areEqual && ra.limit.lower === rb.limit.lower;
+                        areEqual = areEqual && ra.limit.upper === rb.limit.upper;
+                        areEqual = areEqual && ra.ignoreLimits === rb.ignoreLimits;
+                        areEqual = areEqual && ra.jointValue === rb.jointValue;
+                        areEqual = areEqual && ra.origPosition === rb.origPosition;
+                        areEqual = areEqual && ra.origQuaternion === rb.origQuaternion;
+                        break;
+
+                }
+
+                for (let i = 0; i < ra.children.length; i++) {
+
+                    areEqual = areEqual && compareRobots(ra.children[i], rb.children[i]);
+
+                }
+
+                return areEqual;
+
+            }
+
+            const robotA = window.robot;
+            const robotB = robotA.clone();
+
+            return compareRobots(robotA, robotB);
+
+        });
+
+        expect(robotsAreEqual).toBeTruthy();
+
+    });
+
+});
+
+describe('TriATHLETE Climbing URDF', () => {
 
     beforeEach(async() => {
 
@@ -181,7 +244,7 @@ describe('TriATHLETE Climbing URDF', async() => {
     },
 ].forEach(data => {
 
-    describe(`${ data.desc } URDF`, async() => {
+    describe(`${ data.desc } URDF`, () => {
 
         beforeEach(async() => {
 
