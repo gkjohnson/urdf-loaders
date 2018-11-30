@@ -116,11 +116,34 @@ class URDFLoader {
 
         }, options);
 
-        const result = this._processUrdf(content, packages, options.workingPath, options.loadMeshCb);
+        let result = null;
+        let meshCount = 0;
+        const loadMeshFunc = (path, ext, done) => {
 
-        if (typeof onComplete === 'function') {
+            meshCount++;
+            options.loadMeshCb(path, ext, (...args) => {
+
+                done(...args);
+                meshCount--;
+                if (meshCount === 0) {
+
+                    requestAnimationFrame(() => {
+                        if (typeof onComplete === 'function') {
+                            onComplete(result);
+                        }
+                    });
+
+                }
+
+            });
+
+        };
+        result = this._processUrdf(content, packages, options.workingPath, loadMeshFunc);
+
+        if (meshCount === 0 && typeof onComplete === 'function') {
 
             onComplete(result);
+            onComplete = null;
 
         }
 
