@@ -25,6 +25,9 @@ ROS URDf
 
 */
 
+const tempQuaternion = new THREE.Quaternion();
+const tempEuler = new THREE.Euler();
+
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
 export default
@@ -82,9 +85,16 @@ class URDFLoader {
     }
 
     // applies a rotation a threejs object in URDF order
-    _applyRotation(obj, rpy) {
+    _applyRotation(obj, rpy, additive = false) {
 
-        obj.rotation.set(rpy[0], rpy[1], rpy[2], 'ZYX');
+        // if additive is true the rotation is applied in
+        // addition to the existing rotation
+        if (!additive) obj.rotation.set(0, 0, 0);
+
+        tempEuler.set(rpy[0], rpy[1], rpy[2], 'ZYX');
+        tempQuaternion.setFromEuler(tempEuler);
+        tempQuaternion.multiply(obj.quaternion);
+        obj.quaternion.copy(tempQuaternion);
 
     }
 
@@ -504,21 +514,16 @@ class URDFLoader {
 
                 } else if (geoType === 'cylinder') {
 
+                    primitiveModel = new THREE.Mesh();
+                    primitiveModel.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
+                    primitiveModel.material = material;
+
                     const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
                     const length = parseFloat(n.children[0].getAttribute('length')) || 0;
-
-                    primitiveModel = new THREE.Object3D();
-                    const mesh = new THREE.Mesh();
-                    mesh.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
-                    mesh.material = material;
-                    mesh.scale.set(radius, length, radius);
-
-                    primitiveModel.add(mesh);
-                    mesh.rotation.set(Math.PI / 2, 0, 0);
+                    primitiveModel.scale.set(radius, length, radius);
+                    primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
                     linkObj.add(primitiveModel);
-                    this._applyRotation(primitiveModel, rpy);
-                    primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
 
                 }
 
@@ -552,7 +557,7 @@ class URDFLoader {
         // nodes by this point
         if (primitiveModel) {
 
-            this._applyRotation(primitiveModel, rpy);
+            this._applyRotation(primitiveModel, rpy, true);
             primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
 
         }

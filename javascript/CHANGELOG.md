@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - OnComplete callback now fires once all meshes have loaded
+- Removed unnecessary parent when creating a cylinder visual node
 
 ## [0.5.1] - 2018-11-14
 ### Fixed
