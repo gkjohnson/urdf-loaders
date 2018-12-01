@@ -32,7 +32,6 @@ function loadURDF(page, urdf, pkg, options = {}) {
 
         return new Promise(resolve => {
 
-            let meshesLoading = 0;
             const loader = new URDFLoader();
             loader.load(
 
@@ -42,35 +41,11 @@ function loadURDF(page, urdf, pkg, options = {}) {
                 robot => {
 
                     window.robot = robot;
-                    if (meshesLoading === 0) {
-
-                        resolve();
-
-                    }
+                    resolve();
 
                 },
 
-                {
-                    ...options2,
-
-                    loadMeshCb: (path, ext, done) => {
-
-                        meshesLoading++;
-                        loader.defaultMeshLoader(path, ext, model => {
-
-                            done(model);
-                            meshesLoading--;
-                            if (meshesLoading === 0) {
-
-                                resolve();
-
-                            }
-
-                        });
-
-                    },
-
-                }
+                options2
 
             );
 

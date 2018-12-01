@@ -434,9 +434,6 @@ class URDFViewer extends HTMLElement {
 
             };
 
-            let totalMeshes = 0;
-            let meshesLoaded = 0;
-
             if (pkg.includes(':') && (pkg.split(':')[1].substring(0, 2)) !== '//') {
                 // E.g. pkg = "pkg_name: path/to/pkg_name, pk2: path2/to/pk2"}
 
@@ -460,7 +457,6 @@ class URDFViewer extends HTMLElement {
                 urdf,
                 pkg,
 
-                // Callback with array of robots
                 robot => {
 
                     // If another request has come in to load a new
@@ -472,14 +468,14 @@ class URDFViewer extends HTMLElement {
 
                     }
 
-                    updateMaterials(robot);
-
                     this.robot = robot;
                     this.world.add(robot);
+                    updateMaterials(robot);
 
                     this._setIgnoreLimits(this.ignoreLimits);
 
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
+                    this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
 
                     this.recenter();
 
@@ -490,20 +486,10 @@ class URDFViewer extends HTMLElement {
                     loadMeshCb: (path, ext, done) => {
 
                         // Load meshes and enable shadow casting
-                        totalMeshes++;
                         this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
 
                             updateMaterials(mesh);
-
                             done(mesh);
-
-                            meshesLoaded++;
-                            if (meshesLoaded === totalMeshes && this._requestId === requestId) {
-
-                                this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
-
-                            }
-
                             this.recenter();
 
                         });

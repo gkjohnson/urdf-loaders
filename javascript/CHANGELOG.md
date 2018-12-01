@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- URDF XML Node to URDF Joint, Link, and Robot objects
+- Add clone functionality
+
+### Changed
+- OnComplete callback now fires once all meshes have loaded
+- Removed unnecessary parent when creating a cylinder visual node
+
 ## [0.5.1] - 2018-11-14
 ### Fixed
 - Use buffer variants of Box and Sphere geometry.
