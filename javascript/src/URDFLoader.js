@@ -481,7 +481,15 @@ class URDFLoader {
 
                                 obj.position.set(xyz[0], xyz[1], xyz[2]);
                                 obj.rotation.set(0, 0, 0);
-                                obj.scale.set(scale[0], scale[1], scale[2]);
+
+                                // multiply the existing scale by the scale components because
+                                // the loaded model could have important scale values already applied
+                                // to the root. Collada files, for example, can load in with a scale
+                                // to convert the model units to meters.
+                                obj.scale.x *= scale[0];
+                                obj.scale.y *= scale[1];
+                                obj.scale.z *= scale[2];
+
                                 this._applyRotation(obj, rpy);
 
                             }

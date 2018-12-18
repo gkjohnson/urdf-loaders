@@ -165,6 +165,7 @@ class URDFJoint extends Object3D {
 
                 let angle = values[0];
                 if (angle == null) break;
+                if (angle === this.jointValue) break;
 
                 if (!this.ignoreLimits) {
 
@@ -179,6 +180,8 @@ class URDFJoint extends Object3D {
                 this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
 
                 this.jointValue = angle;
+                this.matrixWorldNeedsUpdate = true;
+
                 break;
             }
 
@@ -186,6 +189,7 @@ class URDFJoint extends Object3D {
 
                 let angle = values[0];
                 if (angle == null) break;
+                if (angle === this.jointValue) break;
 
                 if (!this.ignoreLimits) {
 
@@ -198,6 +202,7 @@ class URDFJoint extends Object3D {
                 this.position.addScaledVector(this.axis, angle);
 
                 this.jointValue = angle;
+                this.worldMatrixNeedsUpdate = true;
                 break;
 
             }

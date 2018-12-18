@@ -178,6 +178,19 @@ describe('TriATHLETE Climbing URDF', () => {
 
     });
 
+    it('should mark a joint as needing an update after setting the angle', async() => {
+
+        const needsUpdateBefore = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
+
+        await page.evaluate(() => window.robot.joints.HY1.setAngle(10));
+
+        const needsUpdateAfter = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
+
+        expect(needsUpdateBefore).toBe(false);
+        expect(needsUpdateAfter).toBe(true);
+
+    });
+
     it('should have the correct number of links', async() => {
 
         const jointCt = await page.evaluate(() => Object.keys(window.robot.joints).length);
