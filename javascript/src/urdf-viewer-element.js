@@ -483,16 +483,16 @@ class URDFViewer extends HTMLElement {
 
                 // options
                 {
-                    loadMeshCb: (path, ext, done) => {
+                    loadMeshCb: (path, ext, onLoad, onProgress, onError) => {
 
                         // Load meshes and enable shadow casting
                         this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
 
                             updateMaterials(mesh);
-                            done(mesh);
+                            onLoad(mesh);
                             this.recenter();
 
-                        });
+                        }, onProgress, onError);
 
                     },
 

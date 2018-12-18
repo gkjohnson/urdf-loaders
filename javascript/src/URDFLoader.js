@@ -128,12 +128,13 @@ class URDFLoader {
 
         let result = null;
         let meshCount = 0;
-        const loadMeshFunc = (path, ext, done) => {
 
-            meshCount++;
-            options.loadMeshCb(path, ext, (...args) => {
+        const createMeshTallyFunc = func => {
 
-                done(...args);
+            return (...args) => {
+
+                func(...args);
+
                 meshCount--;
                 if (meshCount === 0) {
 
@@ -144,8 +145,13 @@ class URDFLoader {
                     });
 
                 }
+            };
+        };
 
-            });
+        const loadMeshFunc = (path, ext, onLoad, onProgress, onError) => {
+
+            meshCount++;
+            options.loadMeshCb(path, ext, createMeshTallyFunc(onLoad), onProgress, createMeshTallyFunc(onError));
 
         };
         result = this._processUrdf(content, packages, options.workingPath, loadMeshFunc);
@@ -162,18 +168,18 @@ class URDFLoader {
     }
 
     // Default mesh loading function
-    defaultMeshLoader(path, ext, done) {
+    defaultMeshLoader(path, ext, onLoad, onProgress, onError) {
 
         if (/\.stl$/i.test(path)) {
 
             this.STLLoader.load(path, geom => {
                 const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
-                done(mesh);
-            });
+                onLoad(mesh);
+            }, onProgress, onError);
 
         } else if (/\.dae$/i.test(path)) {
 
-            this.DAELoader.load(path, dae => done(dae.scene));
+            this.DAELoader.load(path, dae => onLoad(dae.scene), onProgress, onError);
 
         } else {
 
@@ -494,7 +500,10 @@ class URDFLoader {
 
                             }
 
-                        });
+                        },
+                        // TODO: Propagate these upwards
+                        () => {},                   // onProgress
+                        err => console.error(err)); // onError
 
                     }
 
