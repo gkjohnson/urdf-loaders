@@ -40,15 +40,6 @@ beforeAll(async() => {
 
     page.on('error', e => { throw new Error(e); });
     page.on('pageerror', e => { throw new Error(e); });
-    page.on('console', e => {
-
-        if (e.type() === 'error') {
-
-            throw new Error(e.text());
-
-        }
-
-    });
 
 });
 
@@ -160,6 +151,37 @@ describe('Clone', () => {
         });
 
         expect(robotsAreEqual).toBeTruthy();
+
+    });
+
+});
+
+describe('Load', () => {
+
+    it(`should call complete even if all meshes can't be loaded`, async() => {
+
+        await page.evaluate(() => {
+
+            const loader = new window.URDFLoader();
+            const urdf = `
+                <robot>
+                    <link
+                        name="Body">
+                        <visual>
+                            <origin xyz="0 0 0" rpy="0 0 0" />
+                            <geometry>
+                                <mesh filename="../file/does/not/exist.stl" />
+                            </geometry>
+                        </visual>
+                    </link>
+                </robot>
+            `;
+
+            loader.defaultMeshLoader = (path, ext, onLoad, onProgress, onError) => onError(new Error());
+
+            return new Promise(resolve => loader.parse(urdf, null, resolve));
+
+        });
 
     });
 

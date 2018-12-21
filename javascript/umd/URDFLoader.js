@@ -348,12 +348,13 @@
 
             let result = null;
             let meshCount = 0;
-            const loadMeshFunc = (path, ext, done) => {
 
-                meshCount++;
-                options.loadMeshCb(path, ext, (...args) => {
+            const createMeshTallyFunc = func => {
 
-                    done(...args);
+                return (...args) => {
+
+                    func(...args);
+
                     meshCount--;
                     if (meshCount === 0) {
 
@@ -364,8 +365,13 @@
                         });
 
                     }
+                };
+            };
 
-                });
+            const loadMeshFunc = (path, ext, done) => {
+
+                meshCount++;
+                options.loadMeshCb(path, ext, createMeshTallyFunc(done));
 
             };
             result = this._processUrdf(content, packages, options.workingPath, loadMeshFunc);
@@ -687,9 +693,13 @@
                             const scaleAttr = n.children[0].getAttribute('scale');
                             if (scaleAttr) scale = this._processTuple(scaleAttr);
 
-                            loadMeshCb(filePath, ext, obj => {
+                            loadMeshCb(filePath, ext, (obj, err) => {
 
-                                if (obj) {
+                                if (err) {
+
+                                    console.error('URDFLoader: Error loading mesh.', err);
+
+                                } else if (obj) {
 
                                     if (obj instanceof THREE.Mesh) {
 

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Scale being overwritten on models that are loaded with pre-set scale values.
+- Loader not completing if a mesh could not be loaded.
 
 ## [0.5.2] - 2018-12-5
 ### Added
