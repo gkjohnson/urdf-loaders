@@ -177,7 +177,7 @@ describe('Load', () => {
                 </robot>
             `;
 
-            loader.defaultMeshLoader = (path, ext, onLoad, onProgress, onError) => onError(new Error());
+            loader.defaultMeshLoader = (path, ext, done) => done(null, new Error());
 
             return new Promise(resolve => loader.parse(urdf, null, resolve));
 
