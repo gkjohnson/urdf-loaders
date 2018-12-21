@@ -169,6 +169,7 @@
 
                     let angle = values[0];
                     if (angle == null) break;
+                    if (angle === this.jointValue) break;
 
                     if (!this.ignoreLimits) {
 
@@ -183,6 +184,8 @@
                     this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
 
                     this.jointValue = angle;
+                    this.matrixWorldNeedsUpdate = true;
+
                     break;
                 }
 
@@ -190,6 +193,7 @@
 
                     let angle = values[0];
                     if (angle == null) break;
+                    if (angle === this.jointValue) break;
 
                     if (!this.ignoreLimits) {
 
@@ -202,6 +206,7 @@
                     this.position.addScaledVector(this.axis, angle);
 
                     this.jointValue = angle;
+                    this.worldMatrixNeedsUpdate = true;
                     break;
 
                 }
@@ -343,12 +348,13 @@
 
             let result = null;
             let meshCount = 0;
-            const loadMeshFunc = (path, ext, done) => {
 
-                meshCount++;
-                options.loadMeshCb(path, ext, (...args) => {
+            const createMeshTallyFunc = func => {
 
-                    done(...args);
+                return (...args) => {
+
+                    func(...args);
+
                     meshCount--;
                     if (meshCount === 0) {
 
@@ -359,8 +365,13 @@
                         });
 
                     }
+                };
+            };
 
-                });
+            const loadMeshFunc = (path, ext, done) => {
+
+                meshCount++;
+                options.loadMeshCb(path, ext, createMeshTallyFunc(done));
 
             };
             result = this._processUrdf(content, packages, options.workingPath, loadMeshFunc);
@@ -682,9 +693,13 @@
                             const scaleAttr = n.children[0].getAttribute('scale');
                             if (scaleAttr) scale = this._processTuple(scaleAttr);
 
-                            loadMeshCb(filePath, ext, obj => {
+                            loadMeshCb(filePath, ext, (obj, err) => {
 
-                                if (obj) {
+                                if (err) {
+
+                                    console.error('URDFLoader: Error loading mesh.', err);
+
+                                } else if (obj) {
 
                                     if (obj instanceof THREE.Mesh) {
 
@@ -696,7 +711,15 @@
 
                                     obj.position.set(xyz[0], xyz[1], xyz[2]);
                                     obj.rotation.set(0, 0, 0);
-                                    obj.scale.set(scale[0], scale[1], scale[2]);
+
+                                    // multiply the existing scale by the scale components because
+                                    // the loaded model could have important scale values already applied
+                                    // to the root. Collada files, for example, can load in with a scale
+                                    // to convert the model units to meters.
+                                    obj.scale.x *= scale[0];
+                                    obj.scale.y *= scale[1];
+                                    obj.scale.z *= scale[2];
+
                                     this._applyRotation(obj, rpy);
 
                                 }

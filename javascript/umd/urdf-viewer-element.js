@@ -489,13 +489,13 @@
                         loadMeshCb: (path, ext, done) => {
 
                             // Load meshes and enable shadow casting
-                            this.urdfLoader.defaultMeshLoader(path, ext, mesh => {
+                            this.urdfLoader.defaultMeshLoader(path, ext, (mesh, err) => {
 
-                                updateMaterials(mesh);
-                                done(mesh);
+                                if (mesh) updateMaterials(mesh);
+                                done(mesh, err);
                                 this.recenter();
 
-                            });
+                            }, null, err => done(null, err));
 
                         },
 

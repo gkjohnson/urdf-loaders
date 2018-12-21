@@ -148,10 +148,10 @@ class URDFLoader {
             };
         };
 
-        const loadMeshFunc = (path, ext, onLoad, onProgress, onError) => {
+        const loadMeshFunc = (path, ext, done) => {
 
             meshCount++;
-            options.loadMeshCb(path, ext, createMeshTallyFunc(onLoad), onProgress, createMeshTallyFunc(onError));
+            options.loadMeshCb(path, ext, createMeshTallyFunc(done));
 
         };
         result = this._processUrdf(content, packages, options.workingPath, loadMeshFunc);
@@ -168,18 +168,18 @@ class URDFLoader {
     }
 
     // Default mesh loading function
-    defaultMeshLoader(path, ext, onLoad, onProgress, onError) {
+    defaultMeshLoader(path, ext, done) {
 
         if (/\.stl$/i.test(path)) {
 
             this.STLLoader.load(path, geom => {
                 const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
-                onLoad(mesh);
-            }, onProgress, onError);
+                done(mesh);
+            });
 
         } else if (/\.dae$/i.test(path)) {
 
-            this.DAELoader.load(path, dae => onLoad(dae.scene), onProgress, onError);
+            this.DAELoader.load(path, dae => done(dae.scene));
 
         } else {
 
@@ -473,9 +473,13 @@ class URDFLoader {
                         const scaleAttr = n.children[0].getAttribute('scale');
                         if (scaleAttr) scale = this._processTuple(scaleAttr);
 
-                        loadMeshCb(filePath, ext, obj => {
+                        loadMeshCb(filePath, ext, (obj, err) => {
 
-                            if (obj) {
+                            if (err) {
+
+                                console.error('URDFLoader: Error loading mesh.', err);
+
+                            } else if (obj) {
 
                                 if (obj instanceof THREE.Mesh) {
 
@@ -500,10 +504,7 @@ class URDFLoader {
 
                             }
 
-                        },
-                        // TODO: Propagate these upwards
-                        () => {},                   // onProgress
-                        err => console.error(err)); // onError
+                        });
 
                     }
 
