@@ -41,6 +41,27 @@ class URDFRobot extends Object3D {
 
     }
 
+    // Set the joint with jointname to
+    // angle in degrees
+    setAngle(jointname, angle) {
+
+        const joint = this.joints[jointname];
+        if (joint && joint.angle !== angle) {
+
+            joint.setAngle(angle);
+            return true;
+
+        }
+
+        return false;
+    }
+
+    setAngles(angles) {
+
+        for (const name in angles) this.setAngle(name, angles[name]);
+
+    }
+
 }
 
 class URDFLink extends Object3D {

@@ -293,12 +293,8 @@
 
             if (!this.robot) return;
 
-            const joint = this.robot.joints[jointname];
-            if (joint && joint.angle !== angle) {
-
-                joint.setAngle(angle);
+            if(this.robot.setAngle(jointname, angle)) {
                 this.redraw();
-
             }
 
             this.dispatchEvent(new CustomEvent('angle-change', { bubles: true, cancelable: true, detail: jointname }));
