@@ -106,10 +106,13 @@ class URDFLoader {
 
         // Check if a full URI is specified before
         // prepending the package info
-        const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
+        const defaultOptions = {
+            workingPath: THREE.LoaderUtils.extractUrlBase(urdf),
+            linkType: 'visual',
+        };
         const urdfPath = this.manager.resolveURL(urdf);
 
-        options = Object.assign({ workingPath }, options);
+        options = Object.assign(defaultOptions, options);
 
         fetch(urdfPath, options.fetchOptions)
             .then(res => res.text())
@@ -154,7 +157,7 @@ class URDFLoader {
             options.loadMeshCb(path, ext, createMeshTallyFunc(done));
 
         };
-        result = this._processUrdf(content, packages, options.workingPath, loadMeshFunc);
+        result = this._processUrdf(content, packages, options, loadMeshFunc);
 
         if (meshCount === 0 && typeof onComplete === 'function') {
 
@@ -235,19 +238,21 @@ class URDFLoader {
     }
 
     // Process the URDF text format
-    _processUrdf(data, packages, path, loadMeshCb) {
-
+    _processUrdf(data, packages, options, loadMeshCb) {
         const parser = new DOMParser();
         const urdf = parser.parseFromString(data, 'text/xml');
 
         const robottag = this.filter(urdf.children, c => c.nodeName === 'robot').pop();
-        return this._processRobot(robottag, packages, path, loadMeshCb);
+        return this._processRobot(robottag, packages, options, loadMeshCb);
 
     }
 
     // Process the <robot> node
-    _processRobot(robot, packages, path, loadMeshCb) {
-
+    _processRobot(robot, packages, options, loadMeshCb) {
+        const {
+            workingPath: path,
+            linkType,
+        } = options;
         const materials = robot.querySelectorAll('material');
         const links = [];
         const joints = [];
@@ -291,7 +296,7 @@ class URDFLoader {
         this.forEach(links, l => {
 
             const name = l.getAttribute('name');
-            linkMap[name] = this._processLink(l, materialMap, packages, path, loadMeshCb);
+            linkMap[name] = this._processLink(l, materialMap, packages, path, linkType, loadMeshCb);
 
         });
 
@@ -383,9 +388,9 @@ class URDFLoader {
     }
 
     // Process the <link> nodes
-    _processLink(link, materialMap, packages, path, loadMeshCb) {
+    _processLink(link, materialMap, packages, path, linkType, loadMeshCb) {
 
-        const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
+        const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === linkType);
         const obj = new URDFLink();
         obj.name = link.getAttribute('name');
         obj.urdfNode = link;
