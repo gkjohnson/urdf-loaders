@@ -14,6 +14,12 @@ class URDFRobot extends Object3D {
 
     }
 
+    clone( recursive ) {
+
+        return new URDFRobot().copy( this, recursive );
+
+    }
+
     copy(source, recursive) {
 
         super.copy(source, recursive);
@@ -51,6 +57,12 @@ class URDFLink extends Object3D {
         this.isURDFLink = true;
         this.type = 'URDFLink';
         this.urdfNode = null;
+
+    }
+
+    clone( recursive ) {
+
+        return new URDFLink().copy( this, recursive );
 
     }
 
@@ -122,6 +134,12 @@ class URDFJoint extends Object3D {
     }
 
     /* Overrides */
+    clone( recursive ) {
+
+        return new URDFJoint().copy( this, recursive );
+
+    }
+
     copy(source, recursive) {
 
         super.copy(source, recursive);
