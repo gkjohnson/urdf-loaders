@@ -1,7 +1,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/js/controls/OrbitControls'), require('./URDFLoader.js')) :
-    typeof define === 'function' && define.amd ? define(['three', 'three/examples/js/controls/OrbitControls', './URDFLoader.js'], factory) :
-    (global.URDFViewer = factory(global.THREE,global.THREE,global.URDFLoader));
+        typeof define === 'function' && define.amd ? define(['three', 'three/examples/js/controls/OrbitControls', './URDFLoader.js'], factory) :
+            (global.URDFViewer = factory(global.THREE,global.THREE,global.URDFLoader));
 }(this, (function (THREE,OrbitControls,URDFLoader) { 'use strict';
 
     URDFLoader = URDFLoader && URDFLoader.hasOwnProperty('default') ? URDFLoader['default'] : URDFLoader;
@@ -183,7 +183,7 @@
 
                 const styletag = document.createElement('style');
                 styletag.innerHTML =
-                `
+                    `
                 ${ this.tagName } { display: block; }
                 ${ this.tagName } canvas {
                     width: 100%;
