@@ -1,7 +1,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/js/loaders/STLLoader'), require('three/examples/js/loaders/ColladaLoader')) :
-        typeof define === 'function' && define.amd ? define(['three', 'three/examples/js/loaders/STLLoader', 'three/examples/js/loaders/ColladaLoader'], factory) :
-            (global.URDFLoader = factory(global.THREE,global.THREE,global.THREE));
+    typeof define === 'function' && define.amd ? define(['three', 'three/examples/js/loaders/STLLoader', 'three/examples/js/loaders/ColladaLoader'], factory) :
+    (global.URDFLoader = factory(global.THREE,global.THREE,global.THREE));
 }(this, (function (THREE,STLLoader,ColladaLoader) { 'use strict';
 
     class URDFRobot extends THREE.Object3D {
