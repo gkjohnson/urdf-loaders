@@ -33,28 +33,6 @@ const tempEuler = new THREE.Euler();
 export default
 class URDFLoader {
 
-    // Cached mesh loaders
-    get STLLoader() {
-
-        this._stlloader = this._stlloader || new STLLoader(this.manager);
-        return this._stlloader;
-
-    }
-
-    get DAELoader() {
-
-        this._daeloader = this._daeloader || new ColladaLoader(this.manager);
-        return this._daeloader;
-
-    }
-
-    get TextureLoader() {
-
-        this._textureloader = this._textureloader || new THREE.TextureLoader(this.manager);
-        return this._textureloader;
-
-    }
-
     constructor(manager) {
 
         this.manager = manager || THREE.DefaultLoadingManager;
@@ -172,14 +150,16 @@ class URDFLoader {
 
         if (/\.stl$/i.test(path)) {
 
-            this.STLLoader.load(path, geom => {
+            const loader = new STLLoader(this.manager);
+            loader.load(path, geom => {
                 const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                 done(mesh);
             });
 
         } else if (/\.dae$/i.test(path)) {
 
-            this.DAELoader.load(path, dae => done(dae.scene));
+            const loader = new ColladaLoader(this.manager);
+            loader.load(path, dae => done(dae.scene));
 
         } else {
 
@@ -417,12 +397,13 @@ class URDFLoader {
 
         } else if (type === 'texture') {
 
+            const loader = new THREE.TextureLoader(this.manager);
             const filename = node.getAttribute('filename');
             const filePath = this._resolvePackagePath(packages, filename, path);
             this._copyMaterialAttributes(
                 material,
                 {
-                    map: this.TextureLoader.load(filePath),
+                    map: loader.load(filePath),
                 });
 
         }
