@@ -28,6 +28,29 @@ ROS URDf
 const tempQuaternion = new THREE.Quaternion();
 const tempEuler = new THREE.Euler();
 
+// take a vector "x y z" and process it into
+// an array [x, y, z]
+function processTuple(val) {
+
+    if (!val) return [0, 0, 0];
+    return val.trim().split(/\s+/g).map(num => parseFloat(num));
+
+}
+
+// applies a rotation a threejs object in URDF order
+function applyRotation(obj, rpy, additive = false) {
+
+    // if additive is true the rotation is applied in
+    // addition to the existing rotation
+    if (!additive) obj.rotation.set(0, 0, 0);
+
+    tempEuler.set(rpy[0], rpy[1], rpy[2], 'ZYX');
+    tempQuaternion.setFromEuler(tempEuler);
+    tempQuaternion.multiply(obj.quaternion);
+    obj.quaternion.copy(tempQuaternion);
+
+}
+
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
 export default
@@ -67,32 +90,8 @@ class URDFLoader {
 
         }, options);
 
-        /* Utilities */
-        // take a vector "x y z" and process it into
-        // an array [x, y, z]
-        function _processTuple(val) {
-
-            if (!val) return [0, 0, 0];
-            return val.trim().split(/\s+/g).map(num => parseFloat(num));
-
-        }
-
-        // applies a rotation a threejs object in URDF order
-        function _applyRotation(obj, rpy, additive = false) {
-
-            // if additive is true the rotation is applied in
-            // addition to the existing rotation
-            if (!additive) obj.rotation.set(0, 0, 0);
-
-            tempEuler.set(rpy[0], rpy[1], rpy[2], 'ZYX');
-            tempQuaternion.setFromEuler(tempEuler);
-            tempQuaternion.multiply(obj.quaternion);
-            obj.quaternion.copy(tempQuaternion);
-
-        }
-
         // Resolves the path of mesh files
-        function _resolvePackagePath(pkg, meshPath, currPath) {
+        function resolvePackagePath(pkg, meshPath, currPath) {
 
             if (!/^package:\/\//.test(meshPath)) {
 
@@ -135,19 +134,19 @@ class URDFLoader {
         }
 
         // Process the URDF text format
-        function _processUrdf(data, packages, path, loadMeshCb) {
+        function processUrdf(data, packages, path, loadMeshCb) {
 
             const parser = new DOMParser();
             const urdf = parser.parseFromString(data, 'text/xml');
             const children = [ ...urdf.children ];
 
             const robotNode = children.filter(c => c.nodeName === 'robot').pop();
-            return _processRobot(robotNode, packages, path, loadMeshCb);
+            return processRobot(robotNode, packages, path, loadMeshCb);
 
         }
 
         // Process the <robot> node
-        function _processRobot(robot, packages, path, loadMeshCb) {
+        function processRobot(robot, packages, path, loadMeshCb) {
 
             const materials = [ ...robot.querySelectorAll('material') ];
             const robotNodes = [ ...robot.children ];
@@ -185,7 +184,7 @@ class URDFLoader {
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
-                linkMap[name] = _processLink(l, materialMap, packages, path, loadMeshCb);
+                linkMap[name] = processLink(l, materialMap, packages, path, loadMeshCb);
 
             });
 
@@ -194,7 +193,7 @@ class URDFLoader {
             joints.forEach(j => {
 
                 const name = j.getAttribute('name');
-                jointMap[name] = _processJoint(j, linkMap);
+                jointMap[name] = processJoint(j, linkMap);
 
             });
 
@@ -216,7 +215,7 @@ class URDFLoader {
         }
 
         // Process joint nodes and parent them
-        function _processJoint(joint, linkMap) {
+        function processJoint(joint, linkMap) {
 
             const children = [ ...joint.children ];
             const jointType = joint.getAttribute('type');
@@ -236,8 +235,8 @@ class URDFLoader {
                 const type = n.nodeName.toLowerCase();
                 if (type === 'origin') {
 
-                    xyz = _processTuple(n.getAttribute('xyz'));
-                    rpy = _processTuple(n.getAttribute('rpy'));
+                    xyz = processTuple(n.getAttribute('xyz'));
+                    rpy = processTuple(n.getAttribute('rpy'));
 
                 } else if (type === 'child') {
 
@@ -259,7 +258,7 @@ class URDFLoader {
             // Join the links
             parent.add(obj);
             obj.add(child);
-            _applyRotation(obj, rpy);
+            applyRotation(obj, rpy);
             obj.position.set(xyz[0], xyz[1], xyz[2]);
 
             // Set up the rotate function
@@ -278,7 +277,7 @@ class URDFLoader {
         }
 
         // Process the <link> nodes
-        function _processLink(link, materialMap, packages, path, loadMeshCb) {
+        function processLink(link, materialMap, packages, path, loadMeshCb) {
 
             const children = [ ...link.children ];
             const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
@@ -286,7 +285,7 @@ class URDFLoader {
             obj.name = link.getAttribute('name');
             obj.urdfNode = link;
 
-            visualNodes.forEach(vn => _processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
+            visualNodes.forEach(vn => processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
 
             return obj;
 
@@ -315,7 +314,7 @@ class URDFLoader {
 
                 const loader = new THREE.TextureLoader(this.manager);
                 const filename = node.getAttribute('filename');
-                const filePath = _resolvePackagePath(packages, filename, path);
+                const filePath = resolvePackagePath(packages, filename, path);
                 _copyMaterialAttributes(
                     material,
                     {
@@ -344,7 +343,7 @@ class URDFLoader {
         }
 
         // Process the visual nodes into meshes
-        function _processVisualNode(vn, linkObj, materialMap, packages, path, loadMeshCb) {
+        function processVisualNode(vn, linkObj, materialMap, packages, path, loadMeshCb) {
 
             let xyz = [0, 0, 0];
             let rpy = [0, 0, 0];
@@ -362,14 +361,14 @@ class URDFLoader {
                     if (geoType === 'mesh') {
 
                         const filename = n.children[0].getAttribute('filename');
-                        const filePath = _resolvePackagePath(packages, filename, path);
+                        const filePath = resolvePackagePath(packages, filename, path);
 
                         // file path is null if a package directory is not provided.
                         if (filePath !== null) {
 
                             const ext = filePath.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                             const scaleAttr = n.children[0].getAttribute('scale');
-                            if (scaleAttr) scale = _processTuple(scaleAttr);
+                            if (scaleAttr) scale = processTuple(scaleAttr);
 
                             loadMeshCb(filePath, ext, (obj, err) => {
 
@@ -398,7 +397,7 @@ class URDFLoader {
                                     obj.scale.y *= scale[1];
                                     obj.scale.z *= scale[2];
 
-                                    _applyRotation(obj, rpy);
+                                    applyRotation(obj, rpy);
 
                                 }
 
@@ -412,7 +411,7 @@ class URDFLoader {
                         primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
                         primitiveModel.material = material;
 
-                        const size = _processTuple(n.children[0].getAttribute('size'));
+                        const size = processTuple(n.children[0].getAttribute('size'));
 
                         linkObj.add(primitiveModel);
                         primitiveModel.scale.set(size[0], size[1], size[2]);
@@ -445,8 +444,8 @@ class URDFLoader {
 
                 } else if (type === 'origin') {
 
-                    xyz = _processTuple(n.getAttribute('xyz'));
-                    rpy = _processTuple(n.getAttribute('rpy'));
+                    xyz = processTuple(n.getAttribute('xyz'));
+                    rpy = processTuple(n.getAttribute('rpy'));
 
                 } else if (type === 'material') {
 
@@ -473,7 +472,7 @@ class URDFLoader {
             // nodes by this point
             if (primitiveModel) {
 
-                _applyRotation(primitiveModel, rpy, true);
+                applyRotation(primitiveModel, rpy, true);
                 primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
 
             }
@@ -509,7 +508,7 @@ class URDFLoader {
             options.loadMeshCb(path, ext, createMeshTallyFunc(done));
 
         };
-        result = _processUrdf(content, packages, options.workingPath, loadMeshFunc);
+        result = processUrdf(content, packages, options.workingPath, loadMeshFunc);
 
         if (meshCount === 0 && typeof onComplete === 'function') {
 
