@@ -95,9 +95,8 @@ class URDFLoader {
         const jointMap = {};
         const materialMap = {};
 
-        // TODO: Remove this
+        // TODO: Remove this and rely on loading manager instead
         let meshCount = 0;
-
         const createMeshTallyFunc = func => {
 
             return (...args) => {
@@ -214,7 +213,7 @@ class URDFLoader {
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
-                linkMap[name] = processLink(l, materialMap);
+                linkMap[name] = processLink(l);
 
             });
 
@@ -222,7 +221,7 @@ class URDFLoader {
             joints.forEach(j => {
 
                 const name = j.getAttribute('name');
-                jointMap[name] = processJoint(j, linkMap);
+                jointMap[name] = processJoint(j);
 
             });
 
@@ -244,7 +243,7 @@ class URDFLoader {
         }
 
         // Process joint nodes and parent them
-        function processJoint(joint, linkMap) {
+        function processJoint(joint) {
 
             const children = [ ...joint.children ];
             const jointType = joint.getAttribute('type');
@@ -306,7 +305,7 @@ class URDFLoader {
         }
 
         // Process the <link> nodes
-        function processLink(link, materialMap) {
+        function processLink(link) {
 
             const children = [ ...link.children ];
             const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
