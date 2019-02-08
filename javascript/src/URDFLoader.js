@@ -251,7 +251,7 @@ class URDFLoader {
             if (!materialMap[name]) {
 
                 materialMap[name] = {};
-                const matNodes = m.children;
+                const matNodes = [ ...m.children ];
                 matNodes.forEach(c => {
 
                     this._processMaterial(
