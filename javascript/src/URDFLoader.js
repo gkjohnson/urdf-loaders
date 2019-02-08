@@ -90,17 +90,51 @@ class URDFLoader {
 
         }, options);
 
+        const workingPath = options.workingPath;
+        const linkMap = {};
+        const jointMap = {};
+        const materialMap = {};
+
+        // TODO: Remove this
+        let meshCount = 0;
+
+        const createMeshTallyFunc = func => {
+
+            return (...args) => {
+
+                func(...args);
+
+                meshCount--;
+                if (meshCount === 0) {
+
+                    requestAnimationFrame(() => {
+                        if (typeof onComplete === 'function') {
+                            onComplete(result);
+                        }
+                    });
+
+                }
+            };
+        };
+
+        const loadMeshCb = (path, ext, done) => {
+
+            meshCount++;
+            options.loadMeshCb(path, ext, createMeshTallyFunc(done));
+
+        };
+
         // Resolves the path of mesh files
-        function resolvePackagePath(meshPath, currPath) {
+        function resolvePath(path) {
 
-            if (!/^package:\/\//.test(meshPath)) {
+            if (!/^package:\/\//.test(path)) {
 
-                return currPath !== undefined ? currPath + meshPath : meshPath;
+                return workingPath ? workingPath + path : path;
 
             }
 
             // Remove "package://" keyword and split meshPath at the first slash
-            const [targetPkg, relPath] = meshPath.replace(/^package:\/\//, '').split(/\/(.+)/);
+            const [targetPkg, relPath] = path.replace(/^package:\/\//, '').split(/\/(.+)/);
 
             if (typeof packages === 'string') {
 
@@ -134,19 +168,19 @@ class URDFLoader {
         }
 
         // Process the URDF text format
-        function processUrdf(data, path, loadMeshCb) {
+        function processUrdf(data) {
 
             const parser = new DOMParser();
             const urdf = parser.parseFromString(data, 'text/xml');
             const children = [ ...urdf.children ];
 
             const robotNode = children.filter(c => c.nodeName === 'robot').pop();
-            return processRobot(robotNode, path, loadMeshCb);
+            return processRobot(robotNode);
 
         }
 
         // Process the <robot> node
-        function processRobot(robot, path, loadMeshCb) {
+        function processRobot(robot) {
 
             const materials = [ ...robot.querySelectorAll('material') ];
             const robotNodes = [ ...robot.children ];
@@ -156,7 +190,6 @@ class URDFLoader {
             obj.name = robot.getAttribute('name');
 
             // Create the <material> map
-            const materialMap = {};
             materials.forEach(m => {
 
                 const name = m.getAttribute('name');
@@ -166,10 +199,9 @@ class URDFLoader {
                     const matNodes = [ ...m.children ];
                     matNodes.forEach(c => {
 
-                        _processMaterial(
+                        processMaterial(
                             materialMap[name],
-                            c,
-                            path
+                            c
                         );
 
                     });
@@ -179,16 +211,14 @@ class URDFLoader {
             });
 
             // Create the <link> map
-            const linkMap = {};
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
-                linkMap[name] = processLink(l, materialMap, path, loadMeshCb);
+                linkMap[name] = processLink(l, materialMap);
 
             });
 
             // Create the <joint> map
-            const jointMap = {};
             joints.forEach(j => {
 
                 const name = j.getAttribute('name');
@@ -276,7 +306,7 @@ class URDFLoader {
         }
 
         // Process the <link> nodes
-        function processLink(link, materialMap, path, loadMeshCb) {
+        function processLink(link, materialMap) {
 
             const children = [ ...link.children ];
             const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
@@ -284,13 +314,13 @@ class URDFLoader {
             obj.name = link.getAttribute('name');
             obj.urdfNode = link;
 
-            visualNodes.forEach(vn => processVisualNode(vn, obj, materialMap, path, loadMeshCb));
+            visualNodes.forEach(vn => processVisualNode(vn, obj, materialMap));
 
             return obj;
 
         }
 
-        function _processMaterial(material, node, path) {
+        function processMaterial(material, node) {
 
             const type = node.nodeName.toLowerCase();
             if (type === 'color') {
@@ -301,7 +331,7 @@ class URDFLoader {
                         .split(/\s/g)
                         .map(v => parseFloat(v));
 
-                _copyMaterialAttributes(
+                copyMaterialAttributes(
                     material,
                     {
                         color: new THREE.Color(rgba[0], rgba[1], rgba[2]),
@@ -313,8 +343,8 @@ class URDFLoader {
 
                 const loader = new THREE.TextureLoader(this.manager);
                 const filename = node.getAttribute('filename');
-                const filePath = resolvePackagePath(filename, path);
-                _copyMaterialAttributes(
+                const filePath = resolvePath(filename);
+                copyMaterialAttributes(
                     material,
                     {
                         map: loader.load(filePath),
@@ -323,7 +353,7 @@ class URDFLoader {
             }
         }
 
-        function _copyMaterialAttributes(material, materialAttributes) {
+        function copyMaterialAttributes(material, materialAttributes) {
 
             if ('color' in materialAttributes) {
 
@@ -342,7 +372,7 @@ class URDFLoader {
         }
 
         // Process the visual nodes into meshes
-        function processVisualNode(vn, linkObj, materialMap, path, loadMeshCb) {
+        function processVisualNode(vn, linkObj, materialMap) {
 
             let xyz = [0, 0, 0];
             let rpy = [0, 0, 0];
@@ -360,7 +390,7 @@ class URDFLoader {
                     if (geoType === 'mesh') {
 
                         const filename = n.children[0].getAttribute('filename');
-                        const filePath = resolvePackagePath(filename, path);
+                        const filePath = resolvePath(filename);
 
                         // file path is null if a package directory is not provided.
                         if (filePath !== null) {
@@ -451,13 +481,13 @@ class URDFLoader {
                     const materialName = n.getAttribute('name');
                     if (materialName) {
 
-                        _copyMaterialAttributes(material, materialMap[materialName]);
+                        copyMaterialAttributes(material, materialMap[materialName]);
 
                     } else {
 
                         children.forEach(c => {
 
-                            _processMaterial(material, c, path);
+                            processMaterial(material, c);
 
                         });
 
@@ -478,36 +508,7 @@ class URDFLoader {
 
         }
 
-        // TODO: Remove this
-        let result = null;
-        let meshCount = 0;
-
-        const createMeshTallyFunc = func => {
-
-            return (...args) => {
-
-                func(...args);
-
-                meshCount--;
-                if (meshCount === 0) {
-
-                    requestAnimationFrame(() => {
-                        if (typeof onComplete === 'function') {
-                            onComplete(result);
-                        }
-                    });
-
-                }
-            };
-        };
-
-        const loadMeshFunc = (path, ext, done) => {
-
-            meshCount++;
-            options.loadMeshCb(path, ext, createMeshTallyFunc(done));
-
-        };
-        result = processUrdf(content, options.workingPath, loadMeshFunc);
+        const result = processUrdf(content);
 
         if (meshCount === 0 && typeof onComplete === 'function') {
 
