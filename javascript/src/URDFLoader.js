@@ -88,7 +88,7 @@ class URDFLoader {
             })
             .catch(e => {
 
-                console.error('URDFLoader: ', e);
+                console.error('URDFLoader: Error parsing file.', e);
                 manager.itemError(urdfPath);
 
             });
