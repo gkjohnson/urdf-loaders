@@ -26,9 +26,9 @@ expect.extend({
     },
 });
 
-function loadURDF(page, urdf, pkg, options = {}) {
+function loadURDF(page, urdf, options = {}) {
 
-    return page.evaluate(async(urdf2, pkg2, options2) => {
+    return page.evaluate(async(urdf2, options2) => {
 
         return new Promise(resolve => {
 
@@ -38,7 +38,6 @@ function loadURDF(page, urdf, pkg, options = {}) {
             loader.load(
 
                 urdf2,
-                pkg2,
 
                 robot => {
 
@@ -52,7 +51,7 @@ function loadURDF(page, urdf, pkg, options = {}) {
 
         });
 
-    }, urdf, pkg, options);
+    }, urdf, options);
 
 }
 
