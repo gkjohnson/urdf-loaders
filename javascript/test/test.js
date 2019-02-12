@@ -56,7 +56,6 @@ describe('Options', () => {
                     const loader = new URDFLoader();
                     loader.load(
                         'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-                        'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
                         robot => {
                             let ct = 0;
                             robot.traverse(c => {
@@ -73,6 +72,7 @@ describe('Options', () => {
 
                         },
                         {
+                            packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
                             loadMeshCb: (path, manager, done) => {
 
                                 const mesh = new THREE.Mesh();
@@ -100,7 +100,9 @@ describe('Clone', () => {
         await loadURDF(
             page,
             'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing'
+            {
+                packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
+            }
         );
 
         const robotsAreEqual = await page.evaluate(async() => {
@@ -194,7 +196,9 @@ describe('TriATHLETE Climbing URDF', () => {
         await loadURDF(
             page,
             'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing'
+            {
+                packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
+            }
         );
 
     });
@@ -283,7 +287,7 @@ describe('TriATHLETE Climbing URDF', () => {
         beforeEach(async() => {
 
             // Model loads STL files and has continuous, prismatic, and revolute joints
-            await loadURDF(page, data.urdf, data.pkg);
+            await loadURDF(page, data.urdf, { packages: data.pkg });
 
         });
 
