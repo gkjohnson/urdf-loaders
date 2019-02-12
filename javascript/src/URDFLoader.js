@@ -90,38 +90,11 @@ class URDFLoader {
 
         }, options);
 
+        const loadMeshCb = options.loadMeshCb;
         const workingPath = options.workingPath;
         const linkMap = {};
         const jointMap = {};
         const materialMap = {};
-
-        // TODO: Remove this and rely on loading manager instead
-        let meshCount = 0;
-        const createMeshTallyFunc = func => {
-
-            return (...args) => {
-
-                func(...args);
-
-                meshCount--;
-                if (meshCount === 0) {
-
-                    requestAnimationFrame(() => {
-                        if (typeof onComplete === 'function') {
-                            onComplete(result);
-                        }
-                    });
-
-                }
-            };
-        };
-
-        const loadMeshCb = (path, ext, done) => {
-
-            meshCount++;
-            options.loadMeshCb(path, ext, createMeshTallyFunc(done));
-
-        };
 
         // Resolves the path of mesh files
         function resolvePath(path) {
@@ -509,12 +482,7 @@ class URDFLoader {
 
         const result = processUrdf(content);
 
-        if (meshCount === 0 && typeof onComplete === 'function') {
-
-            onComplete(result);
-            onComplete = null;
-
-        }
+        onComplete(result);
 
         return result;
 
