@@ -44,10 +44,6 @@ class URDFViewer extends HTMLElement {
     get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
     set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
 
-    get loadingManager() { return this._loadingManager = this._loadingManager || new THREE.LoadingManager(); }
-
-    get urdfLoader() { return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager); }
-
     get angles() {
 
         const angles = {};
@@ -71,6 +67,8 @@ class URDFViewer extends HTMLElement {
         this._dirty = false;
         this._loadScheduled = false;
         this.robot = null;
+        this.loadMeshFunc = null;
+        this.urlModifierFunc = null;
 
         // Scene setup
         const scene = new THREE.Scene();
@@ -138,9 +136,6 @@ class URDFViewer extends HTMLElement {
         this.ambientLight = ambientLight;
 
         this._setUp(this.up);
-
-        // redraw when something new has loaded
-        this.loadingManager.onLoad = () => this.recenter();
 
         const _renderLoop = () => {
 
@@ -290,7 +285,7 @@ class URDFViewer extends HTMLElement {
 
         if (!this.robot) return;
 
-        if(this.robot.setAngle(jointname, angle)) {
+        if (this.robot.setAngle(jointname, angle)) {
             this.redraw();
         }
 
@@ -392,7 +387,7 @@ class URDFViewer extends HTMLElement {
 
                 mesh.traverse(c => {
 
-                    if (c.type === 'Mesh') {
+                    if (c.isMesh) {
 
                         c.castShadow = true;
                         c.receiveShadow = true;
@@ -449,49 +444,48 @@ class URDFViewer extends HTMLElement {
                 }, {});
             }
 
-            this.urdfLoader.load(
+            let robot = null;
+            const manager = new THREE.LoadingManager();
+            manager.onLoad = () => {
+
+                // If another request has come in to load a new
+                // robot, then ignore this one
+                if (this._requestId !== requestId) {
+
+                    robot.traverse(c => c.dispose && c.dispose());
+                    return;
+
+                }
+
+                this.robot = robot;
+                this.world.add(robot);
+                updateMaterials(robot);
+
+                this._setIgnoreLimits(this.ignoreLimits);
+
+                this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
+                this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
+
+                this.recenter();
+
+            };
+
+            if (this.urlModifierFunc) {
+
+                manager.setURLModifier(this.urlModifierFunc);
+
+            }
+
+            new URDFLoader(manager).load(
                 urdf,
                 pkg,
 
-                robot => {
-
-                    // If another request has come in to load a new
-                    // robot, then ignore this one
-                    if (this._requestId !== requestId) {
-
-                        robot.traverse(c => c.dispose && c.dispose());
-                        return;
-
-                    }
-
-                    this.robot = robot;
-                    this.world.add(robot);
-                    updateMaterials(robot);
-
-                    this._setIgnoreLimits(this.ignoreLimits);
-
-                    this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
-                    this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
-
-                    this.recenter();
-
-                },
+                model => robot = model,
 
                 // options
                 {
-                    loadMeshCb: (path, ext, done) => {
 
-                        // Load meshes and enable shadow casting
-                        this.urdfLoader.defaultMeshLoader(path, ext, (mesh, err) => {
-
-                            if (mesh) updateMaterials(mesh);
-                            done(mesh, err);
-                            this.recenter();
-
-                        }, null, err => done(null, err));
-
-                    },
-
+                    loadMeshCb: this.loadMeshFunc,
                     fetchOptions: { mode: 'cors', credentials: 'same-origin' },
 
                 });
