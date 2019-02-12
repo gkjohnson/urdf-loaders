@@ -177,14 +177,16 @@ class URDFJoint extends Object3D {
 
 }
 
-class URDFRobot extends Object3D {
+class URDFRobot extends URDFLink {
 
     constructor(...args) {
 
         super(...args);
         this.isURDFRobot = true;
-        this.type = 'URDFRobot';
         this.urdfNode = null;
+
+        this.urdfRobotNode = null;
+        this.robotName = null;
 
         this.links = null;
         this.joints = null;
@@ -194,6 +196,9 @@ class URDFRobot extends Object3D {
     copy(source, recursive) {
 
         super.copy(source, recursive);
+
+        this.urdfRobotNode = source.urdfRobotNode;
+        this.robotName = source.robotName;
 
         this.links = {};
         this.joints = {};
