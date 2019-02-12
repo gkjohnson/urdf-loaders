@@ -1,69 +1,5 @@
 import { Object3D, Quaternion } from 'three';
 
-class URDFRobot extends Object3D {
-
-    constructor(...args) {
-
-        super(...args);
-        this.isURDFRobot = true;
-        this.type = 'URDFRobot';
-        this.urdfNode = null;
-
-        this.links = null;
-        this.joints = null;
-
-    }
-
-    copy(source, recursive) {
-
-        super.copy(source, recursive);
-
-        this.links = {};
-        this.joints = {};
-
-        this.traverse(c => {
-
-            if (c.isURDFJoint && c.name in source.joints) {
-
-                this.joints[c.name] = c;
-
-            }
-
-            if (c.isURDFLink && c.name in source.links) {
-
-                this.links[c.name] = c;
-
-            }
-
-        });
-
-        return this;
-
-    }
-
-    // Set the joint with jointname to
-    // angle in degrees
-    setAngle(jointname, angle) {
-
-        const joint = this.joints[jointname];
-        if (joint && joint.angle !== angle) {
-
-            joint.setAngle(angle);
-            return true;
-
-        }
-
-        return false;
-    }
-
-    setAngles(angles) {
-
-        for (const name in angles) this.setAngle(name, angles[name]);
-
-    }
-
-}
-
 class URDFLink extends Object3D {
 
     constructor(...args) {
@@ -236,6 +172,70 @@ class URDFJoint extends Object3D {
         }
 
         return this.jointValue;
+
+    }
+
+}
+
+class URDFRobot extends Object3D {
+
+    constructor(...args) {
+
+        super(...args);
+        this.isURDFRobot = true;
+        this.type = 'URDFRobot';
+        this.urdfNode = null;
+
+        this.links = null;
+        this.joints = null;
+
+    }
+
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+
+        this.links = {};
+        this.joints = {};
+
+        this.traverse(c => {
+
+            if (c.isURDFJoint && c.name in source.joints) {
+
+                this.joints[c.name] = c;
+
+            }
+
+            if (c.isURDFLink && c.name in source.links) {
+
+                this.links[c.name] = c;
+
+            }
+
+        });
+
+        return this;
+
+    }
+
+    // Set the joint with jointname to
+    // angle in degrees
+    setAngle(jointname, angle) {
+
+        const joint = this.joints[jointname];
+        if (joint && joint.angle !== angle) {
+
+            joint.setAngle(angle);
+            return true;
+
+        }
+
+        return false;
+    }
+
+    setAngles(angles) {
+
+        for (const name in angles) this.setAngle(name, angles[name]);
 
     }
 
