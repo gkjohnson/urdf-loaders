@@ -95,7 +95,7 @@ class URDFLoader {
 
     }
 
-    parse(content, packages, options) {
+    parse(content, packages = null, options = {}) {
 
         const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
         const workingPath = options.workingPath || '';

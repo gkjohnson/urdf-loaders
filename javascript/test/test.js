@@ -73,7 +73,7 @@ describe('Options', () => {
 
                         },
                         {
-                            loadMeshCb: (path, ext, done) => {
+                            loadMeshCb: (path, manager, done) => {
 
                                 const mesh = new THREE.Mesh();
                                 mesh.fromCallback = true;
@@ -177,9 +177,8 @@ describe('Load', () => {
                 </robot>
             `;
 
-            loader.defaultMeshLoader = (path, ext, done) => done(null, new Error());
-
-            return new Promise(resolve => loader.parse(urdf, null, resolve));
+            loader.defaultMeshLoader = (path, manager, done) => done(null, new Error());
+            loader.parse(urdf);
 
         });
 

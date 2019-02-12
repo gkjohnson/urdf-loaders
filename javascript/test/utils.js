@@ -1,4 +1,4 @@
-/* global URDFLoader expect */
+/* global THREE URDFLoader expect */
 
 // Using custom `looseEquals` instead of `toEqual` here because with `toEqual`, -0 does not equal 0,
 // which can cause some of these cases to fail.
@@ -32,7 +32,9 @@ function loadURDF(page, urdf, pkg, options = {}) {
 
         return new Promise(resolve => {
 
-            const loader = new URDFLoader();
+            const manager = new THREE.LoadingManager();
+            manager.onLoad = () => resolve();
+            const loader = new URDFLoader(manager);
             loader.load(
 
                 urdf2,
@@ -41,7 +43,6 @@ function loadURDF(page, urdf, pkg, options = {}) {
                 robot => {
 
                     window.robot = robot;
-                    resolve();
 
                 },
 

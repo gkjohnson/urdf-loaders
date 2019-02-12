@@ -387,7 +387,7 @@ class URDFViewer extends HTMLElement {
 
                 mesh.traverse(c => {
 
-                    if (c.type === 'Mesh') {
+                    if (c.isMesh) {
 
                         c.castShadow = true;
                         c.receiveShadow = true;
@@ -445,7 +445,8 @@ class URDFViewer extends HTMLElement {
             }
 
             let robot = null;
-            const manager = new THREE.LoadingManager(() => {
+            const manager = new THREE.LoadingManager();
+            manager.onLoad = () => {
 
                 // If another request has come in to load a new
                 // robot, then ignore this one
@@ -467,7 +468,7 @@ class URDFViewer extends HTMLElement {
 
                 this.recenter();
 
-            });
+            };
 
             if (this.urlModifierFunc) {
 
