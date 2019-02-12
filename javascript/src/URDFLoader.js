@@ -167,7 +167,9 @@ class URDFLoader {
             const joints = robotNodes.filter(c => c.nodeName.toLowerCase() === 'joint');
             const materials = robotNodes.filter(c => c.nodeName.toLowerCase() === 'material');
             const obj = new URDFRobot();
-            obj.name = robot.getAttribute('name');
+
+            obj.robotName = robot.getAttribute('name');
+            obj.urdfRobotNode = robot;
 
             // Create the <material> map
             materials.forEach(m => {
@@ -181,7 +183,8 @@ class URDFLoader {
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
-                linkMap[name] = processLink(l);
+                const isRoot = robot.querySelector(`child[link="${ name }"]`) === null;
+                linkMap[name] = processLink(l, isRoot ? obj : null);
 
             });
 
@@ -192,16 +195,6 @@ class URDFLoader {
                 jointMap[name] = processJoint(j);
 
             });
-
-            for (const key in linkMap) {
-
-                if (linkMap[key].parent == null) {
-
-                    obj.add(linkMap[key]);
-
-                }
-
-            }
 
             obj.joints = jointMap;
             obj.links = linkMap;
@@ -273,17 +266,22 @@ class URDFLoader {
         }
 
         // Process the <link> nodes
-        function processLink(link) {
+        function processLink(link, target = null) {
+
+            if (target === null) {
+
+                target = new URDFLink();
+
+            }
 
             const children = [ ...link.children ];
             const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
-            const obj = new URDFLink();
-            obj.name = link.getAttribute('name');
-            obj.urdfNode = link;
+            target.name = link.getAttribute('name');
+            target.urdfNode = link;
 
-            visualNodes.forEach(vn => processVisualNode(vn, obj, materialMap));
+            visualNodes.forEach(vn => processVisualNode(vn, target, materialMap));
 
-            return obj;
+            return target;
 
         }
 
