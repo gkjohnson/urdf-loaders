@@ -162,10 +162,10 @@ class URDFLoader {
         // Process the <robot> node
         function processRobot(robot) {
 
-            const materials = [ ...robot.querySelectorAll('material') ];
             const robotNodes = [ ...robot.children ];
             const links = robotNodes.filter(c => c.nodeName.toLowerCase() === 'link');
             const joints = robotNodes.filter(c => c.nodeName.toLowerCase() === 'joint');
+            const materials = robotNodes.filter(c => c.nodeName.toLowerCase() === 'material');
             const obj = new URDFRobot();
             obj.name = robot.getAttribute('name');
 
@@ -173,20 +173,7 @@ class URDFLoader {
             materials.forEach(m => {
 
                 const name = m.getAttribute('name');
-                if (!materialMap[name]) {
-
-                    materialMap[name] = {};
-                    const matNodes = [ ...m.children ];
-                    matNodes.forEach(c => {
-
-                        processMaterial(
-                            materialMap[name],
-                            c
-                        );
-
-                    });
-
-                }
+                materialMap[name] = processMaterial(m);
 
             });
 
@@ -300,54 +287,38 @@ class URDFLoader {
 
         }
 
-        function processMaterial(material, node) {
+        function processMaterial(node) {
 
-            const type = node.nodeName.toLowerCase();
-            if (type === 'color') {
+            const matNodes = [ ...node.children ];
+            const material = new THREE.MeshPhongMaterial();
 
-                const rgba =
-                    node
-                        .getAttribute('rgba')
-                        .split(/\s/g)
-                        .map(v => parseFloat(v));
+            material.name = node.getAttribute('name') || '';
+            matNodes.forEach(n => {
 
-                copyMaterialAttributes(
-                    material,
-                    {
-                        color: new THREE.Color(rgba[0], rgba[1], rgba[2]),
-                        opacity: rgba[3],
-                        transparent: rgba[3] < 1,
-                    });
+                const type = n.nodeName.toLowerCase();
+                if (type === 'color') {
 
-            } else if (type === 'texture') {
+                    const rgba =
+                        n
+                            .getAttribute('rgba')
+                            .split(/\s/g)
+                            .map(v => parseFloat(v));
 
-                const loader = new THREE.TextureLoader(manager);
-                const filename = node.getAttribute('filename');
-                const filePath = resolvePath(filename);
-                copyMaterialAttributes(
-                    material,
-                    {
-                        map: loader.load(filePath),
-                    });
+                    material.color.setRGB(rgba[0], rgba[1], rgba[2]);
+                    material.opacity = rgba[3];
+                    material.transparent = rgba[3] < 1;
 
-            }
-        }
+                } else if (type === 'texture') {
 
-        function copyMaterialAttributes(material, materialAttributes) {
+                    const loader = new THREE.TextureLoader(manager);
+                    const filename = n.getAttribute('filename');
+                    const filePath = resolvePath(filename);
+                    material.map = loader.load(filePath);
 
-            if ('color' in materialAttributes) {
+                }
+            });
 
-                material.color = materialAttributes.color.clone();
-                material.opacity = materialAttributes.opacity;
-                material.transparent = materialAttributes.transparent;
-
-            }
-
-            if ('map' in materialAttributes) {
-
-                material.map = materialAttributes.map.clone();
-
-            }
+            return material;
 
         }
 
@@ -359,8 +330,30 @@ class URDFLoader {
             let scale = [1, 1, 1];
 
             const children = [ ...vn.children ];
-            const material = new THREE.MeshPhongMaterial();
+            let material = null;
             let primitiveModel = null;
+
+            // get the material first
+            const materialNode = children.filter(n => n.nodeName.toLowerCase() === 'material')[0];
+            if (materialNode) {
+
+                const name = materialNode.getAttribute('name');
+                if (name) {
+
+                    material = materialMap[name];
+
+                } else {
+
+                    material = processMaterial(materialNode);
+
+                }
+
+            } else {
+
+                material = new THREE.MeshPhongMaterial();
+
+            }
+
             children.forEach(n => {
 
                 const type = n.nodeName.toLowerCase();
@@ -455,24 +448,8 @@ class URDFLoader {
                     xyz = processTuple(n.getAttribute('xyz'));
                     rpy = processTuple(n.getAttribute('rpy'));
 
-                } else if (type === 'material') {
-
-                    const materialName = n.getAttribute('name');
-                    if (materialName) {
-
-                        copyMaterialAttributes(material, materialMap[materialName]);
-
-                    } else {
-
-                        children.forEach(c => {
-
-                            processMaterial(material, c);
-
-                        });
-
-                    }
-
                 }
+
             });
 
             // apply the position and rotation to the primitive geometry after
