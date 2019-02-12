@@ -40,19 +40,6 @@ class URDFLoader {
     }
 
     /* Utilities */
-    // forEach and filter function wrappers because
-    // HTMLCollection does not the by default
-    forEach(coll, func) {
-
-        return [].forEach.call(coll, func);
-
-    }
-    filter(coll, func) {
-
-        return [].filter.call(coll, func);
-
-    }
-
     // take a vector "x y z" and process it into
     // an array [x, y, z]
     _processTuple(val) {
@@ -219,39 +206,33 @@ class URDFLoader {
 
         const parser = new DOMParser();
         const urdf = parser.parseFromString(data, 'text/xml');
+        const children = [ ...urdf.children ];
 
-        const robottag = this.filter(urdf.children, c => c.nodeName === 'robot').pop();
-        return this._processRobot(robottag, packages, path, loadMeshCb);
+        const robotNode = children.filter(c => c.nodeName === 'robot').pop();
+        return this._processRobot(robotNode, packages, path, loadMeshCb);
 
     }
 
     // Process the <robot> node
     _processRobot(robot, packages, path, loadMeshCb) {
 
-        const materials = robot.querySelectorAll('material');
-        const links = [];
-        const joints = [];
+        const materials = [ ...robot.querySelectorAll('material') ];
+        const robotNodes = [ ...robot.children ];
+        const links = robotNodes.filter(c => c.nodeName.toLowerCase() === 'link');
+        const joints = robotNodes.filter(c => c.nodeName.toLowerCase() === 'joint');
         const obj = new URDFRobot();
         obj.name = robot.getAttribute('name');
 
-        // Process the <joint> and <link> nodes
-        this.forEach(robot.children, n => {
-
-            const type = n.nodeName.toLowerCase();
-            if (type === 'link') links.push(n);
-            else if (type === 'joint') joints.push(n);
-
-        });
-
         // Create the <material> map
         const materialMap = {};
-        this.forEach(materials, m => {
+        materials.forEach(m => {
 
             const name = m.getAttribute('name');
             if (!materialMap[name]) {
 
                 materialMap[name] = {};
-                this.forEach(m.children, c => {
+                const matNodes = [ ...m.children ];
+                matNodes.forEach(c => {
 
                     this._processMaterial(
                         materialMap[name],
@@ -268,7 +249,7 @@ class URDFLoader {
 
         // Create the <link> map
         const linkMap = {};
-        this.forEach(links, l => {
+        links.forEach(l => {
 
             const name = l.getAttribute('name');
             linkMap[name] = this._processLink(l, materialMap, packages, path, loadMeshCb);
@@ -277,7 +258,7 @@ class URDFLoader {
 
         // Create the <joint> map
         const jointMap = {};
-        this.forEach(joints, j => {
+        joints.forEach(j => {
 
             const name = j.getAttribute('name');
             jointMap[name] = this._processJoint(j, linkMap);
@@ -304,6 +285,7 @@ class URDFLoader {
     // Process joint nodes and parent them
     _processJoint(joint, linkMap) {
 
+        const children = [ ...joint.children ];
         const jointType = joint.getAttribute('type');
         const obj = new URDFJoint();
         obj.urdfNode = joint;
@@ -316,7 +298,7 @@ class URDFLoader {
         let rpy = [0, 0, 0];
 
         // Extract the attributes
-        this.forEach(joint.children, n => {
+        children.forEach(n => {
 
             const type = n.nodeName.toLowerCase();
             if (type === 'origin') {
@@ -348,12 +330,12 @@ class URDFLoader {
         obj.position.set(xyz[0], xyz[1], xyz[2]);
 
         // Set up the rotate function
-        const axisnode = this.filter(joint.children, n => n.nodeName.toLowerCase() === 'axis')[0];
+        const axisNode = children.filter(n => n.nodeName.toLowerCase() === 'axis')[0];
 
-        if (axisnode) {
+        if (axisNode) {
 
-            const axisxyz = axisnode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num));
-            obj.axis = new THREE.Vector3(axisxyz[0], axisxyz[1], axisxyz[2]);
+            const axisXYZ = axisNode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num));
+            obj.axis = new THREE.Vector3(axisXYZ[0], axisXYZ[1], axisXYZ[2]);
             obj.axis.normalize();
 
         }
@@ -365,12 +347,13 @@ class URDFLoader {
     // Process the <link> nodes
     _processLink(link, materialMap, packages, path, loadMeshCb) {
 
-        const visualNodes = this.filter(link.children, n => n.nodeName.toLowerCase() === 'visual');
+        const children = [ ...link.children ];
+        const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
         const obj = new URDFLink();
         obj.name = link.getAttribute('name');
         obj.urdfNode = link;
 
-        this.forEach(visualNodes, vn => this._processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
+        visualNodes.forEach(vn => this._processVisualNode(vn, obj, materialMap, packages, path, loadMeshCb));
 
         return obj;
 
@@ -434,9 +417,10 @@ class URDFLoader {
         let rpy = [0, 0, 0];
         let scale = [1, 1, 1];
 
+        const children = [ ...vn.children ];
         const material = new THREE.MeshPhongMaterial();
         let primitiveModel = null;
-        this.forEach(vn.children, n => {
+        children.forEach(n => {
 
             const type = n.nodeName.toLowerCase();
             if (type === 'geometry') {
@@ -540,7 +524,7 @@ class URDFLoader {
 
                 } else {
 
-                    this.forEach(n.children, c => {
+                    children.forEach(c => {
 
                         this._processMaterial(material, c, packages, path);
 
