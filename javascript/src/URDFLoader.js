@@ -70,28 +70,36 @@ class URDFLoader {
 
         // Check if a full URI is specified before
         // prepending the package info
+        const manager = this.manager;
         const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
 
         options = Object.assign({ workingPath }, options);
 
+        manager.itemStart(urdfPath);
         fetch(urdfPath, options.fetchOptions)
             .then(res => res.text())
-            .then(data => this.parse(data, packages, onComplete, options));
+            .then(data => {
+
+                const model = this.parse(data, packages, options);
+                onComplete(model);
+                manager.itemEnd(urdfPath);
+
+            })
+            .catch(e => {
+
+                console.error('URDFLoader: ', e);
+                manager.itemError(urdfPath);
+
+            });
 
     }
 
-    parse(content, packages, onComplete, options) {
+    parse(content, packages, options) {
 
-        options = Object.assign({
-
-            loadMeshCb: this.defaultMeshLoader.bind(this),
-            workingPath: '',
-
-        }, options);
-
-        const loadMeshCb = options.loadMeshCb;
-        const workingPath = options.workingPath;
+        const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
+        const workingPath = options.workingPath || '';
+        const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
         const materialMap = {};
@@ -313,7 +321,7 @@ class URDFLoader {
 
             } else if (type === 'texture') {
 
-                const loader = new THREE.TextureLoader(this.manager);
+                const loader = new THREE.TextureLoader(manager);
                 const filename = node.getAttribute('filename');
                 const filePath = resolvePath(filename);
                 copyMaterialAttributes(
@@ -367,11 +375,10 @@ class URDFLoader {
                         // file path is null if a package directory is not provided.
                         if (filePath !== null) {
 
-                            const ext = filePath.match(/.*\.([A-Z0-9]+)$/i).pop() || '';
                             const scaleAttr = n.children[0].getAttribute('scale');
                             if (scaleAttr) scale = processTuple(scaleAttr);
 
-                            loadMeshCb(filePath, ext, (obj, err) => {
+                            loadMeshCb(filePath, manager, (obj, err) => {
 
                                 if (err) {
 
@@ -381,7 +388,7 @@ class URDFLoader {
 
                                     if (obj instanceof THREE.Mesh) {
 
-                                        obj.material.copy(material);
+                                        obj.material = material;
 
                                     }
 
@@ -480,20 +487,16 @@ class URDFLoader {
 
         }
 
-        const result = processUrdf(content);
-
-        onComplete(result);
-
-        return result;
+        return processUrdf(content);
 
     }
 
     // Default mesh loading function
-    defaultMeshLoader(path, ext, done) {
+    defaultMeshLoader(path, manager, done) {
 
         if (/\.stl$/i.test(path)) {
 
-            const loader = new STLLoader(this.manager);
+            const loader = new STLLoader(manager);
             loader.load(path, geom => {
                 const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                 done(mesh);
@@ -501,7 +504,7 @@ class URDFLoader {
 
         } else if (/\.dae$/i.test(path)) {
 
-            const loader = new ColladaLoader(this.manager);
+            const loader = new ColladaLoader(manager);
             loader.load(path, dae => done(dae.scene));
 
         } else {

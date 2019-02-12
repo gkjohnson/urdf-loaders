@@ -106,7 +106,7 @@ document.addEventListener('drop', e => {
             // set the loader url modifier to check the list
             // of files
             const fileNames = Object.keys(files).map(n => cleanFilePath(n));
-            viewer.loadingManager.setURLModifier(url => {
+            viewer.urlModifierFunc = url => {
 
                 // find the matching file given the requested url
                 const cleaned = cleanFilePath(url.replace(viewer.package, ''));
@@ -131,7 +131,7 @@ document.addEventListener('drop', e => {
 
                 return url;
 
-            });
+            };
 
             // set the source of the element to the most likely intended display model
             const filesNames = Object.keys(files);
@@ -142,13 +142,6 @@ document.addEventListener('drop', e => {
                 filesNames
                     .filter(n => /urdf$/i.test(n))
                     .shift();
-
-            // remove the url modifier function is it doesn't affect other actions
-            viewer.addEventListener(
-                'geometry-loaded',
-                () => viewer.loadingManager.setURLModifier(null),
-                { once: true }
-            );
 
         });
 

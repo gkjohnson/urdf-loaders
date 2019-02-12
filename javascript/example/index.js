@@ -186,9 +186,10 @@ viewer.addEventListener('urdf-processed', () => {
 
 document.addEventListener('WebComponentsReady', () => {
 
-    const modelLoader = new THREE.ModelLoader(viewer.loadingManager);
-    viewer.urdfLoader.defaultMeshLoader = (path, ext, done) => {
-        modelLoader.load(path, res => done(res.model), null, err => done(null, err));
+    viewer.loadMeshCallback = (path, manager, done) => {
+
+        new THREE.ModelLoader(manager).load(path, res => done(res.model), null, err => done(null, err));
+
     };
 
     document.querySelector('li[urdf]').dispatchEvent(new Event('click'));
