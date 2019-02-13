@@ -18,12 +18,12 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
   const loader = new URDFLoader(manager);
   loader.load(
     'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
-    {
-        packageName : '.../package/dir/'    // The equivelant of a (list of) ROS package(s):// directory
-    },
     robot => { },                           // The robot is loaded!
     {
-        loadMeshCb: (path, ext, done) => { },     // Callback for each mesh for custom mesh processing and loading code
+        packages:     {
+            packageName : '.../package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
+        },
+        loadMeshCb: (path, manager, done) => { },       // Callback for each mesh for custom mesh processing and loading code
     }
    );
 </script>
@@ -42,7 +42,7 @@ Constructor
 
 THREE.LoadingManager. Used for transforming load URLs.
 
-### load(urdfpath, packages, onComplete, options)
+### load(urdfpath, onComplete, options)
 
 Loads and builds the specified URDF robot in THREE.js
 
@@ -52,9 +52,19 @@ _required_
 
 The path to the URDF file relative to the specified package directory.
 
-#### packages : String | Object
+#### onComplete(robot) : Function
 
 _required_
+
+Callback that is called once the urdf robots have been loaded. The loaded robot is passed to the function.
+
+See `URDFRobot` documentation.
+
+#### options : Object
+
+_optional_
+
+#### packages : String | Object
 
 The path representing the `package://` directory(s) to load `package://` relative files.
 
@@ -69,21 +79,15 @@ To specify multiple packages an object syntax is used defining the package name 
 }
 ```
 
-#### onComplete(robot) : Function
+##### options.loadMeshCb(pathToModel, manager, onComplete) : Function
 
-_required_
+An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`.
 
-Callback that is called once the urdf robots have been loaded. The loaded robot is passed to the function.
+`pathToModel` is the url to load the model from.
 
-See `URDFRobot` documentation.
+`manager` is the THREE.js `LoadingManager` used by the `URDFLoader`.
 
-#### options : Object
-
-_optional_
-
-##### options.loadMeshCb(pathToModel, fileExtension, onComplete) : Function
-
-An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
+`onComplete` is called with the mesh once the geometry has been loaded.
 
 ##### options.fetchOptions : Object
 
@@ -95,7 +99,7 @@ The path to load geometry relative to.
 
 Defaults to the path relative to the loaded URDF file.
 
-### parse(urdfContent, packages, onComplete, options) : THREE.Object3D
+### parse(urdfContent,  options) : THREE.Object3D
 
 Parses URDF content and returns the robot model.
 
@@ -104,12 +108,6 @@ Parses URDF content and returns the robot model.
 _required_
 
 The xml content of a URDF file.
-
-#### packages : String | Object
-
-_required_
-
-See `load`.
 
 #### onComplete(robot) : Function
 
