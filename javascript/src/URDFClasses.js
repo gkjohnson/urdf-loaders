@@ -55,6 +55,7 @@ class URDFRobot extends Object3D {
 
     setAngles(angles) {
 
+        // TODO: How to handle other, multi-dimensional joint types?
         for (const name in angles) this.setAngle(name, angles[name]);
 
     }
