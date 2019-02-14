@@ -305,7 +305,7 @@ Install Node.js and NPM.
 
 Run `npm install`.
 
-Run `npm run server`.
+Run `npm start`.
 
 Visit `localhost:9080/javascript/example/` to view the page.
 
