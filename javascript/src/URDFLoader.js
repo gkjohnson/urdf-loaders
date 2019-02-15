@@ -87,8 +87,10 @@ class URDFLoader {
             })
             .catch(e => {
 
+                // TODO: Add onProgress and onError functions here
                 console.error('URDFLoader: Error parsing file.', e);
                 manager.itemError(urdfPath);
+                manager.itemEnd(urdfPath);
 
             });
 
@@ -338,7 +340,7 @@ class URDFLoader {
             if (materialNode) {
 
                 const name = materialNode.getAttribute('name');
-                if (name) {
+                if (name && name in materialMap) {
 
                     material = materialMap[name];
 
