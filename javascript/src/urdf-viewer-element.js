@@ -85,6 +85,7 @@ class URDFViewer extends HTMLElement {
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
         dirLight.castShadow = true;
+        dirLight.shadow.bias = -0.00001;
         scene.add(dirLight);
         scene.add(dirLight.target);
 
@@ -279,17 +280,20 @@ class URDFViewer extends HTMLElement {
 
     }
 
-    // Set the joint with jointname to
+    // Set the joint with jointName to
     // angle in degrees
-    setAngle(jointname, angle) {
+    setAngle(jointName, angle) {
 
         if (!this.robot) return;
+        if (!this.robot.joints[jointName]) return;
 
-        if (this.robot.setAngle(jointname, angle)) {
+        const origAngle = this.robot.joints[jointName].angle;
+        const newAngle = this.robot.setAngle(jointName, angle);
+        if (origAngle !== newAngle) {
             this.redraw();
         }
 
-        this.dispatchEvent(new CustomEvent('angle-change', { bubles: true, cancelable: true, detail: jointname }));
+        this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
 
     }
 
@@ -478,13 +482,12 @@ class URDFViewer extends HTMLElement {
 
             new URDFLoader(manager).load(
                 urdf,
-                pkg,
-
                 model => robot = model,
 
                 // options
                 {
 
+                    packages: pkg,
                     loadMeshCb: this.loadMeshFunc,
                     fetchOptions: { mode: 'cors', credentials: 'same-origin' },
 
