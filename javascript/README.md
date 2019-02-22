@@ -64,7 +64,7 @@ See `URDFRobot` documentation.
 
 _optional_
 
-#### packages : String | Object
+##### options.packages : String | Object
 
 The path representing the `package://` directory(s) to load `package://` relative files.
 
@@ -123,25 +123,9 @@ See `URDFRobot` documentation.
 
 See `load`.
 
-## URDFRobot
+## URDFJoint : THREE.Object3D
 
-Object that describes the URDF Robot. An extension of `THREE.Object3D`.
-
-#### name : String
-
-The name of the robot described in the `<robot>` tag.
-
-#### links : Object
-
-A dictionary of `linkName : URDFLink` with all links in the robot.
-
-#### joints : Object
-
-A dictionary of `jointName : URDFJoint` with all joints in the robot.
-
-## URDFJoint
-
-An object representing a robot joint. An extension of `THREE.Object3D`.
+An object representing a robot joint.
 
 #### name : String
 
@@ -175,11 +159,27 @@ Whether or not to ignore the joint limits when setting a the joint position.
 
 The position off of the starting position to rotate or move the joint to.
 
-## URDFLink
+## URDFLink : THREE.Object3D
 
 #### name
 
 The name of the link.
+
+## URDFRobot : URDFLink
+
+Object that describes the URDF Robot.
+
+#### robotName : String
+
+The name of the robot described in the `<robot>` tag.
+
+#### links : Object
+
+A dictionary of `linkName : URDFLink` with all links in the robot.
+
+#### joints : Object
+
+A dictionary of `jointName : URDFJoint` with all joints in the robot.
 
 ## urdf-viewer Element
 ```html
