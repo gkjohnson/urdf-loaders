@@ -223,23 +223,21 @@ class URDFRobot extends URDFLink {
 
     }
 
-    // Set the joint with jointname to
-    // angle in degrees
-    setAngle(jointname, angle) {
+    setAngle(jointName, ...angle) {
 
-        const joint = this.joints[jointname];
-        if (joint && joint.angle !== angle) {
+        const joint = this.joints[jointName];
+        if (joint) {
 
-            joint.setAngle(angle);
-            return true;
+            return joint.setAngle(...angle);
 
         }
 
-        return false;
+        return null;
     }
 
     setAngles(angles) {
 
+        // TODO: How to handle other, multi-dimensional joint types?
         for (const name in angles) this.setAngle(name, angles[name]);
 
     }

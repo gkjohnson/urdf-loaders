@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Changed `loadMeshCb` function API to take `url`, `manager`, and `done`.
 - Materials defined as "shared" by name in the URDF are shared among meshes, now.
 - The root link is now the same as the URDF Robot object.
+- Moved the `packages` parameter to the options object
 
 ### Removed
 - Removed `urdfLoader` and `loadingManager` fields from `URDFViewer` component.

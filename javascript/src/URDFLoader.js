@@ -64,9 +64,8 @@ class URDFLoader {
 
     /* Public API */
     // urdf:    The path to the URDF within the package OR absolute
-    // packages:     The equivelant of a (list of) ROS package(s):// directory
     // onComplete:      Callback that is passed the model once loaded
-    load(urdf, packages, onComplete, options) {
+    load(urdf, onComplete, options) {
 
         // Check if a full URI is specified before
         // prepending the package info
@@ -81,22 +80,25 @@ class URDFLoader {
             .then(res => res.text())
             .then(data => {
 
-                const model = this.parse(data, packages, options);
+                const model = this.parse(data, options);
                 onComplete(model);
                 manager.itemEnd(urdfPath);
 
             })
             .catch(e => {
 
+                // TODO: Add onProgress and onError functions here
                 console.error('URDFLoader: Error parsing file.', e);
                 manager.itemError(urdfPath);
+                manager.itemEnd(urdfPath);
 
             });
 
     }
 
-    parse(content, packages = null, options = {}) {
+    parse(content, options = {}) {
 
+        const packages = options.packages || null;
         const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
         const workingPath = options.workingPath || '';
         const manager = this.manager;
@@ -336,7 +338,7 @@ class URDFLoader {
             if (materialNode) {
 
                 const name = materialNode.getAttribute('name');
-                if (name) {
+                if (name && name in materialMap) {
 
                     material = materialMap[name];
 
