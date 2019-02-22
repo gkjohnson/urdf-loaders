@@ -98,7 +98,7 @@ class URDFLoader {
 
     parse(content, options = {}) {
 
-        const packages = options.packages || null;
+        const packages = options.packages || '';
         const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
         const workingPath = options.workingPath || '';
         const manager = this.manager;
@@ -142,11 +142,13 @@ class URDFLoader {
 
                 } else {
 
-                    console.error(`URDFLoader : ${ targetPkg } not found in provided package list!`);
+                    console.error(`URDFLoader : ${ targetPkg } not found in provided package list.`);
                     return null;
 
                 }
+
             }
+
         }
 
         // Process the URDF text format
