@@ -47,10 +47,6 @@
         get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
         set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
 
-        get loadingManager() { return this._loadingManager = this._loadingManager || new THREE.LoadingManager(); }
-
-        get urdfLoader() { return this._urdfLoader = this._urdfLoader || new URDFLoader(this.loadingManager); }
-
         get angles() {
 
             const angles = {};
@@ -74,6 +70,8 @@
             this._dirty = false;
             this._loadScheduled = false;
             this.robot = null;
+            this.loadMeshFunc = null;
+            this.urlModifierFunc = null;
 
             // Scene setup
             const scene = new THREE.Scene();
@@ -90,6 +88,7 @@
             dirLight.shadow.mapSize.width = 2048;
             dirLight.shadow.mapSize.height = 2048;
             dirLight.castShadow = true;
+            dirLight.shadow.bias = -0.00001;
             scene.add(dirLight);
             scene.add(dirLight.target);
 
@@ -141,9 +140,6 @@
             this.ambientLight = ambientLight;
 
             this._setUp(this.up);
-
-            // redraw when something new has loaded
-            this.loadingManager.onLoad = () => this.recenter();
 
             const _renderLoop = () => {
 
@@ -287,21 +283,20 @@
 
         }
 
-        // Set the joint with jointname to
+        // Set the joint with jointName to
         // angle in degrees
-        setAngle(jointname, angle) {
+        setAngle(jointName, angle) {
 
             if (!this.robot) return;
+            if (!this.robot.joints[jointName]) return;
 
-            const joint = this.robot.joints[jointname];
-            if (joint && joint.angle !== angle) {
-
-                joint.setAngle(angle);
+            const origAngle = this.robot.joints[jointName].angle;
+            const newAngle = this.robot.setAngle(jointName, angle);
+            if (origAngle !== newAngle) {
                 this.redraw();
-
             }
 
-            this.dispatchEvent(new CustomEvent('angle-change', { bubles: true, cancelable: true, detail: jointname }));
+            this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
 
         }
 
@@ -399,7 +394,7 @@
 
                     mesh.traverse(c => {
 
-                        if (c.type === 'Mesh') {
+                        if (c.isMesh) {
 
                             c.castShadow = true;
                             c.receiveShadow = true;
@@ -456,49 +451,47 @@
                     }, {});
                 }
 
-                this.urdfLoader.load(
+                let robot = null;
+                const manager = new THREE.LoadingManager();
+                manager.onLoad = () => {
+
+                    // If another request has come in to load a new
+                    // robot, then ignore this one
+                    if (this._requestId !== requestId) {
+
+                        robot.traverse(c => c.dispose && c.dispose());
+                        return;
+
+                    }
+
+                    this.robot = robot;
+                    this.world.add(robot);
+                    updateMaterials(robot);
+
+                    this._setIgnoreLimits(this.ignoreLimits);
+
+                    this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
+                    this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
+
+                    this.recenter();
+
+                };
+
+                if (this.urlModifierFunc) {
+
+                    manager.setURLModifier(this.urlModifierFunc);
+
+                }
+
+                new URDFLoader(manager).load(
                     urdf,
-                    pkg,
-
-                    robot => {
-
-                        // If another request has come in to load a new
-                        // robot, then ignore this one
-                        if (this._requestId !== requestId) {
-
-                            robot.traverse(c => c.dispose && c.dispose());
-                            return;
-
-                        }
-
-                        this.robot = robot;
-                        this.world.add(robot);
-                        updateMaterials(robot);
-
-                        this._setIgnoreLimits(this.ignoreLimits);
-
-                        this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
-                        this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
-
-                        this.recenter();
-
-                    },
+                    model => robot = model,
 
                     // options
                     {
-                        loadMeshCb: (path, ext, done) => {
 
-                            // Load meshes and enable shadow casting
-                            this.urdfLoader.defaultMeshLoader(path, ext, (mesh, err) => {
-
-                                if (mesh) updateMaterials(mesh);
-                                done(mesh, err);
-                                this.recenter();
-
-                            }, null, err => done(null, err));
-
-                        },
-
+                        packages: pkg,
+                        loadMeshCb: this.loadMeshFunc,
                         fetchOptions: { mode: 'cors', credentials: 'same-origin' },
 
                     });
