@@ -186,7 +186,7 @@ viewer.addEventListener('urdf-processed', () => {
 
 document.addEventListener('WebComponentsReady', () => {
 
-    viewer.loadMeshCallback = (path, manager, done) => {
+    viewer.loadMeshFunc = (path, manager, done) => {
 
         new THREE.ModelLoader(manager).load(path, res => done(res.model), null, err => done(null, err));
 
