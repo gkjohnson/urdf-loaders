@@ -31,7 +31,6 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 
 ### Limitations
 - Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
-- Collision tags are not parsed.
 
 ## URDFLoader API
 ### constructor(manager)
@@ -93,11 +92,19 @@ An optional function that can be used to override the default mesh loading funct
 
 An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
 
-##### workingPath : String
+##### options.workingPath : String
 
 The path to load geometry relative to.
 
 Defaults to the path relative to the loaded URDF file.
+
+##### options.visualEnabled : Boolean
+
+An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
+
+##### options.collisionEnabled : Boolean
+
+An optional value that can be used to enable / disable loading meshes for links from the `collision` nodes. Defaults to false.
 
 ### parse(urdfContent,  options) : THREE.Object3D
 
