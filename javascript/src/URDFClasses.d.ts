@@ -13,7 +13,7 @@ export class URDFJoint extends Object3D {
     
     urdfNode: Element | null;
     axis: Vector3 | null;
-    jointType: string;
+    jointType: 'fixed' | 'continuous' | 'revolute' | 'planar' | 'prismatic' | 'floating';
     angle: Number | Number[] | null;
     limit: { lower: Number, upper: Number }; // TODO: add more
     ignoreLimits: Boolean;
