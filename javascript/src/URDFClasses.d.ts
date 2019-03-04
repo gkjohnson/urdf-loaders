@@ -1,13 +1,13 @@
 import { Object3D, Vector3 } from 'three';
 
-class URDFLink extends Object3D {
+export class URDFLink extends Object3D {
 
     isURDFLink: true;
     urdfNode: Element | null;
     
 }
 
-class URDFJoint extends Object3D {
+export class URDFJoint extends Object3D {
 
     isURDFJoint: true;
     
@@ -23,7 +23,7 @@ class URDFJoint extends Object3D {
     
 }
 
-class URDFRobot extends URDFLink {
+export class URDFRobot extends URDFLink {
 
     isURDFRobot: true;
     
