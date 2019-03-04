@@ -1,7 +1,7 @@
 import { LoadingManager, Object3D } from 'three';
 import { URDFRobot } from './URDFClasses';
 
-declar type MeshLoadFunc = function(url: string, manager: LoadingManager, onLoad: function(mesh: Object3D): void);
+declare type MeshLoadFunc = function(url: string, manager: LoadingManager, onLoad: function(mesh: Object3D): void);
 declare type URDFLoaderOptions = {
 
     packages?: string | { [key: string]: string },
