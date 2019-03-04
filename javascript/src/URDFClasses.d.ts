@@ -18,8 +18,8 @@ class URDFJoint extends Object3D {
     limit: { lower: Number, upper: Number }; // TODO: add more
     ignoreLimits: Boolean;
     
-    setAngle(Number, Number?, Number?): Number | Number[];
-    setOffset(Number, Number?, Number?): Number | Number[];
+    setAngle(value0: Number, value1?: Number, value2?: Number): Number | Number[];
+    setOffset(value0: Number, value1?: Number, value2?: Number): Number | Number[];
     
 }
 
@@ -30,10 +30,10 @@ class URDFRobot extends URDFLink {
     urdfRobotNode: Element | null;
     robotName: string;
     
-    links: { [key: string]: URDFLink };
-    joints: { [key: string]: URDFJoint };
+    links: { [ key: string ]: URDFLink };
+    joints: { [ key: string ]: URDFJoint };
     
-    setAngle(Number, Number, Number? Number?): Number | Number[] | null;
-    setAngles({ [key: string]: Number | Number[] }): void;
+    setAngle(value0: Number, value1?: Number, value2?: Number): Number | Number[] | null;
+    setAngles({ [ key: string ]: Number | Number[] }): void;
  
 }
