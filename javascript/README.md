@@ -201,17 +201,17 @@ Corresponds to the `package` parameter in `URDFLoader.load`. Supported are:
 1. Single package:
 
     ```html
-    // 1. Example for single package named `default_package`
+    <!-- 1. Example for single package named `default_package` -->
     <urdf-viewer package=".../path/to/default_package" ...></urdf-viewer>
     ```
 
     Fallback within 1: If the target package within the `package://` relative files do not match the default path it is assumed that the default path is the parent folder that contains the target package(s).
 
     ```html
-    // 1. Example for single package named `default_package` with fallback:
+    <!-- 1. Example for single package named `default_package` with fallback: -->
     <urdf-viewer package=".../path/to/parent" ...></urdf-viewer>
-    // since `parent` does not match `default_package`
-    // the path ".../path/to/parent/default_package" is assumed
+    <!-- since `parent` does not match `default_package`
+         the path ".../path/to/parent/default_package" is assumed -->
     ```
 
 2. Serialized package map:
@@ -219,7 +219,7 @@ Corresponds to the `package` parameter in `URDFLoader.load`. Supported are:
     E.g. if the meshes of a URDF are distributed over mutliple packages.
 
     ```html
-    // 2. Example for serialized package map that contains `package1` and `package2`
+    <!-- 2. Example for serialized package map that contains `package1` and `package2` -->
     <urdf-viewer package="package1:.../path/to/package1, package2:.../path/to/package1" ...></urdf-viewer>
     ```
 
