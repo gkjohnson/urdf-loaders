@@ -15,6 +15,7 @@ export default class URDFLoader {
 
     manager: LoadingManager;
     defaultMeshLoader: MeshLoadFunc;
+
     constructor(manager?: LoadingManager);
     load(url: string, onLoad: function(robot: URDFRobot): void, options?: URDFLoaderOptions): void;
     parse(content: string, options?: URDFLoaderOptions): URDFRobot;
