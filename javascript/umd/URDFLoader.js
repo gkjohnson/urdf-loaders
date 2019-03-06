@@ -109,6 +109,8 @@
 
         setOffset(...values) {
 
+            values = values.map(v => parseFloat(v));
+
             if (!this.origPosition || !this.origQuaternion) {
 
                 this.origPosition = this.position.clone();
@@ -128,7 +130,7 @@
                     if (angle == null) break;
                     if (angle === this.jointValue) break;
 
-                    if (!this.ignoreLimits) {
+                    if (!this.ignoreLimits && this.jointType === 'revolute') {
 
                         angle = Math.min(this.limit.upper, angle);
                         angle = Math.max(this.limit.lower, angle);
