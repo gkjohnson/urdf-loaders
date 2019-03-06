@@ -105,6 +105,8 @@ class URDFJoint extends Object3D {
 
     setOffset(...values) {
 
+        values = values.map(v => parseFloat(v));
+
         if (!this.origPosition || !this.origQuaternion) {
 
             this.origPosition = this.position.clone();
