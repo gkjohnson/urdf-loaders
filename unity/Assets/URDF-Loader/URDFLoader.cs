@@ -308,6 +308,13 @@ public class URDFLoader : MonoBehaviour
                                 // get the file path and split it
                                 string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, packages, options.workingPath);
 
+                                Vector3 meshScale = Vector3.one;
+                                if (meshNode.Attributes["scale"] != null)
+                                {
+                                    meshScale = TupleToVector3(meshNode.Attributes["scale"].Value);
+                                }
+                                meshScale = URDFToUnityScale(meshScale);
+
                                 // load all meshes
                                 string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
                                 options.loadMeshCb(fileName, ext, models =>
@@ -319,6 +326,7 @@ public class URDFLoader : MonoBehaviour
                                         trans.parent = urdfLink.transform;
                                         trans.localPosition = visPos;
                                         trans.localRotation = Quaternion.Euler(visRot);
+                                        trans.localScale = meshScale;
 
                                         trans.name = urdfLink.name + " geometry " + i;
                                         
@@ -565,6 +573,11 @@ public class URDFLoader : MonoBehaviour
     public static Vector3 URDFToUnityPos(Vector3 v)
     {
         return new Vector3(-v.y, v.z, v.x);
+    }
+    
+    public static Vector3 URDFToUnityScale(Vector3 v)
+    {
+        return new Vector3(v.y, v.z, v.x);
     }
     
     // URDF
