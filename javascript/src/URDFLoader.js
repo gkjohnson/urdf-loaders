@@ -75,8 +75,6 @@ class URDFLoader {
 
         options = Object.assign({
             workingPath,
-            parseVisual: true,
-            parseCollision: false,
         }, options);
 
         manager.itemStart(urdfPath);
@@ -105,7 +103,7 @@ class URDFLoader {
         const packages = options.packages || '';
         const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
         const workingPath = options.workingPath || '';
-        const parseVisual = options.parseVisual || false;
+        const parseVisual = ('parseVisual' in options) ? options.parseVisual : true;
         const parseCollision = options.parseCollision || false;
         const manager = this.manager;
         const linkMap = {};
