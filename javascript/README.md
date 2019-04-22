@@ -98,11 +98,11 @@ The path to load geometry relative to.
 
 Defaults to the path relative to the loaded URDF file.
 
-##### options.visualEnabled : Boolean
+##### options.parseVisual : Boolean
 
 An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
 
-##### options.collisionEnabled : Boolean
+##### options.parseCollision : Boolean
 
 An optional value that can be used to enable / disable loading meshes for links from the `collision` nodes. Defaults to false.
 
