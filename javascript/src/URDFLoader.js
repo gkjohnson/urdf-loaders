@@ -75,8 +75,8 @@ class URDFLoader {
 
         options = Object.assign({
             workingPath,
-            visualEnabled: true,
-            collisionEnabled: false,
+            parseVisual: true,
+            parseCollision: false,
         }, options);
 
         manager.itemStart(urdfPath);
@@ -105,8 +105,8 @@ class URDFLoader {
         const packages = options.packages || '';
         const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
         const workingPath = options.workingPath || '';
-        const visualEnabled = options.visualEnabled || false;
-        const collisionEnabled = options.collisionEnabled || false;
+        const parseVisual = options.parseVisual || false;
+        const parseCollision = options.parseCollision || false;
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
@@ -288,11 +288,11 @@ class URDFLoader {
             target.name = link.getAttribute('name');
             target.urdfNode = link;
 
-            if (visualEnabled) {
+            if (parseVisual) {
                 const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
                 visualNodes.forEach(vn => processLinkElement(vn, target, materialMap));
             }
-            if (collisionEnabled) {
+            if (parseCollision) {
                 const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
                 collisionNodes.forEach(vn => processLinkElement(vn, target));
             }
