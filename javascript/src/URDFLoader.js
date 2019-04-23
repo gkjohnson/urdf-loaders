@@ -73,7 +73,9 @@ class URDFLoader {
         const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
 
-        options = Object.assign({ workingPath }, options);
+        options = Object.assign({
+            workingPath,
+        }, options);
 
         manager.itemStart(urdfPath);
         fetch(urdfPath, options.fetchOptions)
@@ -101,6 +103,8 @@ class URDFLoader {
         const packages = options.packages || '';
         const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
         const workingPath = options.workingPath || '';
+        const parseVisual = ('parseVisual' in options) ? options.parseVisual : true;
+        const parseCollision = options.parseCollision || false;
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
@@ -279,11 +283,17 @@ class URDFLoader {
             }
 
             const children = [ ...link.children ];
-            const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
             target.name = link.getAttribute('name');
             target.urdfNode = link;
 
-            visualNodes.forEach(vn => processVisualNode(vn, target, materialMap));
+            if (parseVisual) {
+                const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
+                visualNodes.forEach(vn => processLinkElement(vn, target, materialMap));
+            }
+            if (parseCollision) {
+                const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
+                collisionNodes.forEach(vn => processLinkElement(vn, target));
+            }
 
             return target;
 
@@ -324,8 +334,8 @@ class URDFLoader {
 
         }
 
-        // Process the visual nodes into meshes
-        function processVisualNode(vn, linkObj, materialMap) {
+        // Process the visual and collision nodes into meshes
+        function processLinkElement(vn, linkObj, materialMap = {}) {
 
             let xyz = [0, 0, 0];
             let rpy = [0, 0, 0];
