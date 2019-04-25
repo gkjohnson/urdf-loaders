@@ -85,7 +85,6 @@ class URDFViewer extends HTMLElement {
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
         dirLight.castShadow = true;
-        dirLight.shadow.bias = -0.00001;
         scene.add(dirLight);
         scene.add(dirLight.target);
 
@@ -121,7 +120,6 @@ class URDFViewer extends HTMLElement {
         controls.zoomSpeed = 5;
         controls.panSpeed = 2;
         controls.enableZoom = true;
-        controls.enablePan = false;
         controls.enableDamping = false;
         controls.maxDistance = 50;
         controls.minDistance = 0.25;
@@ -435,8 +433,6 @@ class URDFViewer extends HTMLElement {
                                             m.map.encoding = THREE.GammaEncoding;
 
                                         }
-
-                                        m.shadowSide = THREE.DoubleSide;
 
                                         return m;
 

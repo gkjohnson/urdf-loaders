@@ -71,6 +71,7 @@ viewer.addEventListener('joint-mouseout', e => {
 
 });
 
+let originalNoAutoRecenter;
 viewer.addEventListener('manipulate-start', e => {
 
     const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
@@ -78,6 +79,15 @@ viewer.addEventListener('manipulate-start', e => {
         j.scrollIntoView({ block: 'nearest' });
         window.scrollTo(0, 0);
     }
+
+    originalNoAutoRecenter = viewer.noAutoRecenter;
+    viewer.noAutoRecenter = true;
+
+});
+
+viewer.addEventListener('manipulate-end', e => {
+
+    viewer.noAutoRecenter = originalNoAutoRecenter;
 
 });
 
