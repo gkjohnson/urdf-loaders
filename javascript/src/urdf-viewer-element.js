@@ -313,7 +313,29 @@ class URDFViewer extends HTMLElement {
 
         this.world.updateMatrixWorld();
 
-        const bbox = new THREE.Box3().setFromObject(this.robot);
+        const bbox = new THREE.Box3();
+        const temp = new THREE.Box3();
+
+        this.robot.traverse(c => {
+
+            const geometry = c.geometry;
+            if (geometry) {
+
+                if (geometry.boundingBox === null) {
+
+                    geometry.computeBoundingBox();
+
+                }
+
+                temp.copy(geometry.boundingBox);
+                temp.applyMatrix4(c.matrixWorld);
+
+                bbox.union(temp);
+
+            }
+
+        });
+
         const center = bbox.getCenter(new THREE.Vector3());
         this.controls.target.y = center.y;
         this.plane.position.y = bbox.min.y - 1e-3;
