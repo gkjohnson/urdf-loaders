@@ -88,7 +88,6 @@
             dirLight.shadow.mapSize.width = 2048;
             dirLight.shadow.mapSize.height = 2048;
             dirLight.castShadow = true;
-            dirLight.shadow.bias = -0.00001;
             scene.add(dirLight);
             scene.add(dirLight.target);
 
@@ -124,7 +123,6 @@
             controls.zoomSpeed = 5;
             controls.panSpeed = 2;
             controls.enableZoom = true;
-            controls.enablePan = false;
             controls.enableDamping = false;
             controls.maxDistance = 50;
             controls.minDistance = 0.25;
@@ -316,7 +314,29 @@
 
             this.world.updateMatrixWorld();
 
-            const bbox = new THREE.Box3().setFromObject(this.robot);
+            const bbox = new THREE.Box3();
+            const temp = new THREE.Box3();
+
+            this.robot.traverse(c => {
+
+                const geometry = c.geometry;
+                if (geometry) {
+
+                    if (geometry.boundingBox === null) {
+
+                        geometry.computeBoundingBox();
+
+                    }
+
+                    temp.copy(geometry.boundingBox);
+                    temp.applyMatrix4(c.matrixWorld);
+
+                    bbox.union(temp);
+
+                }
+
+            });
+
             const center = bbox.getCenter(new THREE.Vector3());
             this.controls.target.y = center.y;
             this.plane.position.y = bbox.min.y - 1e-3;
@@ -416,8 +436,6 @@
                                                 m.map.encoding = THREE.GammaEncoding;
 
                                             }
-
-                                            m.shadowSide = THREE.DoubleSide;
 
                                             return m;
 
