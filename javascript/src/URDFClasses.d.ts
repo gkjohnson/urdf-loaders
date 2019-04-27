@@ -1,5 +1,11 @@
 import { Object3D, Vector3 } from 'three';
 
+export class URDFCollider extends Object3D {
+
+    isURDFCollider: true;
+
+}
+
 export class URDFLink extends Object3D {
 
     isURDFLink: true;
