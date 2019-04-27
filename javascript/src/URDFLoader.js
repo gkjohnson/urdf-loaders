@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/js/loaders/STLLoader';
 import { ColladaLoader } from 'three/examples/js/loaders/ColladaLoader';
-import { URDFRobot, URDFJoint, URDFLink } from './URDFClasses.js';
+import { URDFRobot, URDFJoint, URDFLink, makeURDFCollider } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -337,6 +337,7 @@ class URDFLoader {
         // Process the visual and collision nodes into meshes
         function processLinkElement(vn, linkObj, materialMap = {}) {
 
+            const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
             let xyz = [0, 0, 0];
             let rpy = [0, 0, 0];
             let scale = [1, 1, 1];
@@ -412,6 +413,12 @@ class URDFLoader {
 
                                     applyRotation(obj, rpy);
 
+                                    if (isCollisionNode) {
+
+                                        makeURDFCollider(obj);
+
+                                    }
+
                                 }
 
                             });
@@ -429,6 +436,12 @@ class URDFLoader {
                         linkObj.add(primitiveModel);
                         primitiveModel.scale.set(size[0], size[1], size[2]);
 
+                        if (isCollisionNode) {
+
+                            makeURDFCollider(primitiveModel);
+
+                        }
+
                     } else if (geoType === 'sphere') {
 
                         primitiveModel = new THREE.Mesh();
@@ -439,6 +452,12 @@ class URDFLoader {
                         primitiveModel.scale.set(radius, radius, radius);
 
                         linkObj.add(primitiveModel);
+
+                        if (isCollisionNode) {
+
+                            makeURDFCollider(primitiveModel);
+
+                        }
 
                     } else if (geoType === 'cylinder') {
 
@@ -452,6 +471,12 @@ class URDFLoader {
                         primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
                         linkObj.add(primitiveModel);
+
+                        if (isCollisionNode) {
+
+                            makeURDFCollider(primitiveModel);
+
+                        }
 
                     }
 
