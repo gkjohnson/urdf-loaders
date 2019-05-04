@@ -45,6 +45,92 @@ beforeAll(async() => {
 
 describe('Options', () => {
 
+    describe('parseVisual, parseCollision', () => {
+
+        it('should exclude the elements if false', async() => {
+
+            await loadURDF(
+                page,
+                'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
+                {
+                    packages: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
+                    parseVisual: false,
+                    parseCollision: false,
+                },
+            );
+
+            const counts = await page.evaluate(async() => {
+
+                let totalVisual = 0;
+                let totalCollision = 0;
+                window.robot.traverse(c => {
+
+                    if (c.isURDFLink) {
+
+                        const children = c.children;
+                        const joints = children.filter(c2 => c2.isURDFJoint).length;
+                        const collision = children.filter(c2 => c2.isURDFCollider).length;
+                        const visual = children.length - joints - collision;
+
+                        totalVisual += visual;
+                        totalCollision += collision;
+
+                    }
+
+                });
+
+                return { visual: totalVisual, collision: totalCollision };
+
+            });
+
+            expect(counts.visual).toBe(0);
+            expect(counts.collision).toBe(0);
+
+        });
+
+        it('should include the elements if true', async() => {
+
+            await loadURDF(
+                page,
+                'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
+                {
+                    packages: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
+                    parseVisual: true,
+                    parseCollision: true,
+                },
+            );
+
+            const counts = await page.evaluate(async() => {
+
+                let totalVisual = 0;
+                let totalCollision = 0;
+                window.robot.traverse(c => {
+
+                    if (c.isURDFLink) {
+
+                        const children = c.children;
+                        const joints = children.filter(c2 => c2.isURDFJoint).length;
+                        const collision = children.filter(c2 => c2.isURDFCollider).length;
+                        const visual = children.length - joints - collision;
+
+                        totalVisual += visual;
+                        totalCollision += collision;
+
+                    }
+
+                });
+
+                return { visual: totalVisual, collision: totalCollision };
+
+            });
+
+            expect(counts.visual).toBe(71);
+            expect(counts.collision).toBe(71);
+
+        });
+
+    });
+
     describe('loadMeshCb', () => {
 
         it('should get called to load all meshes', async() => {
@@ -99,10 +185,11 @@ describe('Clone', () => {
 
         await loadURDF(
             page,
-            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
+            'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
             {
-                packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
-            }
+                packages: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
+                parseCollision: true,
+            },
         );
 
         const robotsAreEqual = await page.evaluate(async() => {
@@ -115,6 +202,12 @@ describe('Clone', () => {
                 areEqual = areEqual && ra.geometry === rb.geometry;
                 areEqual = areEqual && ra.material === rb.material;
                 areEqual = areEqual && ra.urdfNode === rb.urdfNode;
+
+                areEqual = areEqual && ra.isMesh === rb.isMesh;
+                areEqual = areEqual && ra.isURDFLink === rb.isURDFLink;
+                areEqual = areEqual && ra.isURDFRobot === rb.isURDFRobot;
+                areEqual = areEqual && ra.isURDFJoint === rb.isURDFJoint;
+                areEqual = areEqual && ra.isURDFCollider === rb.isURDFCollider;
 
                 switch (ra.type) {
 

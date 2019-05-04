@@ -1,5 +1,21 @@
 import { Object3D, Quaternion } from 'three';
 
+function URDFColliderClone(...args) {
+
+    const proto = Object.getPrototypeOf(this);
+    const result = proto.clone.call(this, ...args);
+    result.isURDFCollider = true;
+    return result;
+
+};
+
+function makeURDFCollider(object) {
+
+    object.isURDFCollider = true;
+    object.clone = URDFColliderClone;
+
+}
+
 class URDFLink extends Object3D {
 
     constructor(...args) {
@@ -246,4 +262,4 @@ class URDFRobot extends URDFLink {
 
 }
 
-export { URDFRobot, URDFLink, URDFJoint };
+export { URDFRobot, URDFLink, URDFJoint, makeURDFCollider };
