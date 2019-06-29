@@ -4,6 +4,22 @@
     (global.URDFLoader = factory(global.THREE,global.THREE,global.THREE));
 }(this, (function (THREE,STLLoader,ColladaLoader) { 'use strict';
 
+    function URDFColliderClone(...args) {
+
+        const proto = Object.getPrototypeOf(this);
+        const result = proto.clone.call(this, ...args);
+        result.isURDFCollider = true;
+        return result;
+
+    }
+
+    function makeURDFCollider(object) {
+
+        object.isURDFCollider = true;
+        object.clone = URDFColliderClone;
+
+    }
+
     class URDFLink extends THREE.Object3D {
 
         constructor(...args) {
@@ -583,6 +599,7 @@
             // Process the visual and collision nodes into meshes
             function processLinkElement(vn, linkObj, materialMap = {}) {
 
+                const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
                 let xyz = [0, 0, 0];
                 let rpy = [0, 0, 0];
                 let scale = [1, 1, 1];
@@ -658,6 +675,12 @@
 
                                         applyRotation(obj, rpy);
 
+                                        if (isCollisionNode) {
+
+                                            makeURDFCollider(obj);
+
+                                        }
+
                                     }
 
                                 });
@@ -675,6 +698,12 @@
                             linkObj.add(primitiveModel);
                             primitiveModel.scale.set(size[0], size[1], size[2]);
 
+                            if (isCollisionNode) {
+
+                                makeURDFCollider(primitiveModel);
+
+                            }
+
                         } else if (geoType === 'sphere') {
 
                             primitiveModel = new THREE.Mesh();
@@ -685,6 +714,12 @@
                             primitiveModel.scale.set(radius, radius, radius);
 
                             linkObj.add(primitiveModel);
+
+                            if (isCollisionNode) {
+
+                                makeURDFCollider(primitiveModel);
+
+                            }
 
                         } else if (geoType === 'cylinder') {
 
@@ -698,6 +733,12 @@
                             primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
                             linkObj.add(primitiveModel);
+
+                            if (isCollisionNode) {
+
+                                makeURDFCollider(primitiveModel);
+
+                            }
 
                         }
 
