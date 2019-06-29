@@ -16,7 +16,8 @@ interface URDFLoaderOptions {
     workingPath?: string,
     fetchOptions?: object
 
-};
+}
+
 export default class URDFLoader {
 
     manager: LoadingManager;
