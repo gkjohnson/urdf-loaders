@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/js/loaders/STLLoader'), require('three/examples/js/loaders/ColladaLoader')) :
-    typeof define === 'function' && define.amd ? define(['three', 'three/examples/js/loaders/STLLoader', 'three/examples/js/loaders/ColladaLoader'], factory) :
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/loaders/STLLoader.js'), require('three/examples/jsm/loaders/ColladaLoader.js')) :
+    typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/loaders/STLLoader.js', 'three/examples/jsm/loaders/ColladaLoader.js'], factory) :
     (global.URDFLoader = factory(global.THREE,global.THREE,global.THREE));
-}(this, (function (THREE,STLLoader,ColladaLoader) { 'use strict';
+}(this, (function (THREE,STLLoader_js,ColladaLoader_js) { 'use strict';
 
     function URDFColliderClone(...args) {
 
@@ -772,7 +772,7 @@
 
             if (/\.stl$/i.test(path)) {
 
-                const loader = new STLLoader.STLLoader(manager);
+                const loader = new STLLoader_js.STLLoader(manager);
                 loader.load(path, geom => {
                     const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                     done(mesh);
@@ -780,7 +780,7 @@
 
             } else if (/\.dae$/i.test(path)) {
 
-                const loader = new ColladaLoader.ColladaLoader(manager);
+                const loader = new ColladaLoader_js.ColladaLoader(manager);
                 loader.load(path, dae => done(dae.scene));
 
             } else {
