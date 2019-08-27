@@ -11,7 +11,7 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 ![Example](/javascript/docs/javascript-example.gif)
 
 # Use
-```html
+```js
 import { LoadingManager } from 'three';
 import URDFLoader from 'urdf-loader';
 
@@ -32,38 +32,15 @@ loader.load(
 ## Limitations
 - Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
 
-## URDFLoader API
-### constructor(manager)
+# API
 
-Constructor
+## URDFOptions
 
-#### manager : THREE.LoadingManager
+### .packages
 
-THREE.LoadingManager. Used for transforming load URLs.
-
-### load(urdfpath, onComplete, options)
-
-Loads and builds the specified URDF robot in THREE.js
-
-#### urdfpath : String
-
-_required_
-
-The path to the URDF file relative to the specified package directory.
-
-#### onComplete(robot) : Function
-
-_required_
-
-Callback that is called once the urdf robots have been loaded. The loaded robot is passed to the function.
-
-See `URDFRobot` documentation.
-
-#### options : Object
-
-_optional_
-
-##### options.packages : String | Object
+```js
+packages = '' : String | Object
+```
 
 The path representing the `package://` directory(s) to load `package://` relative files.
 
@@ -78,7 +55,16 @@ To specify multiple packages an object syntax is used defining the package name 
 }
 ```
 
-##### options.loadMeshCb(pathToModel, manager, onComplete) : Function
+### .loadMeshCb
+
+```js
+loadMeshCb = null :
+    (
+        pathToModel : string,
+        manager : LoadingManager,
+        onComplete : ( obj : Object3D ) => void
+     ) => void
+```
 
 An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`.
 
@@ -88,103 +74,178 @@ An optional function that can be used to override the default mesh loading funct
 
 `onComplete` is called with the mesh once the geometry has been loaded.
 
-##### options.fetchOptions : Object
+### fetchOptions
+
+```js
+fetchOptions : Object
+```
 
 An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
 
-##### options.workingPath : String
+### workingPath
+
+```js
+workingPath : string
+```
 
 The path to load geometry relative to.
 
 Defaults to the path relative to the loaded URDF file.
 
-##### options.parseVisual : Boolean
+### parseVisual
+
+```js
+parseVisual : boolean
+```
 
 An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
 
-##### options.parseCollision : Boolean
+### parseCollision
+
+```js
+parseCollision : boolean
+```
 
 An optional value that can be used to enable / disable loading meshes for links from the `collision` nodes. Defaults to false.
 
-### parse(urdfContent,  options) : THREE.Object3D
+## URDFLoader
 
-Parses URDF content and returns the robot model.
+### constructor
 
-#### urdfContent : String
+```js
+constructor( manager : LoadingManager )
+```
 
-_required_
+Constructor. Manager is used for transforming load URLs and tracking downloads.
 
-The xml content of a URDF file.
+### load
 
-#### onComplete(robot) : Function
+```js
+load(
+    urdfpath : string,
+    onComplete : (robot: URDFRobot) => void,
+    options = null : URDFOptions
+) : void
+```
 
-_optional_
+Loads and builds the specified URDF robot in THREE.js.
 
-Called immediately with the generated robot. This is the same object that is returned from the function.
+Takes a path to load the urdf file from, a func to call when the robot has loaded, and a set of options.
 
-Note that the link geometry will not necessarily have finished being processed when this is called.
+### parse
 
-See `URDFRobot` documentation.
+```js
+parse( urdfContent : string,  options = null : URDFOptions) : URDFRobot
+```
 
-#### options : Object
+Parses URDF content and returns the robot model. Takes an XML string to parse and a set of options.
 
-See `load`.
+Note that geometry will not necessarily be loaded when the robot is returned.
 
-## URDFJoint : THREE.Object3D
+## URDFJoint
+
+_extends Object3D_
 
 An object representing a robot joint.
 
-#### name : String
+### .name
+
+```js
+name : string
+```
 
 The name of the joint.
 
-#### jointType : String
+### .jointType
+
+```js
+.jointType : string
+```
 
 The type of joint. Can only be the URDF types of joints.
 
-#### limit : Object
+### .limit
+
+```js
+.limit : { lower : number, upper : number }
+```
 
 An object containing the `lower` and `upper` constraints for the joint.
 
-#### axis : THREE.Vector3
+### .axis
+
+```js
+axis : Vector3
+```
 
 The axis described for the joint.
 
-#### angle : Number
+### .angle
 
 _readonly_
 
+```js
+angle : number
+```
+
 The current position or angle for joint.
 
-#### ignoreLimits : Boolean
+### .ignoreLimits
+
+```js
+ignoreLimits : boolean
+```
 
 Whether or not to ignore the joint limits when setting a the joint position.
 
-### setAngle(angle) | setOffset(position)
+### setAngle, setOffset
 
-#### angle | position : Number
+```js
+setAngle( angle : number ) : void
+setOffset( position : number ) : void
+```
 
-The position off of the starting position to rotate or move the joint to.
+Takes the position off of the starting position to rotate or move the joint to.
 
-## URDFLink : THREE.Object3D
+## URDFLink
 
-#### name
+_extends Object3D_
+
+### .name
+
+```js
+name : string
+```
 
 The name of the link.
 
-## URDFRobot : URDFLink
+## URDFRobot
+
+_extends [URDFLink](#URDFLink)_
 
 Object that describes the URDF Robot.
 
-#### robotName : String
+### .robotName
+
+```js
+robotName : string
+```
 
 The name of the robot described in the `<robot>` tag.
 
-#### links : Object
+### .links
+
+```js
+links : { [key] : URDFLink }
+```
 
 A dictionary of `linkName : URDFLink` with all links in the robot.
 
-#### joints : Object
+### .joints
+
+```js
+joints : { [key] : URDFJoint }
+```
 
 A dictionary of `jointName : URDFJoint` with all joints in the robot.
 
