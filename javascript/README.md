@@ -365,7 +365,7 @@ Fires when the URDF has finished loading and getting processed.
 
 Fires when all the geometry has been fully loaded.
 
-## Running the Example
+# Running the Example
 
 Install Node.js and NPM.
 
