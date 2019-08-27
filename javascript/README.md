@@ -74,7 +74,7 @@ An optional function that can be used to override the default mesh loading funct
 
 `onComplete` is called with the mesh once the geometry has been loaded.
 
-### fetchOptions
+### .fetchOptions
 
 ```js
 fetchOptions : Object
@@ -82,7 +82,7 @@ fetchOptions : Object
 
 An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
 
-### workingPath
+### .workingPath
 
 ```js
 workingPath : string
@@ -92,7 +92,7 @@ The path to load geometry relative to.
 
 Defaults to the path relative to the loaded URDF file.
 
-### parseVisual
+### .parseVisual
 
 ```js
 parseVisual : boolean
@@ -100,7 +100,7 @@ parseVisual : boolean
 
 An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
 
-### parseCollision
+### .parseCollision
 
 ```js
 parseCollision : boolean
