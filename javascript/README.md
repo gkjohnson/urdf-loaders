@@ -10,26 +10,26 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 
 ![Example](/javascript/docs/javascript-example.gif)
 
-## Use
+# Use
 ```html
-<script src=".../URDFLoader.js"></script>
-<script>
-  const manager = new THREE.LoadingManager();
-  const loader = new URDFLoader(manager);
-  loader.load(
-    'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
-    robot => { },                           // The robot is loaded!
-    {
-        packages:     {
-            packageName : '.../package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
-        },
-        loadMeshCb: (path, manager, done) => { },       // Callback for each mesh for custom mesh processing and loading code
-    }
-   );
-</script>
+import { LoadingManager } from 'three';
+import URDFLoader from 'urdf-loader';
+
+const manager = new LoadingManager();
+const loader = new URDFLoader(manager);
+loader.load(
+  'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
+  robot => { },                           // The robot is loaded!
+  {
+    packages:     {
+      packageName : '.../package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
+    },
+    loadMeshCb: (path, manager, done) => { },       // Callback for each mesh for custom mesh processing and loading code
+  }
+);
 ```
 
-### Limitations
+## Limitations
 - Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
 
 ## URDFLoader API
