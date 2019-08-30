@@ -38,7 +38,7 @@
     "webcomponents"
   ],
   "peerDependencies": {
-    "three": "^0.105.0"
+    "three": ">=0.105.0"
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.0.0",
