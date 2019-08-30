@@ -110,7 +110,7 @@ An optional value that can be used to enable / disable loading meshes for links 
 
 ## URDFLoader
 
-### constructor
+### .constructor
 
 ```js
 constructor( manager : LoadingManager )
@@ -118,7 +118,7 @@ constructor( manager : LoadingManager )
 
 Constructor. Manager is used for transforming load URLs and tracking downloads.
 
-### load
+### .load
 
 ```js
 load(
@@ -132,7 +132,7 @@ Loads and builds the specified URDF robot in THREE.js.
 
 Takes a path to load the urdf file from, a func to call when the robot has loaded, and a set of options.
 
-### parse
+### .parse
 
 ```js
 parse( urdfContent : string,  options = null : URDFOptions) : URDFRobot
@@ -198,7 +198,7 @@ ignoreLimits : boolean
 
 Whether or not to ignore the joint limits when setting a the joint position.
 
-### setAngle, setOffset
+### .setAngle, .setOffset
 
 ```js
 setAngle( angle : number ) : void
@@ -325,25 +325,45 @@ Recenter the camera only after loading the model.
 
 All of the above attributes have corresponding camel case properties.
 
-#### angles
+#### .angles
+
+```js
+angles : Object
+```
 
 Sets or gets the angles of the robot as a dictionary of `joint-name` to `radian` pairs.
 
 ### Functions
 
-#### setAngle(jointName, angle)
+#### setAngle
+
+```js
+setAngle( jointName : string, angle : Number ) : void
+```
 
 Sets the given joint to the provided angle in radians.
 
-#### setAngles(jointDictionary)
+#### .setAngles
+
+```js
+setAngles( jointDictionary : Object ) : void
+```
 
 Sets all joint names specified as keys to radian angle value.
 
-#### redraw()
+#### .redraw
+
+```js
+redraw() : void
+```
 
 Dirty the renderer so the element will redraw next frame.
 
-#### recenter()
+#### .recenter
+
+```js
+recenter() : void
+```
 
 Recenter the camera to the model and redraw.
 
