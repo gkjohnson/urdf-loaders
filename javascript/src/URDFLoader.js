@@ -59,7 +59,11 @@ class URDFLoader {
     constructor(manager) {
 
         this.manager = manager || THREE.DefaultLoadingManager;
-
+        this.loadMeshCb = this.defaultMeshLoader.bind(this);
+        this.parseVisual = true;
+        this.parseCollision = false;
+        this.packages = '';
+        this.fetchOptions = null;
     }
 
     /* Public API */
@@ -73,16 +77,12 @@ class URDFLoader {
         const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
 
-        options = Object.assign({
-            workingPath,
-        }, options);
-
         manager.itemStart(urdfPath);
-        fetch(urdfPath, options.fetchOptions)
+        fetch(urdfPath, this.fetchOptions)
             .then(res => res.text())
             .then(data => {
 
-                const model = this.parse(data, options);
+                const model = this.parse(data, workingPath);
                 onComplete(model);
                 manager.itemEnd(urdfPath);
 
@@ -98,13 +98,12 @@ class URDFLoader {
 
     }
 
-    parse(content, options = {}) {
+    parse(content, workingPath) {
 
-        const packages = options.packages || '';
-        const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
-        const workingPath = options.workingPath || '';
-        const parseVisual = ('parseVisual' in options) ? options.parseVisual : true;
-        const parseCollision = options.parseCollision || false;
+        const packages = this.packages;
+        const loadMeshCb = this.loadMeshCb;
+        const parseVisual = this.parseVisual;
+        const parseCollision = this.parseCollision;
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
