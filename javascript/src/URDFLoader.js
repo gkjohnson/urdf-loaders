@@ -69,7 +69,7 @@ class URDFLoader {
     /* Public API */
     // urdf:    The path to the URDF within the package OR absolute
     // onComplete:      Callback that is passed the model once loaded
-    load(urdf, onComplete, options) {
+    load(urdf, onComplete, onProgress, onError) {
 
         // Check if a full URI is specified before
         // prepending the package info
@@ -90,6 +90,7 @@ class URDFLoader {
             .catch(e => {
 
                 // TODO: Add onProgress and onError functions here
+                onError(e);
                 console.error('URDFLoader: Error parsing file.', e);
                 manager.itemError(urdfPath);
                 manager.itemEnd(urdfPath);
