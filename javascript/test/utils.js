@@ -45,6 +45,9 @@ function loadURDF(page, urdf, options = {}) {
 
                 },
 
+                null,
+                null,
+
                 options2
 
             );

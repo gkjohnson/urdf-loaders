@@ -65,13 +65,80 @@ class URDFLoader {
     /* Public API */
     // urdf:    The path to the URDF within the package OR absolute
     // onComplete:      Callback that is passed the model once loaded
-    load(urdf, onComplete, options) {
+    load(urdf, onComplete, onProgress, onError, options) {
 
         // Check if a full URI is specified before
         // prepending the package info
         const manager = this.manager;
         const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
+
+        const errors = {};
+
+        let managerOnErrorDefault = function() {};
+        let managerOnProgressDefault = function() {};
+        let managerOnLoadDefault = function() {};
+        let model;
+
+        if (manager.onError) {
+
+            managerOnErrorDefault = manager.onProgress.bind(manager);
+
+        }
+
+        if (manager.onProgress) {
+
+            managerOnProgressDefault = manager.onProgress.bind(manager);
+
+        }
+
+        if (manager.onLoad) {
+
+            managerOnLoadDefault = manager.onLoad.bind(manager);
+
+        }
+
+        manager.onError = function(url) {
+
+            errors[url] = 'Error in loading resource';
+
+            if (onError) {
+
+                onError(url);
+
+            }
+
+            managerOnErrorDefault(url);
+
+        };
+
+        manager.onProgress = function(url, itemsLoaded, itemsTotal) {
+
+            if (onProgress) {
+
+                onProgress(url, itemsLoaded, itemsTotal);
+
+            }
+
+            managerOnProgressDefault(url, itemsLoaded, itemsTotal);
+
+        };
+
+        manager.onLoad = function() {
+
+            if (onComplete) {
+
+                const partialErrors = Object.keys(errors).length === 0
+                    ? undefined
+                    : errors;
+
+                onComplete(model, partialErrors);
+
+            }
+
+            managerOnLoadDefault();
+
+        };
 
         options = Object.assign({
             workingPath,
@@ -82,14 +149,12 @@ class URDFLoader {
             .then(res => res.text())
             .then(data => {
 
-                const model = this.parse(data, options);
-                onComplete(model);
+                model = this.parse(data, options);
                 manager.itemEnd(urdfPath);
 
             })
             .catch(e => {
 
-                // TODO: Add onProgress and onError functions here
                 console.error('URDFLoader: Error parsing file.', e);
                 manager.itemError(urdfPath);
                 manager.itemEnd(urdfPath);

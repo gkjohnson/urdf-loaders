@@ -500,7 +500,15 @@ class URDFViewer extends HTMLElement {
 
             new URDFLoader(manager).load(
                 urdf,
-                model => robot = model,
+
+                // onComplete
+                (model, errors) => (robot = model),
+
+                // onProgress
+                (url, itemsLoaded, itemsTotal) => null,
+
+                // onError
+                (url) => null,
 
                 // options
                 {

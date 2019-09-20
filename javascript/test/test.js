@@ -157,6 +157,8 @@ describe('Options', () => {
                             resolve(ct);
 
                         },
+                        null,
+                        null,
                         {
                             packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
                             loadMeshCb: (path, manager, done) => {
@@ -364,13 +366,13 @@ describe('TriATHLETE Climbing URDF', () => {
         urdf: 'https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf',
         pkg: {
             blending_end_effector:
-            'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',
+                'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',
 
             abb_irb1200_support:
-            'https://raw.githubusercontent.com/ros-industrial/abb_experimental/kinetic-devel/abb_irb1200_support',
+                'https://raw.githubusercontent.com/ros-industrial/abb_experimental/kinetic-devel/abb_irb1200_support',
 
             godel_irb1200_support:
-            'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/abb/godel_irb1200/godel_irb1200_support',
+                'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/abb/godel_irb1200/godel_irb1200_support',
         },
     },
 ].forEach(data => {
