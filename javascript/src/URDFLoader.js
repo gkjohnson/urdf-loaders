@@ -323,10 +323,10 @@ class URDFLoader {
                 } else if (type === 'texture') {
 
                     const filename = n.getAttribute('filename');
-                    if(filename && filename != "") {
-                      const loader = new THREE.TextureLoader(manager);
-                      const filePath = resolvePath(filename);
-                      material.map = loader.load(filePath);
+                    if (filename) {
+                        const loader = new THREE.TextureLoader(manager);
+                        const filePath = resolvePath(filename);
+                        material.map = loader.load(filePath);
                     }
 
                 }
