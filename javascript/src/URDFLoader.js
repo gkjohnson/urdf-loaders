@@ -322,11 +322,15 @@ class URDFLoader {
 
                 } else if (type === 'texture') {
 
+                    // The URDF spec does not require that the <texture/> tag include
+                    // a filename attribute so skip loading the texture if not provided.
                     const filename = n.getAttribute('filename');
                     if (filename) {
+
                         const loader = new THREE.TextureLoader(manager);
                         const filePath = resolvePath(filename);
                         material.map = loader.load(filePath);
+
                     }
 
                 }
