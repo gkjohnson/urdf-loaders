@@ -63,7 +63,9 @@ class URDFLoader {
         this.parseVisual = true;
         this.parseCollision = false;
         this.packages = '';
+        this.workingPath = '';
         this.fetchOptions = null;
+
     }
 
     /* Public API */
@@ -79,19 +81,27 @@ class URDFLoader {
 
         manager.itemStart(urdfPath);
         fetch(urdfPath, this.fetchOptions)
-            .then(res => res.text())
+            .then(res => {
+                onProgress(null);
+                return res.text();
+            })
             .then(data => {
 
-                const model = this.parse(data, workingPath);
+                if (this.workingPath === '') {
+
+                    this.workingPath = workingPath;
+
+                }
+
+                const model = this.parse(data);
                 onComplete(model);
                 manager.itemEnd(urdfPath);
 
             })
             .catch(e => {
 
-                // TODO: Add onProgress and onError functions here
                 onError(e);
-                console.error('URDFLoader: Error parsing file.', e);
+                console.error('URDFLoader: Error loading file.', e);
                 manager.itemError(urdfPath);
                 manager.itemEnd(urdfPath);
 
@@ -99,12 +109,13 @@ class URDFLoader {
 
     }
 
-    parse(content, workingPath) {
+    parse(content) {
 
         const packages = this.packages;
         const loadMeshCb = this.loadMeshCb;
         const parseVisual = this.parseVisual;
         const parseCollision = this.parseCollision;
+        const workingPath = this.workingPath;
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
