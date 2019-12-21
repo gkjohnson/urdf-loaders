@@ -140,6 +140,15 @@ describe('Options', () => {
                 return new Promise(resolve => {
 
                     const loader = new URDFLoader();
+                    loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
+                    loader.loadMeshCb = (path, manager, done) => {
+
+                        const mesh = new THREE.Mesh();
+                        mesh.fromCallback = true;
+                        done(mesh);
+
+                    };
+
                     loader.load(
                         'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
                         robot => {
@@ -156,18 +165,9 @@ describe('Options', () => {
 
                             resolve(ct);
 
-                        },
-                        {
-                            packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
-                            loadMeshCb: (path, manager, done) => {
-
-                                const mesh = new THREE.Mesh();
-                                mesh.fromCallback = true;
-                                done(mesh);
-
-                            },
                         }
                     );
+
                 });
             });
 
@@ -272,7 +272,7 @@ describe('Load', () => {
                 </robot>
             `;
 
-            loader.defaultMeshLoader = (path, manager, done) => done(null, new Error());
+            loader.loadMeshCb = (path, manager, done) => done(null, new Error());
             loader.parse(urdf);
 
         });
