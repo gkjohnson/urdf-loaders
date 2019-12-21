@@ -498,18 +498,11 @@ class URDFViewer extends HTMLElement {
 
             }
 
-            new URDFLoader(manager).load(
-                urdf,
-                model => robot = model,
-
-                // options
-                {
-
-                    packages: pkg,
-                    loadMeshCb: this.loadMeshFunc,
-                    fetchOptions: { mode: 'cors', credentials: 'same-origin' },
-
-                });
+            const loader = new URDFLoader(manager);
+            loader.packages = pkg;
+            loader.loadMeshCb = this.loadMeshFunc;
+            loader.fetchOptions = { mode: 'cors', credentials: 'same-origin' };
+            loader.load(urdf, model => robot = model);
 
         }
 
