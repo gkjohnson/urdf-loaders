@@ -17,15 +17,13 @@ import URDFLoader from 'urdf-loader';
 
 const manager = new LoadingManager();
 const loader = new URDFLoader(manager);
+loader.packages = {
+    packageName : '.../package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
+};
+loader.loadMeshCb = (path, manager, done) => { };
 loader.load(
   'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
-  robot => { },                           // The robot is loaded!
-  {
-    packages:     {
-      packageName : '.../package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
-    },
-    loadMeshCb: (path, manager, done) => { },       // Callback for each mesh for custom mesh processing and loading code
-  }
+  robot => { }                            // The robot is loaded!
 );
 ```
 
@@ -35,6 +33,8 @@ loader.load(
 # API
 
 ## URDFOptions
+
+List of options available on the URDFLoader class.
 
 ### .packages
 
@@ -63,7 +63,7 @@ loadMeshCb = null :
         pathToModel : string,
         manager : LoadingManager,
         onComplete : ( obj : Object3D ) => void
-     ) => void
+    ) => void
 ```
 
 An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`.
@@ -136,7 +136,7 @@ Takes a path to load the urdf file from, a func to call when the robot has loade
 ### .parse
 
 ```js
-parse( urdfContent : string,  options = null : URDFOptions) : URDFRobot
+parse( urdfContent : string ) : URDFRobot
 ```
 
 Parses URDF content and returns the robot model. Takes an XML string to parse and a set of options.
