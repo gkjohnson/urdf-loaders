@@ -82,7 +82,9 @@ class URDFLoader {
         manager.itemStart(urdfPath);
         fetch(urdfPath, this.fetchOptions)
             .then(res => {
-                onProgress(null);
+                if (onProgress) {
+                    onProgress(null);
+                }
                 return res.text();
             })
             .then(data => {
@@ -100,8 +102,11 @@ class URDFLoader {
             })
             .catch(e => {
 
-                onError(e);
-                console.error('URDFLoader: Error loading file.', e);
+                if (onError) {
+                    onError(e);
+                } else {
+                    console.error('URDFLoader: Error loading file.', e);
+                }
                 manager.itemError(urdfPath);
                 manager.itemEnd(urdfPath);
 
