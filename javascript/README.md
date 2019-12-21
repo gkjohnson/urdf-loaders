@@ -123,8 +123,9 @@ Constructor. Manager is used for transforming load URLs and tracking downloads.
 ```js
 load(
     urdfpath : string,
-    onComplete : (robot: URDFRobot) => void,
-    options = null : URDFOptions
+    onComplete : (robot : URDFRobot) => void,
+    onProgress? : () => void,
+    onError? : (error : Error) => void
 ) : void
 ```
 

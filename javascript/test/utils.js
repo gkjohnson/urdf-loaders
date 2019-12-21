@@ -39,7 +39,6 @@ function loadURDF(page, urdf, options = {}) {
             Object.assign(loader, options2);
             loader.load(urdf2, robot => window.robot = robot);
 
-
         });
 
     }, urdf, options);

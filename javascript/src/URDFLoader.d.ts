@@ -9,22 +9,26 @@ interface MeshLoadFunc{
     (url: string, manager: LoadingManager, onLoad: MeshLoadDoneFunc): void;
 }
 
-interface URDFLoaderOptions {
-
-    packages?: string | { [key: string]: string },
-    loadMeshCb?: MeshLoadFunc,
-    workingPath?: string,
-    fetchOptions?: object
-
-}
-
 export default class URDFLoader {
 
     manager: LoadingManager;
     defaultMeshLoader: MeshLoadFunc;
 
+    // options
+    fetchOptions: Object;
+    workingPath: string;
+    parseVisual: boolean;
+    parseCollision: boolean;
+    packages: string | { [key: string]: string };
+    loadMeshCb: MeshLoadFunc;
+
     constructor(manager?: LoadingManager);
-    load(url: string, onLoad: (robot: URDFRobot) => void, options?: URDFLoaderOptions): void;
-    parse(content: string, options?: URDFLoaderOptions): URDFRobot;
+    load(
+        url: string,
+        onLoad: (robot: URDFRobot) => void,
+        onProgress?: () => void,
+        onError?: () => void
+    ): void;
+    parse(content: string): URDFRobot;
 
 }
