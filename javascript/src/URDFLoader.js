@@ -59,13 +59,19 @@ class URDFLoader {
     constructor(manager) {
 
         this.manager = manager || THREE.DefaultLoadingManager;
+        this.loadMeshCb = this.defaultMeshLoader.bind(this);
+        this.parseVisual = true;
+        this.parseCollision = false;
+        this.packages = '';
+        this.workingPath = '';
+        this.fetchOptions = null;
 
     }
 
     /* Public API */
     // urdf:    The path to the URDF within the package OR absolute
     // onComplete:      Callback that is passed the model once loaded
-    load(urdf, onComplete, options) {
+    load(urdf, onComplete, onProgress, onError) {
 
         // Check if a full URI is specified before
         // prepending the package info
@@ -73,24 +79,34 @@ class URDFLoader {
         const workingPath = THREE.LoaderUtils.extractUrlBase(urdf);
         const urdfPath = this.manager.resolveURL(urdf);
 
-        options = Object.assign({
-            workingPath,
-        }, options);
-
         manager.itemStart(urdfPath);
-        fetch(urdfPath, options.fetchOptions)
-            .then(res => res.text())
+        fetch(urdfPath, this.fetchOptions)
+            .then(res => {
+                if (onProgress) {
+                    onProgress(null);
+                }
+                return res.text();
+            })
             .then(data => {
 
-                const model = this.parse(data, options);
+                if (this.workingPath === '') {
+
+                    this.workingPath = workingPath;
+
+                }
+
+                const model = this.parse(data);
                 onComplete(model);
                 manager.itemEnd(urdfPath);
 
             })
             .catch(e => {
 
-                // TODO: Add onProgress and onError functions here
-                console.error('URDFLoader: Error parsing file.', e);
+                if (onError) {
+                    onError(e);
+                } else {
+                    console.error('URDFLoader: Error loading file.', e);
+                }
                 manager.itemError(urdfPath);
                 manager.itemEnd(urdfPath);
 
@@ -98,13 +114,13 @@ class URDFLoader {
 
     }
 
-    parse(content, options = {}) {
+    parse(content) {
 
-        const packages = options.packages || '';
-        const loadMeshCb = options.loadMeshCb || this.defaultMeshLoader.bind(this);
-        const workingPath = options.workingPath || '';
-        const parseVisual = ('parseVisual' in options) ? options.parseVisual : true;
-        const parseCollision = options.parseCollision || false;
+        const packages = this.packages;
+        const loadMeshCb = this.loadMeshCb;
+        const parseVisual = this.parseVisual;
+        const parseCollision = this.parseCollision;
+        const workingPath = this.workingPath;
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};

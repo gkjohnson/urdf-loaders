@@ -7,8 +7,8 @@
   "scripts": {
     "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
     "build": "rollup -c && cd example && webpack",
-    "test": "rollup -c && jest",
-    "lint": "eslint ./src/*.js ./test/*.js",
+    "test": "jest",
+    "lint": "eslint ./src/*.js ./test/*.js && tsc -p tsconfig.json --noEmit",
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
   },
   "files": [
@@ -55,6 +55,7 @@
     "static-server": "^3.0.0",
     "three": "^0.101.1",
     "threejs-model-loader": "0.0.1",
+    "typescript": "^3.7.4",
     "wc-loader": "^1.1.12",
     "webpack": "^3.5.3"
   },

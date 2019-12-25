@@ -34,20 +34,10 @@ function loadURDF(page, urdf, options = {}) {
 
             const manager = new THREE.LoadingManager();
             manager.onLoad = () => resolve();
+
             const loader = new URDFLoader(manager);
-            loader.load(
-
-                urdf2,
-
-                robot => {
-
-                    window.robot = robot;
-
-                },
-
-                options2
-
-            );
+            Object.assign(loader, options2);
+            loader.load(urdf2, robot => window.robot = robot);
 
         });
 
