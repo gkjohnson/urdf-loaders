@@ -253,7 +253,7 @@ A dictionary of `jointName : URDFJoint` with all joints in the robot.
 ## urdf-viewer Element
 ```html
 <!-- Register the Element -->
-<script href=".../urdf-viewer-element.js" />
+<script href=".../urdf-viewer-element.js"></script>
 <script>customElements.define('urdf-viewer', URDFViewer)</script>
 
 <body>
