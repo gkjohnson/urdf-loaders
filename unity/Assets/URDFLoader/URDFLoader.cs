@@ -40,86 +40,9 @@ public class URDFLoader : MonoBehaviour {
 
     }
 
-    // Default mesh loading function that can
-    // load STLs from file
-    public static void LoadMesh(string path, string ext, Action<GameObject[]> done) {
-
-        Mesh[] meshes = null;
-        if (ext == "stl") {
-
-            print("building stl file " + path);
-            meshes = StlLoader.Load(path);
-
-        } else if (ext == "dae") {
-            print("building dae file " + path);
-            var empty = new string[0];
-            meshes = DAELoader.LoadFromPath(path, ref empty);
-        }
-
-        if (meshes == null) {
-
-            throw new Exception("Filetype '" + ext + "' not supported");
-
-        } else {
-
-            GameObject[] res = new GameObject[meshes.Length];
-            for (int i = 0; i < meshes.Length; i++) {
-
-                var mesh = meshes[i];
-                Renderer r = GameObject
-                    .CreatePrimitive(PrimitiveType.Cube)
-                    .GetComponent<Renderer>();
-                r.GetComponent<MeshFilter>().mesh = mesh;
-
-                res[i] = r.gameObject;
-
-            }
-
-            done(res);
-        }
-
-    }
-
-    public static string ResolveMeshPath(string path, Dictionary<string, string> packages, string workingPath) {
-
-        if (path.IndexOf("package://") != 0) {
-
-            return Path.Combine(workingPath, path);
-
-        }
-
-        string[] spl = path.Replace("package://", "").Split(new char[] { '/', '\\' }, 2);
-        string targetPackage = spl[0];
-        string remaining = spl[1];
-
-        if (packages.ContainsKey(targetPackage)) {
-
-            return Path.Combine(packages[targetPackage], remaining);
-
-        } else if (packages.ContainsKey(SINGLE_PACKAGE_KEY)) {
-
-            string packagePath = packages[SINGLE_PACKAGE_KEY];
-            if (packagePath.EndsWith(targetPackage)) {
-
-                return Path.Combine(packagePath, remaining);
-
-            } else {
-
-                return Path.Combine(
-                    Path.Combine(packagePath, targetPackage),
-                    remaining
-                );
-
-            }
-
-        }
-
-        Debug.LogError("URDFLoader: " + targetPackage + " not found in provided package list!");
-        return null;
-
-    }
-
+    // Public API
     // Load the URDF from file and build the robot
+    // Takes a single package path which is assumed to be the package location for all meshes.
     public static URDFRobot LoadRobot(string urdfPath, string package, Options options = new Options()) {
 
         Dictionary<string, string> packages = new Dictionary<string, string>();
@@ -129,6 +52,7 @@ public class URDFLoader : MonoBehaviour {
 
     }
 
+    // Takes a dictionary of packages
     public static URDFRobot LoadRobot(string urdfPath, Dictionary<string, string> packages, Options options = new Options()) {
 
         StreamReader reader = new StreamReader(urdfPath);
@@ -145,7 +69,7 @@ public class URDFLoader : MonoBehaviour {
 
     }
 
-    // create the robot
+    // Parse the URDF file and return a URDFRobot instance with all associated links and joints
     public static URDFRobot BuildRobot(string urdfPath, string package, Options options = new Options()) {
 
         Dictionary<string, string> packages = new Dictionary<string, string>();
@@ -157,25 +81,28 @@ public class URDFLoader : MonoBehaviour {
 
     public static URDFRobot BuildRobot(string urdfContent, Dictionary<string, string> packages, Options options = new Options()) {
 
-        if (options.loadMeshCb == null) options.loadMeshCb = LoadMesh;
+        if (options.loadMeshCb == null) {
 
-        // load the XML doc
+            options.loadMeshCb = LoadMesh;
+
+        }
+
+        // Parse the XML doc
         XmlDocument doc = new XmlDocument();
         doc.LoadXml(urdfContent);
 
-        // Store the information about the link and the objects
-        // indexed by link name
+        // Store the information about the link and the objects indexed by link name
         Dictionary<string, XmlNode> xmlLinks = new Dictionary<string, XmlNode>();
         Dictionary<string, XmlNode> xmlJoints = new Dictionary<string, XmlNode>();
 
-        // indexed by joint name
+        // Indexed by joint name
         Dictionary<string, URDFJoint> urdfJoints = new Dictionary<string, URDFJoint>();
         Dictionary<string, URDFLink> urdfLinks = new Dictionary<string, URDFLink>();
 
-        // indexed by joint name
+        // Indexed by joint name
         Dictionary<string, string> parentNames = new Dictionary<string, string>();
 
-        // first node is the robot node (for the full robot)
+        // First node is the <robot> node
         foreach (XmlNode n in doc.ChildNodes) {
 
             // first node is expected to be the robot
@@ -499,6 +426,80 @@ public class URDFLoader : MonoBehaviour {
 
         }
 
+        return null;
+
+    }
+
+    // Utilities
+    // Default mesh loading function that can load STLs from file
+    public static void LoadMesh(string path, string ext, Action<GameObject[]> done) {
+
+        Mesh[] meshes = null;
+        if (ext == "stl") {
+
+            print("building stl file " + path);
+            meshes = StlLoader.Load(path);
+
+        } else {
+
+            throw new Exception("Filetype '" + ext + "' not supported");
+
+        }
+
+        GameObject[] result = new GameObject[meshes.Length];
+        for (int i = 0; i < meshes.Length; i++) {
+
+            GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Mesh mesh = meshes[i];
+            Renderer renderer = gameObject.GetComponent<Renderer>();
+            renderer.GetComponent<MeshFilter>().mesh = mesh;
+
+            result[i] = gameObject;
+
+        }
+
+        done(result);
+
+    }
+
+    // Resolves the given mesh path with the package options and working paths to return
+    // a full path to the mesh file.
+    public static string ResolveMeshPath(string path, Dictionary<string, string> packages, string workingPath) {
+
+        if (path.IndexOf("package://") != 0) {
+
+            return Path.Combine(workingPath, path);
+
+        }
+
+        // extract the package name
+        string[] split = path.Replace("package://", "").Split(new char[] { '/', '\\' }, 2);
+        string targetPackage = split[0];
+        string remaining = split[1];
+
+        if (packages.ContainsKey(targetPackage)) {
+
+            return Path.Combine(packages[targetPackage], remaining);
+
+        } else if (packages.ContainsKey(SINGLE_PACKAGE_KEY)) {
+
+            string packagePath = packages[SINGLE_PACKAGE_KEY];
+            if (packagePath.EndsWith(targetPackage)) {
+
+                return Path.Combine(packagePath, remaining);
+
+            } else {
+
+                return Path.Combine(
+                    Path.Combine(packagePath, targetPackage),
+                    remaining
+                );
+
+            }
+
+        }
+
+        Debug.LogError("URDFLoader: " + targetPackage + " not found in provided package list!");
         return null;
 
     }
