@@ -104,22 +104,24 @@ public class URDFLoader : MonoBehaviour {
 
         // First node is the <robot> node
         XmlNode robotNode = doc.ChildNodes[0];
+        string robotName = robotNode.Attributes["name"].Value;
+
         XmlNode[] xmlLinksArray = GetXmlNodeChildrenByName(robotNode, "link");
         XmlNode[] xmlJointsArray = GetXmlNodeChildrenByName(robotNode, "joint");
 
-        // Cycle through and find all the links for the robot first
+        // Cycle through the links and instantiate the geometry
         foreach (XmlNode linkNode in xmlLinksArray) {
 
             // Store the XML node for the link
-            string name = linkNode.Attributes["name"].Value;
-            xmlLinks.Add(name, linkNode);
+            string linkName = linkNode.Attributes["name"].Value;
+            xmlLinks.Add(linkName, linkNode);
 
             // create the link gameobject
-            GameObject gameObject = new GameObject(name);
+            GameObject gameObject = new GameObject(linkName);
             URDFLink urdfLink = new URDFLink();
-            urdfLink.name = name;
+            urdfLink.name = linkName;
             urdfLink.transform = gameObject.transform;
-            urdfLinks.Add(name, urdfLink);
+            urdfLinks.Add(linkName, urdfLink);
 
             // Get the geometry node and skip it if there isn't one
             XmlNode[] visualNodesArray = GetXmlNodeChildrenByName(linkNode, "visual");
@@ -232,6 +234,7 @@ public class URDFLoader : MonoBehaviour {
 
                     } else {
 
+                        // Instantiate the primitive geometry
                         XmlNode primitiveNode = meshNode;
                         GameObject primitiveGameObject = null;
                         Transform primitiveTransform = null;
@@ -277,21 +280,19 @@ public class URDFLoader : MonoBehaviour {
 
                         }
 
-                        Renderer primitiveRenderer = primitiveGameObject.GetComponent<Renderer>();
-                        if (primitiveRenderer == null) {
-
-                            primitiveRenderer = primitiveGameObject.GetComponentInChildren<Renderer>();
-
-                        }
-
+                        // Position the transform
                         primitiveTransform.parent = urdfLink.transform;
                         primitiveTransform.localPosition = position;
                         primitiveTransform.localRotation = Quaternion.Euler(rotation);
-
                         primitiveGameObject.name = urdfLink.name + " geometry " + primitiveNode.Name;
-                        primitiveRenderer.material.color = color;
 
+                        Renderer primitiveRenderer =
+                            primitiveGameObject.GetComponent<Renderer>() ??
+                            primitiveGameObject.GetComponentInChildren<Renderer>();
+                        primitiveRenderer.material.color = color;
                         renderers.Add(primitiveGameObject);
+
+                        // Dispose of unneeded components
                         if (Application.isPlaying) {
 
                             Destroy(primitiveRenderer.GetComponent<Collider>());
@@ -316,7 +317,7 @@ public class URDFLoader : MonoBehaviour {
 
         }
 
-        // find all the joints next
+        // Cycle through the joint nodes
         foreach (XmlNode jointNode in xmlJointsArray) {
 
             string jointName = jointNode.Attributes["name"].Value;
@@ -326,17 +327,22 @@ public class URDFLoader : MonoBehaviour {
             xmlJoints.Add(jointName, jointNode);
 
             // Get the links by name
-            URDFLink parentLink = urdfLinks[GetXmlNodeChildByName(jointNode, "parent").Attributes["link"].Value];
-            URDFLink childLink = urdfLinks[GetXmlNodeChildByName(jointNode, "child").Attributes["link"].Value];
+            XmlNode parentNode = GetXmlNodeChildByName(jointNode, "parent");
+            XmlNode childNode = GetXmlNodeChildByName(jointNode, "child");
+            string parentName = parentNode.Attributes["link"].Value;
+            string childName = childNode.Attributes["link"].Value;
+            URDFLink parentLink = urdfLinks[parentName];
+            URDFLink childLink = urdfLinks[childName];
 
             // Create the joint
+            GameObject jointGameObject = new GameObject(jointName);
             URDFJoint urdfJoint = new URDFJoint();
             urdfJoint.name = jointName;
             urdfJoint.parentLink = parentLink;
-            urdfJoint.transform = new GameObject(urdfJoint.name).transform;
+            urdfJoint.transform = jointGameObject.transform;
             urdfJoint.type = jointNode.Attributes["type"].Value;
 
-            // set the tree hierarchy
+            // Set the tree hierarchy
             // Parent the joint to its parent link
             urdfJoint.parentLink = parentLink;
             urdfJoint.transform.parent = parentLink.transform;
@@ -350,37 +356,35 @@ public class URDFLoader : MonoBehaviour {
             childLink.transform.localPosition = Vector3.zero;
             childLink.transform.localRotation = Quaternion.identity;
 
-            // position the origin if it's specified
-            XmlNode transNode = GetXmlNodeChildByName(jointNode, "origin");
-            Vector3 pos = Vector3.zero;
-            if (transNode != null && transNode.Attributes["xyz"] != null) {
+            // Position the origin if it's specified
+            XmlNode transformNode = GetXmlNodeChildByName(jointNode, "origin");
+            Vector3 position = Vector3.zero;
+            if (transformNode != null && transformNode.Attributes["xyz"] != null) {
 
-                pos = TupleToVector3(transNode.Attributes["xyz"].Value);
-
-            }
-
-            pos = URDFToUnityPos(pos);
-
-            Vector3 rot = Vector3.zero;
-            if (transNode != null && transNode.Attributes["rpy"] != null) {
-
-                rot = TupleToVector3(transNode.Attributes["rpy"].Value);
+                position = TupleToVector3(transformNode.Attributes["xyz"].Value);
 
             }
+            position = URDFToUnityPos(position);
 
-            rot = URDFToUnityRot(rot);
+            Vector3 rotation = Vector3.zero;
+            if (transformNode != null && transformNode.Attributes["rpy"] != null) {
+
+                rotation = TupleToVector3(transformNode.Attributes["rpy"].Value);
+
+            }
+            rotation = URDFToUnityRot(rotation);
 
             // parent the joint and name it
-            urdfJoint.transform.localPosition = pos;
-            urdfJoint.transform.localRotation = Quaternion.Euler(rot);
-            urdfJoint.originalRotation = urdfJoint.transform.localRotation;
+            urdfJoint.transform.localPosition = position;
+            urdfJoint.transform.localRotation = Quaternion.Euler(rotation);
+            urdfJoint.originalRotation = Quaternion.Euler(rotation);
 
             XmlNode axisNode = GetXmlNodeChildByName(jointNode, "axis");
             if (axisNode != null) {
 
                 Vector3 axis = TupleToVector3(axisNode.Attributes["xyz"].Value);
-                axis.Normalize();
                 axis = URDFToUnityPos(axis);
+                axis.Normalize();
                 urdfJoint.axis = axis;
 
             }
@@ -412,8 +416,6 @@ public class URDFLoader : MonoBehaviour {
         URDFRobot robot = options.target;
         foreach (KeyValuePair<string, URDFLink> kv in urdfLinks) {
 
-            // TODO : if there are multiple robots described, then we'll only be getting
-            // the one. Should update to return a list of jointlists if necessary
             if (kv.Value.parent == null) {
 
                 // find the top most node and add a joint list to it
@@ -434,6 +436,7 @@ public class URDFLoader : MonoBehaviour {
 
                 robot.IsConsistent();
                 return robot;
+
             }
 
         }
@@ -564,60 +567,60 @@ public class URDFLoader : MonoBehaviour {
     }
 
     // Converts a string of the form "x y z" into a Vector3
-    public static Vector3 TupleToVector3(string s) {
+    public static Vector3 TupleToVector3(string str) {
 
-        s = s.Trim();
-        s = System.Text.RegularExpressions.Regex.Replace(s, "\\s+", " ");
+        str = str.Trim();
+        str = System.Text.RegularExpressions.Regex.Replace(str, "\\s+", " ");
 
-        string[] nums = s.Split(' ');
+        string[] numbers = str.Split(' ');
 
-        Vector3 v = Vector3.zero;
-        if (nums.Length == 3) {
+        Vector3 result = Vector3.zero;
+        if (numbers.Length == 3) {
 
             try {
 
-                v.x = float.Parse(nums[0]);
-                v.y = float.Parse(nums[1]);
-                v.z = float.Parse(nums[2]);
+                result.x = float.Parse(numbers[0]);
+                result.y = float.Parse(numbers[1]);
+                result.z = float.Parse(numbers[2]);
 
             } catch (Exception e) {
 
-                Debug.Log(s);
+                Debug.Log(str);
                 Debug.LogError(e.Message);
 
             }
 
         }
 
-        return v;
+        return result;
 
     }
 
-    public static Color TupleToColor(string s) {
+    public static Color TupleToColor(string str) {
 
-        s = s.Trim();
-        s = System.Text.RegularExpressions.Regex.Replace(s, "\\s+", " ");
+        str = str.Trim();
+        str = System.Text.RegularExpressions.Regex.Replace(str, "\\s+", " ");
 
-        string[] nums = s.Split(' ');
-        Color c = new Color();
-        if (nums.Length == 4) {
+        string[] numbers = str.Split(' ');
+        Color result = new Color();
+        if (numbers.Length == 4) {
 
             try {
-                c.r = float.Parse(nums[0]);
-                c.g = float.Parse(nums[1]);
-                c.b = float.Parse(nums[2]);
-                c.a = float.Parse(nums[3]);
+                result.r = float.Parse(numbers[0]);
+                result.g = float.Parse(numbers[1]);
+                result.b = float.Parse(numbers[2]);
+                result.a = float.Parse(numbers[3]);
 
             } catch (Exception e) {
 
-                Debug.Log(s);
+                Debug.Log(str);
                 Debug.LogError(e.Message);
 
             }
 
         }
 
-        return c;
+        return result;
 
     }
 
