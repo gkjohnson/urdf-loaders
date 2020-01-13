@@ -107,21 +107,21 @@ public class URDFLoader : MonoBehaviour {
 
         // first node is expected to be the robot
         // cycle through and find all the links for the robot first
-        foreach (XmlNode xLink in robotNode.ChildNodes) {
+        foreach (XmlNode xmlLink in robotNode.ChildNodes) {
 
-            if (xLink.Name == "link") {
+            if (xmlLink.Name == "link") {
 
                 // Store the XML node for hte link
-                xmlLinks.Add(xLink.Attributes["name"].Value, xLink);
+                xmlLinks.Add(xmlLink.Attributes["name"].Value, xmlLink);
 
                 // create the link gameobject
                 URDFLink urdfLink = new URDFLink();
-                urdfLink.name = xLink.Attributes["name"].Value;
+                urdfLink.name = xmlLink.Attributes["name"].Value;
                 urdfLink.transform = new GameObject(urdfLink.name).transform;
                 urdfLinks.Add(urdfLink.name, urdfLink);
 
                 // Get the geometry node and skip it if there isn't one
-                XmlNode[] visualNodes = GetXmlNodeChildrenByName(xLink, "visual");
+                XmlNode[] visualNodes = GetXmlNodeChildrenByName(xmlLink, "visual");
                 List<GameObject> renderers = new List<GameObject>();
 
                 // Iterate over all the visual nodes
@@ -303,26 +303,26 @@ public class URDFLoader : MonoBehaviour {
         }
 
         // find all the joints next
-        foreach (XmlNode xJoint in robotNode.ChildNodes) {
+        foreach (XmlNode xmlJoint in robotNode.ChildNodes) {
 
-            if (xJoint.Name == "joint") {
+            if (xmlJoint.Name == "joint") {
 
-                string jointName = xJoint.Attributes["name"].Value;
+                string jointName = xmlJoint.Attributes["name"].Value;
 
                 // store the joints indexed by child name so we can find it later
                 // to properly indicate the parents in the joint list
-                xmlJoints.Add(jointName, xJoint);
+                xmlJoints.Add(jointName, xmlJoint);
 
                 // Get the links by name
-                URDFLink parentLink = urdfLinks[GetXmlNodeChildByName(xJoint, "parent").Attributes["link"].Value];
-                URDFLink childLink = urdfLinks[GetXmlNodeChildByName(xJoint, "child").Attributes["link"].Value];
+                URDFLink parentLink = urdfLinks[GetXmlNodeChildByName(xmlJoint, "parent").Attributes["link"].Value];
+                URDFLink childLink = urdfLinks[GetXmlNodeChildByName(xmlJoint, "child").Attributes["link"].Value];
 
                 // Create the joint
                 URDFJoint urdfJoint = new URDFJoint();
                 urdfJoint.name = jointName;
                 urdfJoint.parentLink = parentLink;
                 urdfJoint.transform = new GameObject(urdfJoint.name).transform;
-                urdfJoint.type = xJoint.Attributes["type"].Value;
+                urdfJoint.type = xmlJoint.Attributes["type"].Value;
 
                 // set the tree hierarchy
                 // Parent the joint to its parent link
@@ -339,7 +339,7 @@ public class URDFLoader : MonoBehaviour {
                 childLink.transform.localRotation = Quaternion.identity;
 
                 // position the origin if it's specified
-                XmlNode transNode = GetXmlNodeChildByName(xJoint, "origin");
+                XmlNode transNode = GetXmlNodeChildByName(xmlJoint, "origin");
                 Vector3 pos = Vector3.zero;
                 if (transNode != null && transNode.Attributes["xyz"] != null) {
 
@@ -363,7 +363,7 @@ public class URDFLoader : MonoBehaviour {
                 urdfJoint.transform.localRotation = Quaternion.Euler(rot);
                 urdfJoint.originalRotation = urdfJoint.transform.localRotation;
 
-                XmlNode axisNode = GetXmlNodeChildByName(xJoint, "axis");
+                XmlNode axisNode = GetXmlNodeChildByName(xmlJoint, "axis");
                 if (axisNode != null) {
 
                     Vector3 axis = TupleToVector3(axisNode.Attributes["xyz"].Value);
@@ -373,7 +373,7 @@ public class URDFLoader : MonoBehaviour {
 
                 }
 
-                XmlNode limitNode = GetXmlNodeChildByName(xJoint, "limit");
+                XmlNode limitNode = GetXmlNodeChildByName(xmlJoint, "limit");
                 if (limitNode != null) {
 
                     if (limitNode.Attributes["lower"] != null) {
