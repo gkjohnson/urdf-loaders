@@ -124,6 +124,7 @@ public class URDFLoader : MonoBehaviour {
             // Get the geometry node and skip it if there isn't one
             XmlNode[] visualNodesArray = GetXmlNodeChildrenByName(linkNode, "visual");
             List<GameObject> renderers = new List<GameObject>();
+            urdfLink.geometry = renderers;
 
             // Iterate over all the visual nodes
             foreach (XmlNode xmlVisual in visualNodesArray) {
@@ -199,105 +200,107 @@ public class URDFLoader : MonoBehaviour {
                         options.loadMeshCb(fileName, extension, models => {
 
                             // create the rest of the meshes and child them to the click target
-                            for (int i = 0; i < models.Length; i++)
-                            {
-                                var trans = models[i].transform;
-                                trans.parent = urdfLink.transform;
-                                trans.localPosition = position;
-                                trans.localRotation = Quaternion.Euler(rotation);
-                                trans.localScale = scale;
+                            for (int i = 0; i < models.Length; i++) {
 
-                                trans.name = urdfLink.name + " geometry " + i;
+                                GameObject modelGameObject = models[i];
+                                Transform meshTransform = modelGameObject.transform;
+                                meshTransform.parent = urdfLink.transform;
+                                meshTransform.localPosition = position;
+                                meshTransform.localRotation = Quaternion.Euler(rotation);
+                                meshTransform.localScale = scale;
 
-                                foreach (Renderer r in trans.GetComponentsInChildren<Renderer>()) {
-
-                                    r.material.color = color;
-
-                                }
-
-                                renderers.Add(trans.gameObject);
+                                modelGameObject.name = urdfLink.name + " geometry " + i;
+                                renderers.Add(modelGameObject);
 
                                 // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
                                 // TODO: traverse over the children and do this
                                 if (Application.isPlaying) {
-                                    Destroy(trans.GetComponent<Collider>());
-                                    Destroy(trans.GetComponent<Rigidbody>());
+
+                                    Destroy(meshTransform.GetComponent<Collider>());
+                                    Destroy(meshTransform.GetComponent<Rigidbody>());
+
                                 } else {
-                                    DestroyImmediate(trans.GetComponent<Collider>());
-                                    DestroyImmediate(trans.GetComponent<Rigidbody>());
+
+                                    DestroyImmediate(meshTransform.GetComponent<Collider>());
+                                    DestroyImmediate(meshTransform.GetComponent<Rigidbody>());
+
                                 }
 
                             }
 
                         });
 
-                        // save the geometry in the link
-                        urdfLink.geometry = renderers;
-
                     } else {
 
                         XmlNode primitiveNode = meshNode;
+                        GameObject primitiveGameObject = null;
+                        Transform primitiveTransform = null;
+                        switch (primitiveNode.Name) {
 
-                        if (primitiveNode != null) {
+                            case "box": {
 
-                            GameObject go = null;
-                            switch (primitiveNode.Name) {
+                                primitiveGameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                primitiveTransform = primitiveTransform;
 
-                                case "box":
-                                    go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                                    go.transform.localScale =
-                                        URDFToUnityPos(TupleToVector3(primitiveNode.Attributes[0].Value));
-                                    break;
-
-                                case "sphere":
-                                    go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                    go.transform.localScale =
-                                        Vector3.one * (float.Parse(primitiveNode.Attributes[0].Value) * 2);
-                                    break;
-
-                                case "cylinder":
-                                    go = new GameObject();
-                                    var cPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                                    cPrimitive.transform.parent = go.transform;
-
-                                    var length = float.Parse(primitiveNode.Attributes[0].Value);
-                                    var radius = float.Parse(primitiveNode.Attributes[1].Value);
-                                    go.transform.localScale = new Vector3(radius * 2, length / 2, radius * 2);
-                                    break;
+                                Vector3 boxScale = TupleToVector3(primitiveNode.Attributes["size"].Value);
+                                boxScale = URDFToUnityPos(boxScale);
+                                primitiveTransform.localScale = boxScale;
+                                break;
 
                             }
 
-                            Renderer r = go.GetComponent<Renderer>();
-                            if (r == null) {
+                            case "sphere": {
 
-                                r = go.GetComponentInChildren<Renderer>();
+                                primitiveGameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                                primitiveTransform = primitiveTransform;
+
+                                float sphereRadius = float.Parse(primitiveNode.Attributes["radius"].Value);
+                                primitiveTransform.localScale = Vector3.one * sphereRadius * 2;
+                                break;
+
+                            }
+
+                            case "cylinder": {
+
+                                primitiveGameObject = new GameObject();
+                                primitiveTransform = primitiveTransform;
+
+                                GameObject cylinderPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                                cylinderPrimitive.transform.parent = primitiveTransform;
+
+                                float length = float.Parse(primitiveNode.Attributes["length"].Value);
+                                float radius = float.Parse(primitiveNode.Attributes["radius"].Value);
+                                primitiveTransform.localScale = new Vector3(radius * 2, length / 2, radius * 2);
+                                break;
 
                             }
 
-                            go.transform.parent = urdfLink.transform;
-                            go.transform.localPosition = position;
-                            go.transform.localRotation = Quaternion.Euler(rotation);
+                        }
 
-                            go.name = urdfLink.name + " geometry " + primitiveNode.Name;
+                        Renderer primitiveRenderer = primitiveGameObject.GetComponent<Renderer>();
+                        if (primitiveRenderer == null) {
 
-                            if (r) {
+                            primitiveRenderer = primitiveGameObject.GetComponentInChildren<Renderer>();
 
-                                r.material.color = color;
+                        }
 
-                                renderers.Add(r.gameObject);
-                                if (Application.isPlaying) {
+                        primitiveTransform.parent = urdfLink.transform;
+                        primitiveTransform.localPosition = position;
+                        primitiveTransform.localRotation = Quaternion.Euler(rotation);
 
-                                    Destroy(r.GetComponent<Collider>());
-                                    Destroy(r.GetComponent<Rigidbody>());
+                        primitiveGameObject.name = urdfLink.name + " geometry " + primitiveNode.Name;
+                        primitiveRenderer.material.color = color;
 
-                                } else {
+                        renderers.Add(primitiveGameObject);
+                        if (Application.isPlaying) {
 
-                                    DestroyImmediate(r.GetComponent<Collider>());
-                                    DestroyImmediate(r.GetComponent<Rigidbody>());
+                            Destroy(primitiveRenderer.GetComponent<Collider>());
+                            Destroy(primitiveRenderer.GetComponent<Rigidbody>());
 
-                                }
+                        } else {
 
-                            }
+                            DestroyImmediate(primitiveRenderer.GetComponent<Collider>());
+                            DestroyImmediate(primitiveRenderer.GetComponent<Rigidbody>());
 
                         }
 
