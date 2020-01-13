@@ -98,16 +98,43 @@ public class URDFLoader : MonoBehaviour {
         // Indexed by joint name
         Dictionary<string, URDFJoint> urdfJoints = new Dictionary<string, URDFJoint>();
         Dictionary<string, URDFLink> urdfLinks = new Dictionary<string, URDFLink>();
+        Dictionary<string, Material> urdfMaterials = new Dictionary<string, Material>();
 
         // Indexed by joint name
         Dictionary<string, string> parentNames = new Dictionary<string, string>();
 
         // First node is the <robot> node
-        XmlNode robotNode = doc.ChildNodes[0];
+        XmlNode robotNode = GetXmlNodeChildByName(doc, "robot");
         string robotName = robotNode.Attributes["name"].Value;
 
         XmlNode[] xmlLinksArray = GetXmlNodeChildrenByName(robotNode, "link");
         XmlNode[] xmlJointsArray = GetXmlNodeChildrenByName(robotNode, "joint");
+        XmlNode[] xmlMaterialsArray = GetXmlNodeChildrenByName(robotNode, "material", true);
+
+        foreach(XmlNode materialNode in xmlMaterialsArray) {
+
+            if (materialNode.Attributes["name"] != null) {
+
+                string materialName = materialNode.Attributes["name"].Value;
+                if (!urdfMaterials.ContainsKey(materialName)) {
+
+                    Material material = new Material(Shader.Find("Standard"));
+                    Color color = Color.white;
+                    XmlNode colorNode = GetXmlNodeChildByName(materialNode, "color");
+                    if (colorNode != null) {
+
+                        color = TupleToColor(colorNode.Attributes["rgba"].Value);
+
+                    }
+                    material.color = color;
+                    urdfMaterials.Add(materialName, material);
+
+                }
+
+
+            }
+
+        }
 
         // Cycle through the links and instantiate the geometry
         foreach (XmlNode linkNode in xmlLinksArray) {
@@ -138,20 +165,34 @@ public class URDFLoader : MonoBehaviour {
 
                 }
 
+                Material material = null;
                 XmlNode materialNode = GetXmlNodeChildByName(xmlVisual, "material");
-                Color color = Color.white;
                 if (materialNode != null) {
 
-                    XmlNode colorNode = GetXmlNodeChildByName(materialNode, "color");
-                    if (colorNode != null) {
+                    if (materialNode.Attributes["name"] != null) {
 
-                        color = TupleToColor(colorNode.Attributes["rgba"].Value);
+
+                        string materialName = materialNode.Attributes["name"].Value;
+                        material = urdfMaterials[materialName];
+
+                    } else {
+
+                        Color color = Color.white;
+                        XmlNode colorNode = GetXmlNodeChildByName(materialNode, "color");
+                        if (colorNode != null) {
+
+                            color = TupleToColor(colorNode.Attributes["rgba"].Value);
+
+                        }
+
+                        material = new Material(Shader.Find("Standard"));
+                        material.color = color;
+
+                        // TODO: Load the textures
+                        // XmlNode texNode = GetXmlNodeChildByName(materialNode, "texture");
+                        // if (texNode != null) { }
 
                     }
-
-                    // TODO: Load the textures
-                    // XmlNode texNode = GetXmlNodeChildByName(materialNode, "texture");
-                    // if (texNode != null) { }
 
                 }
 
@@ -243,7 +284,7 @@ public class URDFLoader : MonoBehaviour {
                             case "box": {
 
                                 primitiveGameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                                primitiveTransform = primitiveTransform;
+                                primitiveTransform = primitiveGameObject.transform;
 
                                 Vector3 boxScale = TupleToVector3(primitiveNode.Attributes["size"].Value);
                                 boxScale = URDFToUnityPos(boxScale);
@@ -255,7 +296,7 @@ public class URDFLoader : MonoBehaviour {
                             case "sphere": {
 
                                 primitiveGameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                primitiveTransform = primitiveTransform;
+                                primitiveTransform = primitiveGameObject.transform;
 
                                 float sphereRadius = float.Parse(primitiveNode.Attributes["radius"].Value);
                                 primitiveTransform.localScale = Vector3.one * sphereRadius * 2;
@@ -266,7 +307,7 @@ public class URDFLoader : MonoBehaviour {
                             case "cylinder": {
 
                                 primitiveGameObject = new GameObject();
-                                primitiveTransform = primitiveTransform;
+                                primitiveTransform = primitiveGameObject.transform;
 
                                 GameObject cylinderPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                                 cylinderPrimitive.transform.parent = primitiveTransform;
@@ -286,10 +327,18 @@ public class URDFLoader : MonoBehaviour {
                         primitiveTransform.localRotation = Quaternion.Euler(rotation);
                         primitiveGameObject.name = urdfLink.name + " geometry " + primitiveNode.Name;
 
-                        Renderer primitiveRenderer =
-                            primitiveGameObject.GetComponent<Renderer>() ??
-                            primitiveGameObject.GetComponentInChildren<Renderer>();
-                        primitiveRenderer.material.color = color;
+                        Renderer primitiveRenderer = primitiveGameObject.GetComponent<Renderer>();
+                        if (primitiveRenderer == null) {
+
+                            primitiveRenderer = primitiveGameObject.GetComponentInChildren<Renderer>();
+
+                        }
+
+                        if (material != null) {
+
+                            primitiveRenderer.material = material;
+
+                        }
                         renderers.Add(primitiveGameObject);
 
                         // Dispose of unneeded components
@@ -521,13 +570,7 @@ public class URDFLoader : MonoBehaviour {
 
     // returns the first instance of a child node with the name "name"
     // null if it couldn't be found
-    public static XmlNode[] GetXmlNodeChildrenByName(XmlNode parent, string name) {
-
-        if (parent == null) {
-
-            return null;
-
-        }
+    public static XmlNode[] GetXmlNodeChildrenByName(XmlNode parent, string name, bool recursive = false) {
 
         List<XmlNode> nodes = new List<XmlNode>();
         foreach (XmlNode n in parent.ChildNodes) {
@@ -538,6 +581,18 @@ public class URDFLoader : MonoBehaviour {
 
             }
 
+
+            if (recursive) {
+
+                XmlNode[] recursiveChildren = GetXmlNodeChildrenByName(n, name, true);
+                foreach(XmlNode x in recursiveChildren) {
+
+                    nodes.Add(x);
+
+                }
+
+            }
+
         }
 
         return nodes.ToArray();
@@ -545,12 +600,6 @@ public class URDFLoader : MonoBehaviour {
     }
 
     public static XmlNode GetXmlNodeChildByName(XmlNode parent, string name) {
-
-        if (parent == null) {
-
-            return null;
-
-        }
 
         foreach (XmlNode n in parent.ChildNodes) {
 
