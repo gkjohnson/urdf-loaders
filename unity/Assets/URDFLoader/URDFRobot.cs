@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// A Joint list for URDF robots
+// Component representing the URDF Robot
 public class URDFRobot : MonoBehaviour {
 
-    // an object describing a URDF joint (joint transform, associated geometry, more?)
+    // Object describing a URDF joint with joint transform, associated geometry, etc
     public class URDFJoint {
 
         public string name;
@@ -21,25 +21,58 @@ public class URDFRobot : MonoBehaviour {
 
         public List<GameObject> geometry { get { return childLink.geometry; } }
 
-        // Set the rotation of the joint in radians
         private float _angle = 0;
         public float angle {
 
-            get {
+            get { return _angle; }
 
-                return _angle;
+            set { setAngle(value); }
 
-            }
-
-            set {
-
-                _angle = Mathf.Clamp(value, minAngle, maxAngle);
-
-                // Negate to accomodate Right -> Left handed coordinate system
-                transform.localRotation = Quaternion.AngleAxis(angle * Mathf.Rad2Deg * -1, originalRotation * axis) * originalRotation;
-
-            }
         }
+
+        public float setAngle(float val) {
+
+            switch(type) {
+
+                case "fixed": {
+
+                    break;
+
+                }
+
+                case "continuous":
+                case "revolute": {
+
+                    if (type == "revolute") {
+
+                        val = Mathf.Clamp(val, minAngle, maxAngle);
+
+                    }
+
+                    // Negate to accommodate Right -> Left handed coordinate system
+                    float degrees = angle * Mathf.Rad2Deg * -1;
+                    transform.localRotation = Quaternion.AngleAxis(degrees, originalRotation * axis) * originalRotation;
+                    _angle = val;
+
+                    break;
+
+                }
+
+                case "prismatic":
+                case "floating":
+                case "planar": {
+
+                    Debug.LogWarning("URDFLoader: '" + type + "' joint not yet supported");
+                    break;
+
+                }
+
+            }
+
+            return _angle;
+
+        }
+
     }
 
     // Object discribing a URDF Link
@@ -55,16 +88,16 @@ public class URDFRobot : MonoBehaviour {
 
     }
 
-    // dictionary containing all the URDF joints
+    // Dictionary containing all the URDF joints
     public Dictionary<string, URDFJoint> joints = new Dictionary<string, URDFJoint>();
     public Dictionary<string, URDFLink> links = new Dictionary<string, URDFLink>();
 
     // adds a joint via URDFJoint
-    public bool AddJoint( URDFJoint urdfj ) {
+    public bool AddJoint( URDFJoint joint ) {
 
-        if (!joints.ContainsKey(urdfj.name)) {
+        if (!joints.ContainsKey(joint.name)) {
 
-            joints.Add(urdfj.name, urdfj);
+            joints.Add(joint.name, joint);
             return true;
 
         }
@@ -73,11 +106,11 @@ public class URDFRobot : MonoBehaviour {
     }
 
     // Adds the URDFLink to the list
-    public bool AddLink(URDFLink urdfl) {
+    public bool AddLink(URDFLink link) {
 
-        if (!links.ContainsKey(urdfl.name)) {
+        if (!links.ContainsKey(link.name)) {
 
-            links.Add(urdfl.name, urdfl);
+            links.Add(link.name, link);
             return true;
 
         }
@@ -89,7 +122,7 @@ public class URDFRobot : MonoBehaviour {
     public void SetAngle(string name, float angle) {
 
         URDFJoint joint = joints[name];
-        joint.angle = angle;
+        joint.setAngle(angle);
 
     }
 
@@ -110,33 +143,34 @@ public class URDFRobot : MonoBehaviour {
     // get and set the joint angles as dictionaries
     public Dictionary<string, float> GetAnglesAsDictionary() {
 
-		Dictionary<string, float> angleDict = new Dictionary<string, float>();
+		Dictionary<string, float> result = new Dictionary<string, float>();
         foreach (KeyValuePair<string, URDFJoint> kv in joints) {
 
             float angle = kv.Value.angle;
-            if (angleDict.ContainsKey(kv.Key)) angleDict[kv.Key] = angle;
-            else angleDict.Add(kv.Key, angle);
+            if (result.ContainsKey(kv.Key)) {
+
+                result[kv.Key] = angle;
+
+            } else {
+
+                result.Add(kv.Key, angle);
+
+            }
 
         }
 
-        return angleDict;
+        return result;
 
     }
 
     // sets the joints via a dictionary
     public void SetAnglesFromDictionary(Dictionary<string, float> dict) {
 
-        if(dict == null) {
-
-            return;
-
-        }
-
         foreach (KeyValuePair<string, float> kv in dict) {
 
             if (joints.ContainsKey(kv.Key)) {
 
-                joints[kv.Key].angle = kv.Value;
+                joints[kv.Key].setAngle(kv.Value);
 
             }
 
@@ -153,7 +187,7 @@ public class URDFRobot : MonoBehaviour {
         bool success = IsConsistent(ref error);
         if (!success) {
 
-            Debug.LogError("Inconsistent URDF Structure\n" + error);
+            Debug.LogError("URDFLoader: Inconsistent URDF Structure\n" + error);
 
         }
         return success;
