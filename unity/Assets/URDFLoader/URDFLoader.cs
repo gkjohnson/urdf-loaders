@@ -104,21 +104,24 @@ public class URDFLoader : MonoBehaviour {
 
         // First node is the <robot> node
         XmlNode robotNode = doc.ChildNodes[0];
+        XmlNode[] xmlLinksArray = GetXmlNodeChildrenByName(robotNode, "link");
+        XmlNode[] xmlJointsArray = GetXmlNodeChildrenByName(robotNode, "joint");
 
-        // first node is expected to be the robot
-        // cycle through and find all the links for the robot first
-        foreach (XmlNode xmlLink in robotNode.ChildNodes) {
+        // Cycle through and find all the links for the robot first
+        foreach (XmlNode xmlLink in xmlLinksArray) {
 
             if (xmlLink.Name == "link") {
 
-                // Store the XML node for hte link
-                xmlLinks.Add(xmlLink.Attributes["name"].Value, xmlLink);
+                // Store the XML node for the link
+                string name = xmlLink.Attributes["name"].Value;
+                xmlLinks.Add(name, xmlLink);
 
                 // create the link gameobject
+                GameObject gameObject = new GameObject(name);
                 URDFLink urdfLink = new URDFLink();
-                urdfLink.name = xmlLink.Attributes["name"].Value;
-                urdfLink.transform = new GameObject(urdfLink.name).transform;
-                urdfLinks.Add(urdfLink.name, urdfLink);
+                urdfLink.name = name;
+                urdfLink.transform = gameObject.transform;
+                urdfLinks.Add(name, urdfLink);
 
                 // Get the geometry node and skip it if there isn't one
                 XmlNode[] visualNodes = GetXmlNodeChildrenByName(xmlLink, "visual");
@@ -303,7 +306,7 @@ public class URDFLoader : MonoBehaviour {
         }
 
         // find all the joints next
-        foreach (XmlNode xmlJoint in robotNode.ChildNodes) {
+        foreach (XmlNode xmlJoint in xmlJointsArray) {
 
             if (xmlJoint.Name == "joint") {
 
