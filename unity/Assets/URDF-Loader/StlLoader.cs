@@ -20,7 +20,7 @@ public class StlLoader {
 
     // Parse the file into meshes
     public static Mesh[] Parse(byte[] bytes) {
-        
+
         // Read and throw out the header
         string fileType = Encoding.ASCII.GetString(bytes, 0, 5);
 
@@ -36,7 +36,7 @@ public class StlLoader {
             return LoadBinary(bytes);
 
         }
-        
+
     }
 
     // Parse the ascii stl contents
@@ -56,7 +56,11 @@ public class StlLoader {
             string[] tokens = line.Split(' ');
 
             // finish if we hit the end of the file
-            if (tokens[0] == "endsolid") break;
+            if (tokens[0] == "endsolid") {
+
+                break;
+
+            }
 
             // if a normal is provided
             Vector3 n = Vector3.zero;
@@ -95,7 +99,6 @@ public class StlLoader {
             // "endfacet"
             i++;
 
-
             if (vertices.Count > MAX_VERTEX_COUNT - 1) {
 
                 Mesh newMesh = ToMesh(vertices, normals, triangles);
@@ -127,7 +130,8 @@ public class StlLoader {
         // Some implementation referenced from
         // https://forum.unity.com/threads/stl-file-and-vertex-normals.159844/
 
-        BinaryReader reader = new BinaryReader(new MemoryStream(bytes));
+        MemoryStream memoryStream = new MemoryStream(bytes);
+        BinaryReader reader = new BinaryReader(memoryStream);
         reader.ReadBytes(80);
 
         uint trianglesCount = reader.ReadUInt32();
@@ -179,11 +183,11 @@ public class StlLoader {
             meshes[meshIndex++] = ToMesh(vertices, normals, triangles);
 
         }
-        
+
         return meshes;
 
     }
-    
+
     /* Utilities */
     // Read a vector from the binary reader
     static Vector3 ReadBinaryVector(BinaryReader br) {
@@ -210,7 +214,7 @@ public class StlLoader {
             triangles = triangles.ToArray(),
             normals = normals.ToArray()
         };
-        
+
         mesh.RecalculateBounds();
 
         return mesh;
