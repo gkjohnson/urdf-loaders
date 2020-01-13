@@ -103,298 +103,298 @@ public class URDFLoader : MonoBehaviour {
         Dictionary<string, string> parentNames = new Dictionary<string, string>();
 
         // First node is the <robot> node
-        foreach (XmlNode n in doc.ChildNodes) {
+        XmlNode robotNode = doc.ChildNodes[0];
 
-            // first node is expected to be the robot
-            // cycle through and find all the links for the robot first
-            foreach (XmlNode xLink in n.ChildNodes) {
+        // first node is expected to be the robot
+        // cycle through and find all the links for the robot first
+        foreach (XmlNode xLink in robotNode.ChildNodes) {
 
-                if (xLink.Name == "link") {
+            if (xLink.Name == "link") {
 
-                    // Store the XML node for hte link
-                    xmlLinks.Add(xLink.Attributes["name"].Value, xLink);
+                // Store the XML node for hte link
+                xmlLinks.Add(xLink.Attributes["name"].Value, xLink);
 
-                    // create the link gameobject
-                    URDFLink urdfLink = new URDFLink();
-                    urdfLink.name = xLink.Attributes["name"].Value;
-                    urdfLink.transform = new GameObject(urdfLink.name).transform;
-                    urdfLinks.Add(urdfLink.name, urdfLink);
+                // create the link gameobject
+                URDFLink urdfLink = new URDFLink();
+                urdfLink.name = xLink.Attributes["name"].Value;
+                urdfLink.transform = new GameObject(urdfLink.name).transform;
+                urdfLinks.Add(urdfLink.name, urdfLink);
 
-                    // Get the geometry node and skip it if there isn't one
-                    XmlNode[] visualNodes = GetXmlNodeChildrenByName(xLink, "visual");
-                    List<GameObject> renderers = new List<GameObject>();
+                // Get the geometry node and skip it if there isn't one
+                XmlNode[] visualNodes = GetXmlNodeChildrenByName(xLink, "visual");
+                List<GameObject> renderers = new List<GameObject>();
 
-                    // Iterate over all the visual nodes
-                    foreach (var vn in visualNodes) {
+                // Iterate over all the visual nodes
+                foreach (var vn in visualNodes) {
 
-                        XmlNode geomNode = GetXmlNodeChildByName(vn, "geometry");
-                        if (geomNode == null) continue;
+                    XmlNode geomNode = GetXmlNodeChildByName(vn, "geometry");
+                    if (geomNode == null) continue;
 
-                        XmlNode matNode = GetXmlNodeChildByName(vn, "material");
-                        Color col = Color.white;
-                        if (matNode != null) {
+                    XmlNode matNode = GetXmlNodeChildByName(vn, "material");
+                    Color col = Color.white;
+                    if (matNode != null) {
 
-                            XmlNode colNode = GetXmlNodeChildByName(matNode, "color");
-                            if (colNode != null) col = TupleToColor(colNode.Attributes["rgba"].Value);
+                        XmlNode colNode = GetXmlNodeChildByName(matNode, "color");
+                        if (colNode != null) col = TupleToColor(colNode.Attributes["rgba"].Value);
 
-                            // TODO: Load the textures
-                            // XmlNode texNode = GetXmlNodeChildByName(matNode, "texture");
-                            // if (texNode != null) { }
+                        // TODO: Load the textures
+                        // XmlNode texNode = GetXmlNodeChildByName(matNode, "texture");
+                        // if (texNode != null) { }
 
-                        }
+                    }
 
-                        // Get the mesh and the origin nodes
-                        XmlNode meshNode = GetXmlNodeChildByName(geomNode, "mesh");
-                        XmlNode visOriginNode = GetXmlNodeChildByName(vn, "origin");
+                    // Get the mesh and the origin nodes
+                    XmlNode meshNode = GetXmlNodeChildByName(geomNode, "mesh");
+                    XmlNode visOriginNode = GetXmlNodeChildByName(vn, "origin");
 
-                        // take the visual origin and place on the renderer
-                        // use the visual origin to set the pose if necessary
-                        Vector3 visPos = Vector3.zero;
-                        if (visOriginNode != null && visOriginNode.Attributes["xyz"] != null) {
+                    // take the visual origin and place on the renderer
+                    // use the visual origin to set the pose if necessary
+                    Vector3 visPos = Vector3.zero;
+                    if (visOriginNode != null && visOriginNode.Attributes["xyz"] != null) {
 
-                            visPos = TupleToVector3(visOriginNode.Attributes["xyz"].Value);
+                        visPos = TupleToVector3(visOriginNode.Attributes["xyz"].Value);
 
-                        }
+                    }
 
-                        visPos = URDFToUnityPos(visPos);
+                    visPos = URDFToUnityPos(visPos);
 
-                        Vector3 visRot = Vector3.zero;
-                        if (visOriginNode != null && visOriginNode.Attributes["rpy"] != null) {
+                    Vector3 visRot = Vector3.zero;
+                    if (visOriginNode != null && visOriginNode.Attributes["rpy"] != null) {
 
-                            visRot = TupleToVector3(visOriginNode.Attributes["rpy"].Value);
+                        visRot = TupleToVector3(visOriginNode.Attributes["rpy"].Value);
 
-                        }
+                    }
 
-                        visRot = URDFToUnityRot(visRot);
+                    visRot = URDFToUnityRot(visRot);
 
-                        try {
+                    try {
 
-                            // try to load primitives if there is no mesh
-                            if (meshNode == null) {
+                        // try to load primitives if there is no mesh
+                        if (meshNode == null) {
 
-                                XmlNode primitiveNode = GetXmlNodeChildByName(geomNode, "box") ??
-                                                        GetXmlNodeChildByName(geomNode, "sphere") ??
-                                                        GetXmlNodeChildByName(geomNode, "cylinder");
+                            XmlNode primitiveNode = GetXmlNodeChildByName(geomNode, "box") ??
+                                                    GetXmlNodeChildByName(geomNode, "sphere") ??
+                                                    GetXmlNodeChildByName(geomNode, "cylinder");
 
-                                if (primitiveNode != null) {
+                            if (primitiveNode != null) {
 
-                                    GameObject go = null;
-                                    switch (primitiveNode.Name) {
+                                GameObject go = null;
+                                switch (primitiveNode.Name) {
 
-                                        case "box":
-                                            go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                                            go.transform.localScale =
-                                                URDFToUnityPos(TupleToVector3(primitiveNode.Attributes[0].Value));
-                                            break;
+                                    case "box":
+                                        go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                                        go.transform.localScale =
+                                            URDFToUnityPos(TupleToVector3(primitiveNode.Attributes[0].Value));
+                                        break;
 
-                                        case "sphere":
-                                            go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                                            go.transform.localScale =
-                                                Vector3.one * (float.Parse(primitiveNode.Attributes[0].Value) * 2);
-                                            break;
+                                    case "sphere":
+                                        go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                                        go.transform.localScale =
+                                            Vector3.one * (float.Parse(primitiveNode.Attributes[0].Value) * 2);
+                                        break;
 
-                                        case "cylinder":
-                                            go = new GameObject();
-                                            var cPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                                            cPrimitive.transform.parent = go.transform;
+                                    case "cylinder":
+                                        go = new GameObject();
+                                        var cPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                                        cPrimitive.transform.parent = go.transform;
 
-                                            var length = float.Parse(primitiveNode.Attributes[0].Value);
-                                            var radius = float.Parse(primitiveNode.Attributes[1].Value);
-                                            go.transform.localScale = new Vector3(radius * 2, length / 2, radius * 2);
-                                            break;
+                                        var length = float.Parse(primitiveNode.Attributes[0].Value);
+                                        var radius = float.Parse(primitiveNode.Attributes[1].Value);
+                                        go.transform.localScale = new Vector3(radius * 2, length / 2, radius * 2);
+                                        break;
 
-                                    }
+                                }
 
-                                    Renderer r = go.GetComponent<Renderer>();
-                                    if (r == null) {
+                                Renderer r = go.GetComponent<Renderer>();
+                                if (r == null) {
 
-                                        r = go.GetComponentInChildren<Renderer>();
+                                    r = go.GetComponentInChildren<Renderer>();
 
-                                    }
+                                }
 
-                                    go.transform.parent = urdfLink.transform;
-                                    go.transform.localPosition = visPos;
-                                    go.transform.localRotation = Quaternion.Euler(visRot);
+                                go.transform.parent = urdfLink.transform;
+                                go.transform.localPosition = visPos;
+                                go.transform.localRotation = Quaternion.Euler(visRot);
 
-                                    go.name = urdfLink.name + " geometry " + primitiveNode.Name;
+                                go.name = urdfLink.name + " geometry " + primitiveNode.Name;
 
-                                    if (r) {
+                                if (r) {
 
-                                        r.material.color = col;
+                                    r.material.color = col;
 
-                                        renderers.Add(r.gameObject);
-                                        if (Application.isPlaying) {
+                                    renderers.Add(r.gameObject);
+                                    if (Application.isPlaying) {
 
-                                            Destroy(r.GetComponent<Collider>());
-                                            Destroy(r.GetComponent<Rigidbody>());
+                                        Destroy(r.GetComponent<Collider>());
+                                        Destroy(r.GetComponent<Rigidbody>());
 
-                                        } else {
+                                    } else {
 
-                                            DestroyImmediate(r.GetComponent<Collider>());
-                                            DestroyImmediate(r.GetComponent<Rigidbody>());
-
-                                        }
+                                        DestroyImmediate(r.GetComponent<Collider>());
+                                        DestroyImmediate(r.GetComponent<Rigidbody>());
 
                                     }
 
                                 }
 
-                            } else {
-
-                                // load the STL file if possible
-                                // get the file path and split it
-                                string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, packages, options.workingPath);
-
-                                Vector3 meshScale = Vector3.one;
-                                if (meshNode.Attributes["scale"] != null) {
-
-                                    meshScale = TupleToVector3(meshNode.Attributes["scale"].Value);
-
-                                }
-                                meshScale = URDFToUnityScale(meshScale);
-
-                                // load all meshes
-                                string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
-                                options.loadMeshCb(fileName, ext, models => {
-
-                                    // create the rest of the meshes and child them to the click target
-                                    for (int i = 0; i < models.Length; i++)
-                                    {
-                                        var trans = models[i].transform;
-                                        trans.parent = urdfLink.transform;
-                                        trans.localPosition = visPos;
-                                        trans.localRotation = Quaternion.Euler(visRot);
-                                        trans.localScale = meshScale;
-
-                                        trans.name = urdfLink.name + " geometry " + i;
-
-                                        foreach (Renderer r in trans.GetComponentsInChildren<Renderer>()) {
-                                            r.material.color = col;
-                                        }
-
-                                        renderers.Add(trans.gameObject);
-
-                                        // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
-                                        // TODO: traverse over the children and do this
-                                        if (Application.isPlaying) {
-                                            Destroy(trans.GetComponent<Collider>());
-                                            Destroy(trans.GetComponent<Rigidbody>());
-                                        } else {
-                                            DestroyImmediate(trans.GetComponent<Collider>());
-                                            DestroyImmediate(trans.GetComponent<Rigidbody>());
-                                        }
-
-                                    }
-
-                                });
-
-                                // save the geometry in the link
-                                urdfLink.geometry = renderers;
                             }
 
-                        } catch (Exception e) {
+                        } else {
 
-                            Debug.LogError("Error loading model for " + urdfLink.name + " : " + e.Message);
+                            // load the STL file if possible
+                            // get the file path and split it
+                            string fileName = ResolveMeshPath(meshNode.Attributes["filename"].Value, packages, options.workingPath);
 
+                            Vector3 meshScale = Vector3.one;
+                            if (meshNode.Attributes["scale"] != null) {
+
+                                meshScale = TupleToVector3(meshNode.Attributes["scale"].Value);
+
+                            }
+                            meshScale = URDFToUnityScale(meshScale);
+
+                            // load all meshes
+                            string ext = Path.GetExtension(fileName).ToLower().Replace(".", "");
+                            options.loadMeshCb(fileName, ext, models => {
+
+                                // create the rest of the meshes and child them to the click target
+                                for (int i = 0; i < models.Length; i++)
+                                {
+                                    var trans = models[i].transform;
+                                    trans.parent = urdfLink.transform;
+                                    trans.localPosition = visPos;
+                                    trans.localRotation = Quaternion.Euler(visRot);
+                                    trans.localScale = meshScale;
+
+                                    trans.name = urdfLink.name + " geometry " + i;
+
+                                    foreach (Renderer r in trans.GetComponentsInChildren<Renderer>()) {
+                                        r.material.color = col;
+                                    }
+
+                                    renderers.Add(trans.gameObject);
+
+                                    // allows the urdf parser to be called from editor scripts outside of runtime without throwing errors
+                                    // TODO: traverse over the children and do this
+                                    if (Application.isPlaying) {
+                                        Destroy(trans.GetComponent<Collider>());
+                                        Destroy(trans.GetComponent<Rigidbody>());
+                                    } else {
+                                        DestroyImmediate(trans.GetComponent<Collider>());
+                                        DestroyImmediate(trans.GetComponent<Rigidbody>());
+                                    }
+
+                                }
+
+                            });
+
+                            // save the geometry in the link
+                            urdfLink.geometry = renderers;
                         }
 
-                    }
-                }
-            }
+                    } catch (Exception e) {
 
-            // find all the joints next
-            foreach (XmlNode xJoint in n.ChildNodes) {
-
-                if (xJoint.Name == "joint") {
-
-                    string jointName = xJoint.Attributes["name"].Value;
-
-                    // store the joints indexed by child name so we can find it later
-                    // to properly indicate the parents in the joint list
-                    xmlJoints.Add(jointName, xJoint);
-
-                    // Get the links by name
-                    URDFLink parentLink = urdfLinks[GetXmlNodeChildByName(xJoint, "parent").Attributes["link"].Value];
-                    URDFLink childLink = urdfLinks[GetXmlNodeChildByName(xJoint, "child").Attributes["link"].Value];
-
-                    // Create the joint
-                    URDFJoint urdfJoint = new URDFJoint();
-                    urdfJoint.name = jointName;
-                    urdfJoint.parentLink = parentLink;
-                    urdfJoint.transform = new GameObject(urdfJoint.name).transform;
-                    urdfJoint.type = xJoint.Attributes["type"].Value;
-
-                    // set the tree hierarchy
-                    // Parent the joint to its parent link
-                    urdfJoint.parentLink = parentLink;
-                    urdfJoint.transform.parent = parentLink.transform;
-                    parentLink.children.Add(urdfJoint);
-
-                    // Parent the child link to this joint
-                    urdfJoint.childLink = childLink;
-                    childLink.transform.parent = urdfJoint.transform;
-                    childLink.parent = urdfJoint;
-
-                    childLink.transform.localPosition = Vector3.zero;
-                    childLink.transform.localRotation = Quaternion.identity;
-
-                    // position the origin if it's specified
-                    XmlNode transNode = GetXmlNodeChildByName(xJoint, "origin");
-                    Vector3 pos = Vector3.zero;
-                    if (transNode != null && transNode.Attributes["xyz"] != null) {
-
-                        pos = TupleToVector3(transNode.Attributes["xyz"].Value);
+                        Debug.LogError("Error loading model for " + urdfLink.name + " : " + e.Message);
 
                     }
 
-                    pos = URDFToUnityPos(pos);
-
-                    Vector3 rot = Vector3.zero;
-                    if (transNode != null && transNode.Attributes["rpy"] != null) {
-
-                        rot = TupleToVector3(transNode.Attributes["rpy"].Value);
-
-                    }
-
-                    rot = URDFToUnityRot(rot);
-
-                    // parent the joint and name it
-                    urdfJoint.transform.localPosition = pos;
-                    urdfJoint.transform.localRotation = Quaternion.Euler(rot);
-                    urdfJoint.originalRotation = urdfJoint.transform.localRotation;
-
-                    XmlNode axisNode = GetXmlNodeChildByName(xJoint, "axis");
-                    if (axisNode != null) {
-
-                        Vector3 axis = TupleToVector3(axisNode.Attributes["xyz"].Value);
-                        axis.Normalize();
-                        axis = URDFToUnityPos(axis);
-                        urdfJoint.axis = axis;
-
-                    }
-
-                    XmlNode limitNode = GetXmlNodeChildByName(xJoint, "limit");
-                    if (limitNode != null) {
-
-                        if (limitNode.Attributes["lower"] != null) {
-
-                            urdfJoint.minAngle = float.Parse(limitNode.Attributes["lower"].Value);
-
-                        }
-
-                        if (limitNode.Attributes["upper"] != null) {
-
-                            urdfJoint.maxAngle = float.Parse(limitNode.Attributes["upper"].Value);
-
-                        }
-
-                    }
-
-                    // save the URDF joint
-                    urdfJoints.Add(urdfJoint.name, urdfJoint);
                 }
             }
         }
+
+        // find all the joints next
+        foreach (XmlNode xJoint in robotNode.ChildNodes) {
+
+            if (xJoint.Name == "joint") {
+
+                string jointName = xJoint.Attributes["name"].Value;
+
+                // store the joints indexed by child name so we can find it later
+                // to properly indicate the parents in the joint list
+                xmlJoints.Add(jointName, xJoint);
+
+                // Get the links by name
+                URDFLink parentLink = urdfLinks[GetXmlNodeChildByName(xJoint, "parent").Attributes["link"].Value];
+                URDFLink childLink = urdfLinks[GetXmlNodeChildByName(xJoint, "child").Attributes["link"].Value];
+
+                // Create the joint
+                URDFJoint urdfJoint = new URDFJoint();
+                urdfJoint.name = jointName;
+                urdfJoint.parentLink = parentLink;
+                urdfJoint.transform = new GameObject(urdfJoint.name).transform;
+                urdfJoint.type = xJoint.Attributes["type"].Value;
+
+                // set the tree hierarchy
+                // Parent the joint to its parent link
+                urdfJoint.parentLink = parentLink;
+                urdfJoint.transform.parent = parentLink.transform;
+                parentLink.children.Add(urdfJoint);
+
+                // Parent the child link to this joint
+                urdfJoint.childLink = childLink;
+                childLink.transform.parent = urdfJoint.transform;
+                childLink.parent = urdfJoint;
+
+                childLink.transform.localPosition = Vector3.zero;
+                childLink.transform.localRotation = Quaternion.identity;
+
+                // position the origin if it's specified
+                XmlNode transNode = GetXmlNodeChildByName(xJoint, "origin");
+                Vector3 pos = Vector3.zero;
+                if (transNode != null && transNode.Attributes["xyz"] != null) {
+
+                    pos = TupleToVector3(transNode.Attributes["xyz"].Value);
+
+                }
+
+                pos = URDFToUnityPos(pos);
+
+                Vector3 rot = Vector3.zero;
+                if (transNode != null && transNode.Attributes["rpy"] != null) {
+
+                    rot = TupleToVector3(transNode.Attributes["rpy"].Value);
+
+                }
+
+                rot = URDFToUnityRot(rot);
+
+                // parent the joint and name it
+                urdfJoint.transform.localPosition = pos;
+                urdfJoint.transform.localRotation = Quaternion.Euler(rot);
+                urdfJoint.originalRotation = urdfJoint.transform.localRotation;
+
+                XmlNode axisNode = GetXmlNodeChildByName(xJoint, "axis");
+                if (axisNode != null) {
+
+                    Vector3 axis = TupleToVector3(axisNode.Attributes["xyz"].Value);
+                    axis.Normalize();
+                    axis = URDFToUnityPos(axis);
+                    urdfJoint.axis = axis;
+
+                }
+
+                XmlNode limitNode = GetXmlNodeChildByName(xJoint, "limit");
+                if (limitNode != null) {
+
+                    if (limitNode.Attributes["lower"] != null) {
+
+                        urdfJoint.minAngle = float.Parse(limitNode.Attributes["lower"].Value);
+
+                    }
+
+                    if (limitNode.Attributes["upper"] != null) {
+
+                        urdfJoint.maxAngle = float.Parse(limitNode.Attributes["upper"].Value);
+
+                    }
+
+                }
+
+                // save the URDF joint
+                urdfJoints.Add(urdfJoint.name, urdfJoint);
+            }
+        }
+
 
         // loop through all the transforms until we find the one that has no parent
         URDFRobot robot = options.target;
