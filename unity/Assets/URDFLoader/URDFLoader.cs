@@ -247,10 +247,21 @@ public class URDFLoader : MonoBehaviour {
 
                                 GameObject modelGameObject = models[i];
                                 Transform meshTransform = modelGameObject.transform;
+
+                                // Capture the original local transforms before parenting in case the loader or model came in
+                                // with existing pose information and then apply our transform on top of it.
+                                Vector3 originalLocalPosition = meshTransform.localPosition;
+                                Quaternion originalLocalRotation = meshTransform.localRotation;
+                                Vector3 originalLocalScale = meshTransform.localScale;
+                                Vector3 transformedScale = originalLocalScale;
+                                transformedScale.x *= scale.x;
+                                transformedScale.y *= scale.y;
+                                transformedScale.z *= scale.z;
+
                                 meshTransform.parent = urdfLink.transform;
-                                meshTransform.localPosition = position;
-                                meshTransform.localRotation = Quaternion.Euler(rotation);
-                                meshTransform.localScale = scale;
+                                meshTransform.localPosition = originalLocalPosition + position;
+                                meshTransform.localRotation = Quaternion.Euler(rotation) * originalLocalRotation;
+                                meshTransform.localScale = transformedScale;
 
                                 modelGameObject.name = urdfLink.name + " geometry " + i;
                                 renderers.Add(modelGameObject);
@@ -441,15 +452,16 @@ public class URDFLoader : MonoBehaviour {
             XmlNode limitNode = GetXmlNodeChildByName(jointNode, "limit");
             if (limitNode != null) {
 
+                // Use double.parse to handle particularly large values.
                 if (limitNode.Attributes["lower"] != null) {
 
-                    urdfJoint.minAngle = float.Parse(limitNode.Attributes["lower"].Value);
+                    urdfJoint.minAngle = (float)double.Parse(limitNode.Attributes["lower"].Value);
 
                 }
 
                 if (limitNode.Attributes["upper"] != null) {
 
-                    urdfJoint.maxAngle = float.Parse(limitNode.Attributes["upper"].Value);
+                    urdfJoint.maxAngle = (float)double.Parse(limitNode.Attributes["upper"].Value);
 
                 }
 
@@ -459,7 +471,6 @@ public class URDFLoader : MonoBehaviour {
             urdfJoints.Add(urdfJoint.name, urdfJoint);
 
         }
-
 
         // loop through all the transforms until we find the one that has no parent
         URDFRobot robot = options.target;
@@ -489,6 +500,7 @@ public class URDFLoader : MonoBehaviour {
             }
 
         }
+        robot.name = robotName;
 
         return null;
 
