@@ -78,7 +78,7 @@ Reads and processes the urdf at the given path, returning a `URDFRobot` that des
 
 `options` specifies a set of options for the loader. See more options below.
 
-#### .Parse
+### .Parse
 
 ```js
 static Parse(
