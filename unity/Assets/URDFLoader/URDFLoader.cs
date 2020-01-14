@@ -43,17 +43,17 @@ public class URDFLoader : MonoBehaviour {
     // Public API
     // Load the URDF from file and build the robot
     // Takes a single package path which is assumed to be the package location for all meshes.
-    public static URDFRobot LoadRobot(string urdfPath, string package, Options options = new Options()) {
+    public static URDFRobot Load(string urdfPath, string package, Options options = new Options()) {
 
         Dictionary<string, string> packages = new Dictionary<string, string>();
         packages.Add(SINGLE_PACKAGE_KEY, package);
 
-        return LoadRobot(urdfPath, packages, options);
+        return Load(urdfPath, packages, options);
 
     }
 
     // Takes a dictionary of packages
-    public static URDFRobot LoadRobot(string urdfPath, Dictionary<string, string> packages, Options options = new Options()) {
+    public static URDFRobot Load(string urdfPath, Dictionary<string, string> packages, Options options = new Options()) {
 
         StreamReader reader = new StreamReader(urdfPath);
         string content = reader.ReadToEnd();
@@ -65,21 +65,21 @@ public class URDFLoader : MonoBehaviour {
 
         }
 
-        return BuildRobot(content, packages, options);
+        return Parse(content, packages, options);
 
     }
 
     // Parse the URDF file and return a URDFRobot instance with all associated links and joints
-    public static URDFRobot BuildRobot(string urdfPath, string package, Options options = new Options()) {
+    public static URDFRobot Parse(string urdfPath, string package, Options options = new Options()) {
 
         Dictionary<string, string> packages = new Dictionary<string, string>();
         packages.Add(SINGLE_PACKAGE_KEY, package);
 
-        return BuildRobot(urdfPath, packages, options);
+        return Parse(urdfPath, packages, options);
 
     }
 
-    public static URDFRobot BuildRobot(string urdfContent, Dictionary<string, string> packages, Options options = new Options()) {
+    public static URDFRobot Parse(string urdfContent, Dictionary<string, string> packages, Options options = new Options()) {
 
         if (options.loadMeshCb == null) {
 

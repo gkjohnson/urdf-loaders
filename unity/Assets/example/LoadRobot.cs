@@ -62,7 +62,7 @@ public class LoadRobot : MonoBehaviour {
 
     virtual protected URDFRobot CreateRobot(string urdf, Dictionary<string, string> packages) {
 
-        URDFRobot ur = URDFLoader.LoadRobot(urdf, packages);
+        URDFRobot ur = URDFLoader.Load(urdf, packages, options);
         ur.name = urdf;
 
         return ur;

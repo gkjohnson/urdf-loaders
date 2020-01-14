@@ -37,7 +37,7 @@ public class LoadWebRobot : LoadRobot {
                     target = ur
                 };
 
-                URDFLoader.BuildRobot(www.downloadHandler.text, packages, opt);
+                URDFLoader.Parse(www.downloadHandler.text, packages, opt);
 
             }
 
