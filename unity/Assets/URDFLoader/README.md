@@ -13,7 +13,7 @@ URDFRobot ur = URDFLoader.BuildRobot(".../package/dir", content);
 
 ## API
 ### URDFLoader
-#### LoadRobot(urdfPath, package, options) : URDFRobot
+#### Load(urdfPath, package, options) : URDFRobot
 Reads and processes the urdf at the given path, returning a `URDFRobot` that describes the whole robot.
 
 ##### urdfpath : String
@@ -30,7 +30,7 @@ _optional_
 
 Set of options for the loader.
 
-#### BuildRobot(urdfContent, package, options) : URDFRobot
+#### Parse(urdfContent, package, options) : URDFRobot
 Same function as above, but this function takes the raw contents of the urdf file rather than a path.
 
 ##### urdfContent : String
