@@ -29,6 +29,6 @@ export default class URDFLoader {
         onProgress?: () => void,
         onError?: () => void
     ): void;
-    parse(content: string): URDFRobot;
+    parse(content: string | Element | Document): URDFRobot;
 
 }
