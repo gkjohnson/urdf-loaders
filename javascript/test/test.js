@@ -49,7 +49,7 @@ describe('File Argument', () => {
 
         const linkCount = await page.evaluate(() => {
 
-            return new Promise(await resolve => {
+            return new Promise(async resolve => {
 
                 const loader = new URDFLoader();
                 loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
@@ -61,10 +61,10 @@ describe('File Argument', () => {
                 const documentRobot = loader.parse(parsedRobot);
                 const rootRobot = loader.parse(parsedRobot.children[0]);
 
-                return {
+                resolve({
                     documentLinkCount: Object.keys(documentRobot.links).length,
                     rootLinkCount: Object.keys(rootRobot.links).length,
-                };
+                });
 
             });
 
