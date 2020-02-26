@@ -11,6 +11,9 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 ![Example](/javascript/docs/javascript-example.gif)
 
 # Use
+
+Loading a URDF file from a server.
+
 ```js
 import { LoadingManager } from 'three';
 import URDFLoader from 'urdf-loader';
@@ -25,6 +28,17 @@ loader.load(
   'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
   robot => { }                            // The robot is loaded!
 );
+```
+
+Using [XacroParser](github.com/gkjohnson/xacro-parser) to process a Xacro URDF file and then parsing it.
+
+```js
+import { XacroLoader } from 'xacro-parser';
+import URDFLoader from 'urdf-loader';
+
+const xacroLoader = new XacroLoader();
+const urdfLoader = new URDFLoader();
+
 ```
 
 ## Limitations
