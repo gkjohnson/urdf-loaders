@@ -57,7 +57,7 @@ describe('File Argument', () => {
                 const req = await fetch('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
                 const xmlContent = await req.text();
                 const parsedContent = new DOMParser().parseFromString(xmlContent);
-                
+
                 const documentRobot = loader.parse(parsedContent);
                 const rootRobot = loader.parse(parsedContent.children[0]);
 
