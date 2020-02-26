@@ -141,7 +141,7 @@ parse( urdfContent : string | Document | Element ) : URDFRobot
 
 Parses URDF content and returns the robot model. Takes an XML string to parse and a set of options.
 
-If the XML document has already been parsed using `DOMParser` then either the returned `Document` or root `Element` can be passed into this function, as well.
+If the XML document has already been parsed using `DOMParser` then either the returned `Document` or root `Element` can be passed into this function in place of the string, as well.
 
 Note that geometry will not necessarily be loaded when the robot is returned.
 
