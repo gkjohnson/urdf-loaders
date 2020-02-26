@@ -174,9 +174,22 @@ class URDFLoader {
         // Process the URDF text format
         function processUrdf(data) {
 
-            const parser = new DOMParser();
-            const urdf = parser.parseFromString(data, 'text/xml');
-            const children = [ ...urdf.children ];
+            let children;
+            if (data instanceof Document) {
+
+                children = [ ...data.children ];
+
+            } else if (data instanceof Element) {
+
+                children = [ data ];
+
+            } else {
+
+                const parser = new DOMParser();
+                const urdf = parser.parseFromString(data, 'text/xml');
+                children = [ ...urdf.children ];
+
+            }
 
             const robotNode = children.filter(c => c.nodeName === 'robot').pop();
             return processRobot(robotNode);
