@@ -136,10 +136,12 @@ Takes a path to load the urdf file from, a func to call when the robot has loade
 ### .parse
 
 ```js
-parse( urdfContent : string ) : URDFRobot
+parse( urdfContent : string | Document | Element ) : URDFRobot
 ```
 
 Parses URDF content and returns the robot model. Takes an XML string to parse and a set of options.
+
+If the XML document has already been parsed using `DOMParser` then either the returned `Document` or root `Element` can be passed into this function, as well.
 
 Note that geometry will not necessarily be loaded when the robot is returned.
 
