@@ -53,7 +53,8 @@ describe('File Argument', () => {
 
                 const loader = new URDFLoader();
                 loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
-
+                loader.workingPath = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/';
+                
                 const req = await fetch('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
                 const xmlContent = await req.text();
                 const parsedContent = new DOMParser().parseFromString(xmlContent, 'text/xml');
