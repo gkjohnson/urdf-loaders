@@ -45,7 +45,7 @@ beforeAll(async() => {
 
 describe('File Argument', () => {
 
-   it('should work if the file is already parsed', async() => {
+    it('should work if the file is already parsed', async() => {
 
         const linkCount = await page.evaluate(() => {
 
@@ -58,8 +58,8 @@ describe('File Argument', () => {
                 const xmlContent = await req.text();
                 const parsedContent = new DOMParser().parseFromString(xmlContent);
                 
-                const documentRobot = loader.parse(parsedRobot);
-                const rootRobot = loader.parse(parsedRobot.children[0]);
+                const documentRobot = loader.parse(parsedContent);
+                const rootRobot = loader.parse(parsedContent.children[0]);
 
                 resolve({
                     documentLinkCount: Object.keys(documentRobot.links).length,
@@ -73,8 +73,8 @@ describe('File Argument', () => {
         expect(linkCount.documentLinkCount).toEqual(28);
         expect(linkCount.rootLinkCount).toEqual(28);
 
-    }); 
-    
+    });
+
 });
 
 describe('Options', () => {
