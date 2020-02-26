@@ -43,6 +43,40 @@ beforeAll(async() => {
 
 });
 
+describe('File Argument', () => {
+
+   it('should work if the file is already parsed', async() => {
+
+        const linkCount = await page.evaluate(() => {
+
+            return new Promise(await resolve => {
+
+                const loader = new URDFLoader();
+                loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
+
+                const req = await fetch('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+                const xmlContent = await req.text();
+                const parsedContent = new DOMParser().parseFromString(xmlContent);
+                
+                const documentRobot = loader.parse(parsedRobot);
+                const rootRobot = loader.parse(parsedRobot.children[0]);
+
+                return {
+                    documentLinkCount: Object.keys(documentRobot.links).length,
+                    rootLinkCount: Object.keys(rootRobot.links).length,
+                };
+
+            });
+
+        });
+
+        expect(linkCount.documentLinkCount).toEqual(28);
+        expect(linkCount.rootLinkCount).toEqual(28);
+
+    }); 
+    
+});
+
 describe('Options', () => {
 
     describe('parseVisual, parseCollision', () => {
