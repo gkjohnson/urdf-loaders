@@ -39,7 +39,7 @@ import URDFLoader from 'urdf-loader';
 
 const url = './path/to/file.xacro';
 const xacroLoader = new XacroLoader();
-xacroLoader.load( url ).then( xml => {
+xacroLoader.load( url, xml => {
 
     const urdfLoader = new URDFLoader();
     urdfLoader.workingPath = LoaderUtils.extractUrlBase( url );
