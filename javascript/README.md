@@ -11,6 +11,9 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 ![Example](/javascript/docs/javascript-example.gif)
 
 # Use
+
+Loading a URDF file from a server.
+
 ```js
 import { LoadingManager } from 'three';
 import URDFLoader from 'urdf-loader';
@@ -18,13 +21,34 @@ import URDFLoader from 'urdf-loader';
 const manager = new LoadingManager();
 const loader = new URDFLoader(manager);
 loader.packages = {
-    packageName : '.../package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
+    packageName : './package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
 };
 loader.loadMeshCb = (path, manager, done) => { };
 loader.load(
   'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
   robot => { }                            // The robot is loaded!
 );
+```
+
+Using [XacroParser](github.com/gkjohnson/xacro-parser) to process a Xacro URDF file and then parsing it.
+
+```js
+import { LoaderUtils } from 'three';
+import { XacroLoader } from 'xacro-parser';
+import URDFLoader from 'urdf-loader';
+
+const url = './path/to/file.xacro';
+const xacroLoader = new XacroLoader();
+xacroLoader.load( url, xml => {
+
+    const urdfLoader = new URDFLoader();
+    urdfLoader.workingPath = LoaderUtils.extractUrlBase( url );
+    
+    const robot = urdfLoader.parse( xml );
+
+    // robot is loaded!
+
+} );
 ```
 
 ## Limitations
@@ -49,8 +73,8 @@ If the argument is a string, then it is used to replace the `package://` prefix 
 To specify multiple packages an object syntax is used defining the package name to the package path:
 ```js
 {
-  "package1": ".../path/to/package1",
-  "package2": ".../path/to/package2",
+  "package1": "./path/to/package1",
+  "package2": "./path/to/package2",
   ...
 }
 ```
