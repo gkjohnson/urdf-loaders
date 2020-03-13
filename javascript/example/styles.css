@@ -151,6 +151,7 @@ input:focus {
     width: 100%;
     margin: 15px 0;
     transition: 0.5s opacity ease;
+    overflow: hidden;
 }
 
 #controls > * {
