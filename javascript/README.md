@@ -1,4 +1,4 @@
-# javascript urdf-loader
+# urdf-loader
 
 [![npm version](https://img.shields.io/npm/v/urdf-loader.svg?style=flat-square)](https://www.npmjs.com/package/urdf-loader)
 [![travis build](https://img.shields.io/travis/gkjohnson/urdf-loaders/master.svg?style=flat-square)](https://travis-ci.com/gkjohnson/urdf-loaders)
