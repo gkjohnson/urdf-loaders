@@ -18,6 +18,8 @@ Loading a URDF file from a server.
 import { LoadingManager } from 'three';
 import URDFLoader from 'urdf-loader';
 
+// ...init three.js scene...
+
 const manager = new LoadingManager();
 const loader = new URDFLoader(manager);
 loader.packages = {
@@ -26,7 +28,12 @@ loader.packages = {
 loader.loadMeshCb = (path, manager, done) => { };
 loader.load(
   'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
-  robot => { }                            // The robot is loaded!
+  robot => {
+    
+    // The robot is loaded!  
+    scene.add( robot );
+  
+  }
 );
 ```
 
@@ -37,6 +44,8 @@ import { LoaderUtils } from 'three';
 import { XacroLoader } from 'xacro-parser';
 import URDFLoader from 'urdf-loader';
 
+// ...init three.js scene...
+
 const url = './path/to/file.xacro';
 const xacroLoader = new XacroLoader();
 xacroLoader.load( url, xml => {
@@ -45,9 +54,8 @@ xacroLoader.load( url, xml => {
     urdfLoader.workingPath = LoaderUtils.extractUrlBase( url );
     
     const robot = urdfLoader.parse( xml );
-
-    // robot is loaded!
-
+    scene.add( robot );
+  
 } );
 ```
 
