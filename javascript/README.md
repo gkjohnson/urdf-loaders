@@ -25,7 +25,6 @@ const loader = new URDFLoader(manager);
 loader.packages = {
     packageName : './package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
 };
-loader.loadMeshCb = (path, manager, done) => { };
 loader.load(
   'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
   robot => {
