@@ -12,7 +12,7 @@ The `_flipped` variants of the URDF ATHLETE models invert the revolute joint axe
 
 # LICENSE
 
-The software is available under the [Apache V2.0 license](../LICENSE.txt).
+The software is available under the [Apache V2.0 license](./LICENSE).
 
 Copyright © 2019 California Institute of Technology. ALL RIGHTS
 RESERVED. United States Government Sponsorship Acknowledged.
