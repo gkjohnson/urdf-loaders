@@ -431,7 +431,7 @@ Visit `localhost:9080/javascript/example/` to view the page.
 
 # LICENSE
 
-The software is available under the [Apache V2.0 license](../LICENSE.txt).
+The software is available under the [Apache V2.0 license](../LICENSE).
 
 Copyright © 2019 California Institute of Technology. ALL RIGHTS
 RESERVED. United States Government Sponsorship Acknowledged.
