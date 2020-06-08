@@ -433,7 +433,7 @@ Visit `localhost:9080/javascript/example/` to view the page.
 
 The software is available under the [Apache V2.0 license](../LICENSE).
 
-Copyright © 2019 California Institute of Technology. ALL RIGHTS
+Copyright © 2020 California Institute of Technology. ALL RIGHTS
 RESERVED. United States Government Sponsorship Acknowledged.
 Neither the name of Caltech nor its operating division, the
 Jet Propulsion Laboratory, nor the names of its contributors may be
