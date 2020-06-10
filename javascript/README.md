@@ -36,7 +36,7 @@ loader.load(
 );
 ```
 
-Using [XacroParser](github.com/gkjohnson/xacro-parser) to process a Xacro URDF file and then parse it.
+Using [XacroParser](https://github.com/gkjohnson/xacro-parser) to process a Xacro URDF file and then parse it.
 
 ```js
 import { LoaderUtils } from 'three';
