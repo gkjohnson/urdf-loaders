@@ -12,6 +12,8 @@ Utilities for loading URDF files into THREE.js and a Web Component that loads an
 
 # Use
 
+#### Basic Use
+
 Loading a URDF file from a server.
 
 ```js
@@ -21,7 +23,7 @@ import URDFLoader from 'urdf-loader';
 // ...init three.js scene...
 
 const manager = new LoadingManager();
-const loader = new URDFLoader(manager);
+const loader = new URDFLoader( manager );
 loader.packages = {
     packageName : './package/dir/'            // The equivalent of a (list of) ROS package(s):// directory
 };
@@ -35,6 +37,38 @@ loader.load(
   }
 );
 ```
+
+#### Custom Mesh Loader
+
+Adding a custom mesh loader.
+
+```js
+import { GLTFLoader } from 'three/examples/loaders/GLTFLoader.js';
+import URDFLoader from 'urdf-loader';
+
+// ...init three.js scene...
+
+const loader = new URDFLoader();
+loader.loadMeshCb = function( path, manager, onComplete ) {
+
+    const gltfLoader = new GLTFLoader( manager );
+    gltfLoader.load( path, result => {
+    
+        onComplete( result.scene );
+    
+    } );
+
+};
+loader.load( 'T12/urdf/T12.URDF', robot => {
+    
+    // The robot is loaded!  
+    scene.add( robot );
+
+} );
+
+```
+
+#### From Xacro
 
 Using [XacroParser](https://github.com/gkjohnson/xacro-parser) to process a Xacro URDF file and then parse it.
 
