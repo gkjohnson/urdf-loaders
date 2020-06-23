@@ -11,6 +11,7 @@ import URDFLoader from './URDFLoader.js';
 // geometry-loaded: Fires when all the geometry has been fully loaded
 // ignore-limits-change: Fires when the 'ignore-limits' attribute changes
 // angle-change: Fires when an angle changes
+const tempVec2 = new THREE.Vector2();
 export default
 class URDFViewer extends HTMLElement {
 
@@ -250,7 +251,7 @@ class URDFViewer extends HTMLElement {
         const r = this.renderer;
         const w = this.clientWidth;
         const h = this.clientHeight;
-        const currsize = r.getSize();
+        const currsize = r.getSize(tempVec2);
 
         if (currsize.width !== w || currsize.height !== h) {
 
