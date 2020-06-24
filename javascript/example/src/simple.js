@@ -34,11 +34,12 @@ function init() {
     renderer.outputEncoding = sRGBEncoding;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
 
     // vr
     renderer.xr.enabled = true;
     renderer.setAnimationLoop(render);
-    document.body.appendChild(renderer.domElement);
+    document.body.appendChild(VRButton.createButton(renderer));
 
     const directionalLight = new DirectionalLight(0xffffff, 1.0);
     directionalLight.castShadow = true;
@@ -100,6 +101,7 @@ function init() {
 
         const bb = new Box3();
         bb.setFromObject(robot);
+
         robot.position.y -= bb.min.y;
 
         scene.add(robot);
@@ -123,6 +125,7 @@ function onResize() {
 
 function render() {
 
+    controls.enabled = !renderer.xr.getSession();
     renderer.render(scene, camera);
 
 }
