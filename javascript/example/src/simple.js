@@ -16,12 +16,12 @@ import {
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import URDFLoader from '../../src/URDFLoader.js';
 
 let scene, camera, renderer, robot, controls;
 
 init();
-render();
 
 function init() {
 
@@ -29,12 +29,15 @@ function init() {
     scene.background = new Color(0xffab40);
     camera = new PerspectiveCamera();
 
-    camera.position.set(15, 15, 15);
+    camera.position.set(10, 10, 10);
     renderer = new WebGLRenderer({ antialias: true });
     renderer.outputEncoding = sRGBEncoding;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.setAnimationLoop(render);
     document.body.appendChild(renderer.domElement);
+
+    document.body.appendChild(VRButton.createButton(renderer));
 
     const directionalLight = new DirectionalLight(0xffffff, 1.0);
     directionalLight.castShadow = true;
@@ -121,8 +124,6 @@ function onResize() {
 }
 
 function render() {
-
-    requestAnimationFrame(render);
 
     renderer.render(scene, camera);
 
