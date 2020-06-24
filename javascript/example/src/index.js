@@ -5,7 +5,7 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import URDFManipulator from '../src/urdf-manipulator-element.js';
+import URDFManipulator from '../../src/urdf-manipulator-element.js';
 
 customElements.define('urdf-viewer', URDFManipulator);
 

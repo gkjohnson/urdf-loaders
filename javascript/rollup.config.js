@@ -43,10 +43,10 @@ export default [
 
     // examples
     {
-        input: './example/index.js',
+        input: './example/src/index.js',
         plugins: [resolve()],
         output: {
-            file: './example/index.bundle.js',
+            file: './example/bundle/index.js',
             format: 'iife',
             sourcemap: true,
         },
