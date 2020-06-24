@@ -200,7 +200,7 @@ describe('Options', () => {
 
                             resolve(ct);
 
-                        }
+                        },
                     );
 
                 });
@@ -326,7 +326,7 @@ describe('TriATHLETE Climbing URDF', () => {
             'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
             {
                 packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
-            }
+            },
         );
 
     });

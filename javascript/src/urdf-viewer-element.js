@@ -108,7 +108,7 @@ class URDFViewer extends HTMLElement {
 
         const plane = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(40, 40),
-            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 }),
         );
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -0.5;

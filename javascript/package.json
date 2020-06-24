@@ -44,7 +44,7 @@
     "@rollup/plugin-node-resolve": "^8.1.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "concurrently": "^4.0.1",
-    "eslint": "^5.14.1",
+    "eslint": "^7.3.1",
     "jest": "^24.1.0",
     "jest-cli": "^24.1.0",
     "nyc": "^13.3.0",
