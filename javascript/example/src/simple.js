@@ -66,6 +66,7 @@ function init() {
     scene.add(ground);
 
     controls = new OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false;
     controls.minDistance = 1e-2;
 
     const manager = new LoadingManager();
