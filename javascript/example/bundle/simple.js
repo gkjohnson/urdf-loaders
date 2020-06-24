@@ -60204,7 +60204,7 @@
 
 	}
 
-	let scene, camera, renderer, robot, controls;
+	let scene, camera, renderer, robot, controls, cameraContainer, vrCamera;
 
 	init();
 
@@ -60212,9 +60212,16 @@
 
 	    scene = new Scene();
 	    scene.background = new Color(0xffab40);
-	    camera = new PerspectiveCamera();
 
+	    cameraContainer = new Group();
+	    scene.add(cameraContainer);
+
+	    vrCamera = new PerspectiveCamera();
+	    cameraContainer.add(vrCamera);
+
+	    camera = new PerspectiveCamera();
 	    camera.position.set(10, 10, 10);
+
 	    renderer = new WebGLRenderer({ antialias: true });
 	    renderer.outputEncoding = sRGBEncoding;
 	    renderer.shadowMap.enabled = true;
@@ -60306,12 +60313,18 @@
 	    camera.aspect = window.innerWidth / window.innerHeight;
 	    camera.updateProjectionMatrix();
 
+	    vrCamera.aspect = window.innerWidth / window.innerHeight;
+	    vrCamera.updateProjectionMatrix();
+
 	}
 
 	function render() {
 
-	    controls.enabled = !renderer.xr.getSession();
-	    renderer.render(scene, camera);
+	    const vrEnabled = Boolean(renderer.xr.getSession());
+	    controls.enabled = !vrEnabled;
+
+	    cameraContainer.position.copy(camera.position);
+	    renderer.render(scene, vrEnabled ? vrCamera : camera);
 
 	}
 
