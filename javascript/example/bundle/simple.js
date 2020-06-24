@@ -49858,551 +49858,6 @@
 
 	}
 
-	// Converts a datatransfer structer into an object with all paths and files
-	// listed out. Returns a promise that resolves with the file structure.
-	function dataTransferToFiles(dataTransfer) {
-
-	    if (!(dataTransfer instanceof DataTransfer)) {
-
-	        throw new Error('Data must be of type "DataTransfer"', dataTransfer);
-
-	    }
-
-	    const files = {};
-
-	    // recurse down the webkit file structure resolving
-	    // the paths to files names to store in the `files`
-	    // object
-	    function recurseDirectory(item) {
-
-	        if (item.isFile) {
-
-	            return new Promise(resolve => {
-	                item.file(file => {
-	                    files[item.fullPath] = file;
-	                    resolve();
-	                });
-	            });
-
-	        } else {
-
-	            const reader = item.createReader();
-
-	            return new Promise(resolve => {
-
-	                const promises = [];
-	                reader.readEntries(et => {
-	                    et.forEach(e => {
-	                        promises.push(recurseDirectory(e));
-	                    });
-
-	                    Promise.all(promises).then(() => resolve());
-	                });
-	            });
-	        }
-	    }
-
-	    return new Promise(resolve => {
-
-	        // Traverse down the tree and add the files into the zip
-	        const dtitems = dataTransfer.items && [...dataTransfer.items];
-	        const dtfiles = [...dataTransfer.files];
-
-	        if (dtitems && dtitems.length && dtitems[0].webkitGetAsEntry) {
-
-	            const promises = [];
-	            for (let i = 0; i < dtitems.length; i++) {
-	                const item = dtitems[i];
-	                const entry = item.webkitGetAsEntry();
-
-	                promises.push(recurseDirectory(entry));
-
-	            }
-	            Promise.all(promises).then(() => resolve(files));
-
-	        } else {
-
-	            // add a '/' prefix to math the file directory entry
-	            // on webkit browsers
-	            dtfiles
-	                .filter(f => f.size !== 0)
-	                .forEach(f => files['/' + f.name] = f);
-
-	            resolve(files);
-
-	        }
-	    });
-	}
-	function registerDragEvents(viewer, callback) {
-
-	    document.addEventListener('dragover', e => e.preventDefault());
-	    document.addEventListener('dragenter', e => e.preventDefault());
-	    document.addEventListener('drop', e => {
-
-	        e.preventDefault();
-
-	        // convert the files
-	        dataTransferToFiles(e.dataTransfer)
-	            .then(files => {
-
-	                // removes '..' and '.' tokens and normalizes slashes
-	                const cleanFilePath = path => {
-
-	                    return path
-	                        .replace(/\\/g, '/')
-	                        .split(/\//g)
-	                        .reduce((acc, el) => {
-
-	                            if (el === '..') acc.pop();
-	                            else if (el !== '.') acc.push(el);
-	                            return acc;
-
-	                        }, [])
-	                        .join('/');
-
-	                };
-
-	                // set the loader url modifier to check the list
-	                // of files
-	                const fileNames = Object.keys(files).map(n => cleanFilePath(n));
-	                viewer.urlModifierFunc = url => {
-
-	                    // find the matching file given the requested url
-	                    const cleaned = cleanFilePath(url.replace(viewer.package, ''));
-	                    const fileName = fileNames
-	                        .filter(name => {
-
-	                            // check if the end of file and url are the same
-	                            const len = Math.min(name.length, cleaned.length);
-	                            return cleaned.substr(cleaned.length - len) === name.substr(name.length - len);
-
-	                        }).pop();
-
-	                    if (fileName !== undefined) {
-
-	                        // revoke the url after it's been used
-	                        const bloburl = URL.createObjectURL(files[fileName]);
-	                        requestAnimationFrame(() => URL.revokeObjectURL(bloburl));
-
-	                        return bloburl;
-
-	                    }
-
-	                    return url;
-
-	                };
-
-	                // set the source of the element to the most likely intended display model
-	                const filesNames = Object.keys(files);
-	                viewer.up = '+Z';
-	                document.getElementById('up-select').value = viewer.up;
-
-	                viewer.urdf =
-	                    filesNames
-	                        .filter(n => /urdf$/i.test(n))
-	                        .shift();
-
-	            });
-
-	        callback();
-	    });
-
-	}
-
-	/**
-	 * @author aleeper / http://adamleeper.com/
-	 * @author mrdoob / http://mrdoob.com/
-	 * @author gero3 / https://github.com/gero3
-	 * @author Mugen87 / https://github.com/Mugen87
-	 * @author neverhood311 / https://github.com/neverhood311
-	 *
-	 * Description: A THREE loader for STL ASCII files, as created by Solidworks and other CAD programs.
-	 *
-	 * Supports both binary and ASCII encoded files, with automatic detection of type.
-	 *
-	 * The loader returns a non-indexed buffer geometry.
-	 *
-	 * Limitations:
-	 *  Binary decoding supports "Magics" color format (http://en.wikipedia.org/wiki/STL_(file_format)#Color_in_binary_STL).
-	 *  There is perhaps some question as to how valid it is to always assume little-endian-ness.
-	 *  ASCII decoding assumes file is UTF-8.
-	 *
-	 * Usage:
-	 *  var loader = new STLLoader();
-	 *  loader.load( './models/stl/slotted_disk.stl', function ( geometry ) {
-	 *    scene.add( new THREE.Mesh( geometry ) );
-	 *  });
-	 *
-	 * For binary STLs geometry might contain colors for vertices. To use it:
-	 *  // use the same code to load STL as above
-	 *  if (geometry.hasColors) {
-	 *    material = new THREE.MeshPhongMaterial({ opacity: geometry.alpha, vertexColors: true });
-	 *  } else { .... }
-	 *  var mesh = new THREE.Mesh( geometry, material );
-	 *
-	 * For ASCII STLs containing multiple solids, each solid is assigned to a different group.
-	 * Groups can be used to assign a different color by defining an array of materials with the same length of
-	 * geometry.groups and passing it to the Mesh constructor:
-	 *
-	 * var mesh = new THREE.Mesh( geometry, material );
-	 *
-	 * For example:
-	 *
-	 *  var materials = [];
-	 *  var nGeometryGroups = geometry.groups.length;
-	 *
-	 *  var colorMap = ...; // Some logic to index colors.
-	 *
-	 *  for (var i = 0; i < nGeometryGroups; i++) {
-	 *
-	 *		var material = new THREE.MeshPhongMaterial({
-	 *			color: colorMap[i],
-	 *			wireframe: false
-	 *		});
-	 *
-	 *  }
-	 *
-	 *  materials.push(material);
-	 *  var mesh = new THREE.Mesh(geometry, materials);
-	 */
-
-
-	var STLLoader = function ( manager ) {
-
-		Loader.call( this, manager );
-
-	};
-
-	STLLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
-
-		constructor: STLLoader,
-
-		load: function ( url, onLoad, onProgress, onError ) {
-
-			var scope = this;
-
-			var loader = new FileLoader( scope.manager );
-			loader.setPath( scope.path );
-			loader.setResponseType( 'arraybuffer' );
-			loader.load( url, function ( text ) {
-
-				try {
-
-					onLoad( scope.parse( text ) );
-
-				} catch ( e ) {
-
-					if ( onError ) {
-
-						onError( e );
-
-					} else {
-
-						console.error( e );
-
-					}
-
-					scope.manager.itemError( url );
-
-				}
-
-			}, onProgress, onError );
-
-		},
-
-		parse: function ( data ) {
-
-			function isBinary( data ) {
-
-				var expect, face_size, n_faces, reader;
-				reader = new DataView( data );
-				face_size = ( 32 / 8 * 3 ) + ( ( 32 / 8 * 3 ) * 3 ) + ( 16 / 8 );
-				n_faces = reader.getUint32( 80, true );
-				expect = 80 + ( 32 / 8 ) + ( n_faces * face_size );
-
-				if ( expect === reader.byteLength ) {
-
-					return true;
-
-				}
-
-				// An ASCII STL data must begin with 'solid ' as the first six bytes.
-				// However, ASCII STLs lacking the SPACE after the 'd' are known to be
-				// plentiful.  So, check the first 5 bytes for 'solid'.
-
-				// Several encodings, such as UTF-8, precede the text with up to 5 bytes:
-				// https://en.wikipedia.org/wiki/Byte_order_mark#Byte_order_marks_by_encoding
-				// Search for "solid" to start anywhere after those prefixes.
-
-				// US-ASCII ordinal values for 's', 'o', 'l', 'i', 'd'
-
-				var solid = [ 115, 111, 108, 105, 100 ];
-
-				for ( var off = 0; off < 5; off ++ ) {
-
-					// If "solid" text is matched to the current offset, declare it to be an ASCII STL.
-
-					if ( matchDataViewAt( solid, reader, off ) ) return false;
-
-				}
-
-				// Couldn't find "solid" text at the beginning; it is binary STL.
-
-				return true;
-
-			}
-
-			function matchDataViewAt( query, reader, offset ) {
-
-				// Check if each byte in query matches the corresponding byte from the current offset
-
-				for ( var i = 0, il = query.length; i < il; i ++ ) {
-
-					if ( query[ i ] !== reader.getUint8( offset + i, false ) ) return false;
-
-				}
-
-				return true;
-
-			}
-
-			function parseBinary( data ) {
-
-				var reader = new DataView( data );
-				var faces = reader.getUint32( 80, true );
-
-				var r, g, b, hasColors = false, colors;
-				var defaultR, defaultG, defaultB, alpha;
-
-				// process STL header
-				// check for default color in header ("COLOR=rgba" sequence).
-
-				for ( var index = 0; index < 80 - 10; index ++ ) {
-
-					if ( ( reader.getUint32( index, false ) == 0x434F4C4F /*COLO*/ ) &&
-						( reader.getUint8( index + 4 ) == 0x52 /*'R'*/ ) &&
-						( reader.getUint8( index + 5 ) == 0x3D /*'='*/ ) ) {
-
-						hasColors = true;
-						colors = new Float32Array( faces * 3 * 3 );
-
-						defaultR = reader.getUint8( index + 6 ) / 255;
-						defaultG = reader.getUint8( index + 7 ) / 255;
-						defaultB = reader.getUint8( index + 8 ) / 255;
-						alpha = reader.getUint8( index + 9 ) / 255;
-
-					}
-
-				}
-
-				var dataOffset = 84;
-				var faceLength = 12 * 4 + 2;
-
-				var geometry = new BufferGeometry();
-
-				var vertices = new Float32Array( faces * 3 * 3 );
-				var normals = new Float32Array( faces * 3 * 3 );
-
-				for ( var face = 0; face < faces; face ++ ) {
-
-					var start = dataOffset + face * faceLength;
-					var normalX = reader.getFloat32( start, true );
-					var normalY = reader.getFloat32( start + 4, true );
-					var normalZ = reader.getFloat32( start + 8, true );
-
-					if ( hasColors ) {
-
-						var packedColor = reader.getUint16( start + 48, true );
-
-						if ( ( packedColor & 0x8000 ) === 0 ) {
-
-							// facet has its own unique color
-
-							r = ( packedColor & 0x1F ) / 31;
-							g = ( ( packedColor >> 5 ) & 0x1F ) / 31;
-							b = ( ( packedColor >> 10 ) & 0x1F ) / 31;
-
-						} else {
-
-							r = defaultR;
-							g = defaultG;
-							b = defaultB;
-
-						}
-
-					}
-
-					for ( var i = 1; i <= 3; i ++ ) {
-
-						var vertexstart = start + i * 12;
-						var componentIdx = ( face * 3 * 3 ) + ( ( i - 1 ) * 3 );
-
-						vertices[ componentIdx ] = reader.getFloat32( vertexstart, true );
-						vertices[ componentIdx + 1 ] = reader.getFloat32( vertexstart + 4, true );
-						vertices[ componentIdx + 2 ] = reader.getFloat32( vertexstart + 8, true );
-
-						normals[ componentIdx ] = normalX;
-						normals[ componentIdx + 1 ] = normalY;
-						normals[ componentIdx + 2 ] = normalZ;
-
-						if ( hasColors ) {
-
-							colors[ componentIdx ] = r;
-							colors[ componentIdx + 1 ] = g;
-							colors[ componentIdx + 2 ] = b;
-
-						}
-
-					}
-
-				}
-
-				geometry.setAttribute( 'position', new BufferAttribute( vertices, 3 ) );
-				geometry.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
-
-				if ( hasColors ) {
-
-					geometry.setAttribute( 'color', new BufferAttribute( colors, 3 ) );
-					geometry.hasColors = true;
-					geometry.alpha = alpha;
-
-				}
-
-				return geometry;
-
-			}
-
-			function parseASCII( data ) {
-
-				var geometry = new BufferGeometry();
-				var patternSolid = /solid([\s\S]*?)endsolid/g;
-				var patternFace = /facet([\s\S]*?)endfacet/g;
-				var faceCounter = 0;
-
-				var patternFloat = /[\s]+([+-]?(?:\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?)/.source;
-				var patternVertex = new RegExp( 'vertex' + patternFloat + patternFloat + patternFloat, 'g' );
-				var patternNormal = new RegExp( 'normal' + patternFloat + patternFloat + patternFloat, 'g' );
-
-				var vertices = [];
-				var normals = [];
-
-				var normal = new Vector3();
-
-				var result;
-
-				var groupCount = 0;
-				var startVertex = 0;
-				var endVertex = 0;
-
-				while ( ( result = patternSolid.exec( data ) ) !== null ) {
-
-					startVertex = endVertex;
-
-					var solid = result[ 0 ];
-
-					while ( ( result = patternFace.exec( solid ) ) !== null ) {
-
-						var vertexCountPerFace = 0;
-						var normalCountPerFace = 0;
-
-						var text = result[ 0 ];
-
-						while ( ( result = patternNormal.exec( text ) ) !== null ) {
-
-							normal.x = parseFloat( result[ 1 ] );
-							normal.y = parseFloat( result[ 2 ] );
-							normal.z = parseFloat( result[ 3 ] );
-							normalCountPerFace ++;
-
-						}
-
-						while ( ( result = patternVertex.exec( text ) ) !== null ) {
-
-							vertices.push( parseFloat( result[ 1 ] ), parseFloat( result[ 2 ] ), parseFloat( result[ 3 ] ) );
-							normals.push( normal.x, normal.y, normal.z );
-							vertexCountPerFace ++;
-							endVertex ++;
-
-						}
-
-						// every face have to own ONE valid normal
-
-						if ( normalCountPerFace !== 1 ) {
-
-							console.error( 'THREE.STLLoader: Something isn\'t right with the normal of face number ' + faceCounter );
-
-						}
-
-						// each face have to own THREE valid vertices
-
-						if ( vertexCountPerFace !== 3 ) {
-
-							console.error( 'THREE.STLLoader: Something isn\'t right with the vertices of face number ' + faceCounter );
-
-						}
-
-						faceCounter ++;
-
-					}
-
-					var start = startVertex;
-					var count = endVertex - startVertex;
-
-					geometry.addGroup( start, count, groupCount );
-					groupCount ++;
-
-				}
-
-				geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-				geometry.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-
-				return geometry;
-
-			}
-
-			function ensureString( buffer ) {
-
-				if ( typeof buffer !== 'string' ) {
-
-					return LoaderUtils.decodeText( new Uint8Array( buffer ) );
-
-				}
-
-				return buffer;
-
-			}
-
-			function ensureBinary( buffer ) {
-
-				if ( typeof buffer === 'string' ) {
-
-					var array_buffer = new Uint8Array( buffer.length );
-					for ( var i = 0; i < buffer.length; i ++ ) {
-
-						array_buffer[ i ] = buffer.charCodeAt( i ) & 0xff; // implicitly assumes little-endian
-
-					}
-
-					return array_buffer.buffer || array_buffer;
-
-				} else {
-
-					return buffer;
-
-				}
-
-			}
-
-			// start
-
-			var binData = ensureBinary( data );
-
-			return isBinary( binData ) ? parseBinary( binData ) : parseASCII( ensureString( data ) );
-
-		}
-
-	} );
-
 	/**
 	 * @author Rich Tibbett / https://github.com/richtr
 	 * @author mrdoob / http://mrdoob.com/
@@ -53700,6 +53155,1535 @@
 		return GLTFLoader;
 
 	} )();
+
+	/**
+	 * @author qiao / https://github.com/qiao
+	 * @author mrdoob / http://mrdoob.com
+	 * @author alteredq / http://alteredqualia.com/
+	 * @author WestLangley / http://github.com/WestLangley
+	 * @author erich666 / http://erichaines.com
+	 * @author ScieCode / http://github.com/sciecode
+	 */
+
+	// This set of controls performs orbiting, dollying (zooming), and panning.
+	// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
+	//
+	//    Orbit - left mouse / touch: one-finger move
+	//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
+	//    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
+
+	var OrbitControls = function ( object, domElement ) {
+
+		if ( domElement === undefined ) console.warn( 'THREE.OrbitControls: The second parameter "domElement" is now mandatory.' );
+		if ( domElement === document ) console.error( 'THREE.OrbitControls: "document" should not be used as the target "domElement". Please use "renderer.domElement" instead.' );
+
+		this.object = object;
+		this.domElement = domElement;
+
+		// Set to false to disable this control
+		this.enabled = true;
+
+		// "target" sets the location of focus, where the object orbits around
+		this.target = new Vector3();
+
+		// How far you can dolly in and out ( PerspectiveCamera only )
+		this.minDistance = 0;
+		this.maxDistance = Infinity;
+
+		// How far you can zoom in and out ( OrthographicCamera only )
+		this.minZoom = 0;
+		this.maxZoom = Infinity;
+
+		// How far you can orbit vertically, upper and lower limits.
+		// Range is 0 to Math.PI radians.
+		this.minPolarAngle = 0; // radians
+		this.maxPolarAngle = Math.PI; // radians
+
+		// How far you can orbit horizontally, upper and lower limits.
+		// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
+		this.minAzimuthAngle = - Infinity; // radians
+		this.maxAzimuthAngle = Infinity; // radians
+
+		// Set to true to enable damping (inertia)
+		// If damping is enabled, you must call controls.update() in your animation loop
+		this.enableDamping = false;
+		this.dampingFactor = 0.05;
+
+		// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
+		// Set to false to disable zooming
+		this.enableZoom = true;
+		this.zoomSpeed = 1.0;
+
+		// Set to false to disable rotating
+		this.enableRotate = true;
+		this.rotateSpeed = 1.0;
+
+		// Set to false to disable panning
+		this.enablePan = true;
+		this.panSpeed = 1.0;
+		this.screenSpacePanning = false; // if true, pan in screen-space
+		this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
+
+		// Set to true to automatically rotate around the target
+		// If auto-rotate is enabled, you must call controls.update() in your animation loop
+		this.autoRotate = false;
+		this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
+
+		// Set to false to disable use of the keys
+		this.enableKeys = true;
+
+		// The four arrow keys
+		this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+
+		// Mouse buttons
+		this.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN };
+
+		// Touch fingers
+		this.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN };
+
+		// for reset
+		this.target0 = this.target.clone();
+		this.position0 = this.object.position.clone();
+		this.zoom0 = this.object.zoom;
+
+		//
+		// public methods
+		//
+
+		this.getPolarAngle = function () {
+
+			return spherical.phi;
+
+		};
+
+		this.getAzimuthalAngle = function () {
+
+			return spherical.theta;
+
+		};
+
+		this.saveState = function () {
+
+			scope.target0.copy( scope.target );
+			scope.position0.copy( scope.object.position );
+			scope.zoom0 = scope.object.zoom;
+
+		};
+
+		this.reset = function () {
+
+			scope.target.copy( scope.target0 );
+			scope.object.position.copy( scope.position0 );
+			scope.object.zoom = scope.zoom0;
+
+			scope.object.updateProjectionMatrix();
+			scope.dispatchEvent( changeEvent );
+
+			scope.update();
+
+			state = STATE.NONE;
+
+		};
+
+		// this method is exposed, but perhaps it would be better if we can make it private...
+		this.update = function () {
+
+			var offset = new Vector3();
+
+			// so camera.up is the orbit axis
+			var quat = new Quaternion().setFromUnitVectors( object.up, new Vector3( 0, 1, 0 ) );
+			var quatInverse = quat.clone().inverse();
+
+			var lastPosition = new Vector3();
+			var lastQuaternion = new Quaternion();
+
+			return function update() {
+
+				var position = scope.object.position;
+
+				offset.copy( position ).sub( scope.target );
+
+				// rotate offset to "y-axis-is-up" space
+				offset.applyQuaternion( quat );
+
+				// angle from z-axis around y-axis
+				spherical.setFromVector3( offset );
+
+				if ( scope.autoRotate && state === STATE.NONE ) {
+
+					rotateLeft( getAutoRotationAngle() );
+
+				}
+
+				if ( scope.enableDamping ) {
+
+					spherical.theta += sphericalDelta.theta * scope.dampingFactor;
+					spherical.phi += sphericalDelta.phi * scope.dampingFactor;
+
+				} else {
+
+					spherical.theta += sphericalDelta.theta;
+					spherical.phi += sphericalDelta.phi;
+
+				}
+
+				// restrict theta to be between desired limits
+				spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
+
+				// restrict phi to be between desired limits
+				spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
+
+				spherical.makeSafe();
+
+
+				spherical.radius *= scale;
+
+				// restrict radius to be between desired limits
+				spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
+
+				// move target to panned location
+
+				if ( scope.enableDamping === true ) {
+
+					scope.target.addScaledVector( panOffset, scope.dampingFactor );
+
+				} else {
+
+					scope.target.add( panOffset );
+
+				}
+
+				offset.setFromSpherical( spherical );
+
+				// rotate offset back to "camera-up-vector-is-up" space
+				offset.applyQuaternion( quatInverse );
+
+				position.copy( scope.target ).add( offset );
+
+				scope.object.lookAt( scope.target );
+
+				if ( scope.enableDamping === true ) {
+
+					sphericalDelta.theta *= ( 1 - scope.dampingFactor );
+					sphericalDelta.phi *= ( 1 - scope.dampingFactor );
+
+					panOffset.multiplyScalar( 1 - scope.dampingFactor );
+
+				} else {
+
+					sphericalDelta.set( 0, 0, 0 );
+
+					panOffset.set( 0, 0, 0 );
+
+				}
+
+				scale = 1;
+
+				// update condition is:
+				// min(camera displacement, camera rotation in radians)^2 > EPS
+				// using small-angle approximation cos(x/2) = 1 - x^2 / 8
+
+				if ( zoomChanged ||
+					lastPosition.distanceToSquared( scope.object.position ) > EPS ||
+					8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
+
+					scope.dispatchEvent( changeEvent );
+
+					lastPosition.copy( scope.object.position );
+					lastQuaternion.copy( scope.object.quaternion );
+					zoomChanged = false;
+
+					return true;
+
+				}
+
+				return false;
+
+			};
+
+		}();
+
+		this.dispose = function () {
+
+			scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
+			scope.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+			scope.domElement.removeEventListener( 'wheel', onMouseWheel, false );
+
+			scope.domElement.removeEventListener( 'touchstart', onTouchStart, false );
+			scope.domElement.removeEventListener( 'touchend', onTouchEnd, false );
+			scope.domElement.removeEventListener( 'touchmove', onTouchMove, false );
+
+			document.removeEventListener( 'mousemove', onMouseMove, false );
+			document.removeEventListener( 'mouseup', onMouseUp, false );
+
+			scope.domElement.removeEventListener( 'keydown', onKeyDown, false );
+
+			//scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
+
+		};
+
+		//
+		// internals
+		//
+
+		var scope = this;
+
+		var changeEvent = { type: 'change' };
+		var startEvent = { type: 'start' };
+		var endEvent = { type: 'end' };
+
+		var STATE = {
+			NONE: - 1,
+			ROTATE: 0,
+			DOLLY: 1,
+			PAN: 2,
+			TOUCH_ROTATE: 3,
+			TOUCH_PAN: 4,
+			TOUCH_DOLLY_PAN: 5,
+			TOUCH_DOLLY_ROTATE: 6
+		};
+
+		var state = STATE.NONE;
+
+		var EPS = 0.000001;
+
+		// current position in spherical coordinates
+		var spherical = new Spherical();
+		var sphericalDelta = new Spherical();
+
+		var scale = 1;
+		var panOffset = new Vector3();
+		var zoomChanged = false;
+
+		var rotateStart = new Vector2();
+		var rotateEnd = new Vector2();
+		var rotateDelta = new Vector2();
+
+		var panStart = new Vector2();
+		var panEnd = new Vector2();
+		var panDelta = new Vector2();
+
+		var dollyStart = new Vector2();
+		var dollyEnd = new Vector2();
+		var dollyDelta = new Vector2();
+
+		function getAutoRotationAngle() {
+
+			return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
+
+		}
+
+		function getZoomScale() {
+
+			return Math.pow( 0.95, scope.zoomSpeed );
+
+		}
+
+		function rotateLeft( angle ) {
+
+			sphericalDelta.theta -= angle;
+
+		}
+
+		function rotateUp( angle ) {
+
+			sphericalDelta.phi -= angle;
+
+		}
+
+		var panLeft = function () {
+
+			var v = new Vector3();
+
+			return function panLeft( distance, objectMatrix ) {
+
+				v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
+				v.multiplyScalar( - distance );
+
+				panOffset.add( v );
+
+			};
+
+		}();
+
+		var panUp = function () {
+
+			var v = new Vector3();
+
+			return function panUp( distance, objectMatrix ) {
+
+				if ( scope.screenSpacePanning === true ) {
+
+					v.setFromMatrixColumn( objectMatrix, 1 );
+
+				} else {
+
+					v.setFromMatrixColumn( objectMatrix, 0 );
+					v.crossVectors( scope.object.up, v );
+
+				}
+
+				v.multiplyScalar( distance );
+
+				panOffset.add( v );
+
+			};
+
+		}();
+
+		// deltaX and deltaY are in pixels; right and down are positive
+		var pan = function () {
+
+			var offset = new Vector3();
+
+			return function pan( deltaX, deltaY ) {
+
+				var element = scope.domElement;
+
+				if ( scope.object.isPerspectiveCamera ) {
+
+					// perspective
+					var position = scope.object.position;
+					offset.copy( position ).sub( scope.target );
+					var targetDistance = offset.length();
+
+					// half of the fov is center to top of screen
+					targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
+
+					// we use only clientHeight here so aspect ratio does not distort speed
+					panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix );
+					panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix );
+
+				} else if ( scope.object.isOrthographicCamera ) {
+
+					// orthographic
+					panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix );
+					panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix );
+
+				} else {
+
+					// camera neither orthographic nor perspective
+					console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
+					scope.enablePan = false;
+
+				}
+
+			};
+
+		}();
+
+		function dollyOut( dollyScale ) {
+
+			if ( scope.object.isPerspectiveCamera ) {
+
+				scale /= dollyScale;
+
+			} else if ( scope.object.isOrthographicCamera ) {
+
+				scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom * dollyScale ) );
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+
+			} else {
+
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+				scope.enableZoom = false;
+
+			}
+
+		}
+
+		function dollyIn( dollyScale ) {
+
+			if ( scope.object.isPerspectiveCamera ) {
+
+				scale *= dollyScale;
+
+			} else if ( scope.object.isOrthographicCamera ) {
+
+				scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom / dollyScale ) );
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+
+			} else {
+
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+				scope.enableZoom = false;
+
+			}
+
+		}
+
+		//
+		// event callbacks - update the object state
+		//
+
+		function handleMouseDownRotate( event ) {
+
+			rotateStart.set( event.clientX, event.clientY );
+
+		}
+
+		function handleMouseDownDolly( event ) {
+
+			dollyStart.set( event.clientX, event.clientY );
+
+		}
+
+		function handleMouseDownPan( event ) {
+
+			panStart.set( event.clientX, event.clientY );
+
+		}
+
+		function handleMouseMoveRotate( event ) {
+
+			rotateEnd.set( event.clientX, event.clientY );
+
+			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+			var element = scope.domElement;
+
+			rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+			rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+			rotateStart.copy( rotateEnd );
+
+			scope.update();
+
+		}
+
+		function handleMouseMoveDolly( event ) {
+
+			dollyEnd.set( event.clientX, event.clientY );
+
+			dollyDelta.subVectors( dollyEnd, dollyStart );
+
+			if ( dollyDelta.y > 0 ) {
+
+				dollyOut( getZoomScale() );
+
+			} else if ( dollyDelta.y < 0 ) {
+
+				dollyIn( getZoomScale() );
+
+			}
+
+			dollyStart.copy( dollyEnd );
+
+			scope.update();
+
+		}
+
+		function handleMouseMovePan( event ) {
+
+			panEnd.set( event.clientX, event.clientY );
+
+			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+			pan( panDelta.x, panDelta.y );
+
+			panStart.copy( panEnd );
+
+			scope.update();
+
+		}
+
+		function handleMouseWheel( event ) {
+
+			if ( event.deltaY < 0 ) {
+
+				dollyIn( getZoomScale() );
+
+			} else if ( event.deltaY > 0 ) {
+
+				dollyOut( getZoomScale() );
+
+			}
+
+			scope.update();
+
+		}
+
+		function handleKeyDown( event ) {
+
+			var needsUpdate = false;
+
+			switch ( event.keyCode ) {
+
+				case scope.keys.UP:
+					pan( 0, scope.keyPanSpeed );
+					needsUpdate = true;
+					break;
+
+				case scope.keys.BOTTOM:
+					pan( 0, - scope.keyPanSpeed );
+					needsUpdate = true;
+					break;
+
+				case scope.keys.LEFT:
+					pan( scope.keyPanSpeed, 0 );
+					needsUpdate = true;
+					break;
+
+				case scope.keys.RIGHT:
+					pan( - scope.keyPanSpeed, 0 );
+					needsUpdate = true;
+					break;
+
+			}
+
+			if ( needsUpdate ) {
+
+				// prevent the browser from scrolling on cursor keys
+				event.preventDefault();
+
+				scope.update();
+
+			}
+
+
+		}
+
+		function handleTouchStartRotate( event ) {
+
+			if ( event.touches.length == 1 ) {
+
+				rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+			} else {
+
+				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+				rotateStart.set( x, y );
+
+			}
+
+		}
+
+		function handleTouchStartPan( event ) {
+
+			if ( event.touches.length == 1 ) {
+
+				panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+			} else {
+
+				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+				panStart.set( x, y );
+
+			}
+
+		}
+
+		function handleTouchStartDolly( event ) {
+
+			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+
+			var distance = Math.sqrt( dx * dx + dy * dy );
+
+			dollyStart.set( 0, distance );
+
+		}
+
+		function handleTouchStartDollyPan( event ) {
+
+			if ( scope.enableZoom ) handleTouchStartDolly( event );
+
+			if ( scope.enablePan ) handleTouchStartPan( event );
+
+		}
+
+		function handleTouchStartDollyRotate( event ) {
+
+			if ( scope.enableZoom ) handleTouchStartDolly( event );
+
+			if ( scope.enableRotate ) handleTouchStartRotate( event );
+
+		}
+
+		function handleTouchMoveRotate( event ) {
+
+			if ( event.touches.length == 1 ) {
+
+				rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+			} else {
+
+				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+				rotateEnd.set( x, y );
+
+			}
+
+			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+			var element = scope.domElement;
+
+			rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+			rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+			rotateStart.copy( rotateEnd );
+
+		}
+
+		function handleTouchMovePan( event ) {
+
+			if ( event.touches.length == 1 ) {
+
+				panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+
+			} else {
+
+				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+				panEnd.set( x, y );
+
+			}
+
+			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+			pan( panDelta.x, panDelta.y );
+
+			panStart.copy( panEnd );
+
+		}
+
+		function handleTouchMoveDolly( event ) {
+
+			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+
+			var distance = Math.sqrt( dx * dx + dy * dy );
+
+			dollyEnd.set( 0, distance );
+
+			dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );
+
+			dollyOut( dollyDelta.y );
+
+			dollyStart.copy( dollyEnd );
+
+		}
+
+		function handleTouchMoveDollyPan( event ) {
+
+			if ( scope.enableZoom ) handleTouchMoveDolly( event );
+
+			if ( scope.enablePan ) handleTouchMovePan( event );
+
+		}
+
+		function handleTouchMoveDollyRotate( event ) {
+
+			if ( scope.enableZoom ) handleTouchMoveDolly( event );
+
+			if ( scope.enableRotate ) handleTouchMoveRotate( event );
+
+		}
+
+		//
+		// event handlers - FSM: listen for events and reset state
+		//
+
+		function onMouseDown( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			// Prevent the browser from scrolling.
+			event.preventDefault();
+
+			// Manually set the focus since calling preventDefault above
+			// prevents the browser from setting it automatically.
+
+			scope.domElement.focus ? scope.domElement.focus() : window.focus();
+
+			var mouseAction;
+
+			switch ( event.button ) {
+
+				case 0:
+
+					mouseAction = scope.mouseButtons.LEFT;
+					break;
+
+				case 1:
+
+					mouseAction = scope.mouseButtons.MIDDLE;
+					break;
+
+				case 2:
+
+					mouseAction = scope.mouseButtons.RIGHT;
+					break;
+
+				default:
+
+					mouseAction = - 1;
+
+			}
+
+			switch ( mouseAction ) {
+
+				case MOUSE.DOLLY:
+
+					if ( scope.enableZoom === false ) return;
+
+					handleMouseDownDolly( event );
+
+					state = STATE.DOLLY;
+
+					break;
+
+				case MOUSE.ROTATE:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						if ( scope.enablePan === false ) return;
+
+						handleMouseDownPan( event );
+
+						state = STATE.PAN;
+
+					} else {
+
+						if ( scope.enableRotate === false ) return;
+
+						handleMouseDownRotate( event );
+
+						state = STATE.ROTATE;
+
+					}
+
+					break;
+
+				case MOUSE.PAN:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						if ( scope.enableRotate === false ) return;
+
+						handleMouseDownRotate( event );
+
+						state = STATE.ROTATE;
+
+					} else {
+
+						if ( scope.enablePan === false ) return;
+
+						handleMouseDownPan( event );
+
+						state = STATE.PAN;
+
+					}
+
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+			if ( state !== STATE.NONE ) {
+
+				document.addEventListener( 'mousemove', onMouseMove, false );
+				document.addEventListener( 'mouseup', onMouseUp, false );
+
+				scope.dispatchEvent( startEvent );
+
+			}
+
+		}
+
+		function onMouseMove( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			event.preventDefault();
+
+			switch ( state ) {
+
+				case STATE.ROTATE:
+
+					if ( scope.enableRotate === false ) return;
+
+					handleMouseMoveRotate( event );
+
+					break;
+
+				case STATE.DOLLY:
+
+					if ( scope.enableZoom === false ) return;
+
+					handleMouseMoveDolly( event );
+
+					break;
+
+				case STATE.PAN:
+
+					if ( scope.enablePan === false ) return;
+
+					handleMouseMovePan( event );
+
+					break;
+
+			}
+
+		}
+
+		function onMouseUp( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			document.removeEventListener( 'mousemove', onMouseMove, false );
+			document.removeEventListener( 'mouseup', onMouseUp, false );
+
+			scope.dispatchEvent( endEvent );
+
+			state = STATE.NONE;
+
+		}
+
+		function onMouseWheel( event ) {
+
+			if ( scope.enabled === false || scope.enableZoom === false || ( state !== STATE.NONE && state !== STATE.ROTATE ) ) return;
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			scope.dispatchEvent( startEvent );
+
+			handleMouseWheel( event );
+
+			scope.dispatchEvent( endEvent );
+
+		}
+
+		function onKeyDown( event ) {
+
+			if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
+
+			handleKeyDown( event );
+
+		}
+
+		function onTouchStart( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			event.preventDefault(); // prevent scrolling
+
+			switch ( event.touches.length ) {
+
+				case 1:
+
+					switch ( scope.touches.ONE ) {
+
+						case TOUCH.ROTATE:
+
+							if ( scope.enableRotate === false ) return;
+
+							handleTouchStartRotate( event );
+
+							state = STATE.TOUCH_ROTATE;
+
+							break;
+
+						case TOUCH.PAN:
+
+							if ( scope.enablePan === false ) return;
+
+							handleTouchStartPan( event );
+
+							state = STATE.TOUCH_PAN;
+
+							break;
+
+						default:
+
+							state = STATE.NONE;
+
+					}
+
+					break;
+
+				case 2:
+
+					switch ( scope.touches.TWO ) {
+
+						case TOUCH.DOLLY_PAN:
+
+							if ( scope.enableZoom === false && scope.enablePan === false ) return;
+
+							handleTouchStartDollyPan( event );
+
+							state = STATE.TOUCH_DOLLY_PAN;
+
+							break;
+
+						case TOUCH.DOLLY_ROTATE:
+
+							if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+
+							handleTouchStartDollyRotate( event );
+
+							state = STATE.TOUCH_DOLLY_ROTATE;
+
+							break;
+
+						default:
+
+							state = STATE.NONE;
+
+					}
+
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+			if ( state !== STATE.NONE ) {
+
+				scope.dispatchEvent( startEvent );
+
+			}
+
+		}
+
+		function onTouchMove( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			event.preventDefault(); // prevent scrolling
+			event.stopPropagation();
+
+			switch ( state ) {
+
+				case STATE.TOUCH_ROTATE:
+
+					if ( scope.enableRotate === false ) return;
+
+					handleTouchMoveRotate( event );
+
+					scope.update();
+
+					break;
+
+				case STATE.TOUCH_PAN:
+
+					if ( scope.enablePan === false ) return;
+
+					handleTouchMovePan( event );
+
+					scope.update();
+
+					break;
+
+				case STATE.TOUCH_DOLLY_PAN:
+
+					if ( scope.enableZoom === false && scope.enablePan === false ) return;
+
+					handleTouchMoveDollyPan( event );
+
+					scope.update();
+
+					break;
+
+				case STATE.TOUCH_DOLLY_ROTATE:
+
+					if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+
+					handleTouchMoveDollyRotate( event );
+
+					scope.update();
+
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+		}
+
+		function onTouchEnd( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			scope.dispatchEvent( endEvent );
+
+			state = STATE.NONE;
+
+		}
+
+		function onContextMenu( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			event.preventDefault();
+
+		}
+
+		//
+
+		scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
+
+		scope.domElement.addEventListener( 'mousedown', onMouseDown, false );
+		scope.domElement.addEventListener( 'wheel', onMouseWheel, false );
+
+		scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
+		scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
+		scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
+
+		scope.domElement.addEventListener( 'keydown', onKeyDown, false );
+
+		// make sure element can receive keys.
+
+		if ( scope.domElement.tabIndex === - 1 ) {
+
+			scope.domElement.tabIndex = 0;
+
+		}
+
+		// force an update at start
+
+		this.update();
+
+	};
+
+	OrbitControls.prototype = Object.create( EventDispatcher.prototype );
+	OrbitControls.prototype.constructor = OrbitControls;
+
+
+	// This set of controls performs orbiting, dollying (zooming), and panning.
+	// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
+	// This is very similar to OrbitControls, another set of touch behavior
+	//
+	//    Orbit - right mouse, or left mouse + ctrl/meta/shiftKey / touch: two-finger rotate
+	//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
+	//    Pan - left mouse, or arrow keys / touch: one-finger move
+
+	var MapControls = function ( object, domElement ) {
+
+		OrbitControls.call( this, object, domElement );
+
+		this.mouseButtons.LEFT = MOUSE.PAN;
+		this.mouseButtons.RIGHT = MOUSE.ROTATE;
+
+		this.touches.ONE = TOUCH.PAN;
+		this.touches.TWO = TOUCH.DOLLY_ROTATE;
+
+	};
+
+	MapControls.prototype = Object.create( EventDispatcher.prototype );
+	MapControls.prototype.constructor = MapControls;
+
+	/**
+	 * @author aleeper / http://adamleeper.com/
+	 * @author mrdoob / http://mrdoob.com/
+	 * @author gero3 / https://github.com/gero3
+	 * @author Mugen87 / https://github.com/Mugen87
+	 * @author neverhood311 / https://github.com/neverhood311
+	 *
+	 * Description: A THREE loader for STL ASCII files, as created by Solidworks and other CAD programs.
+	 *
+	 * Supports both binary and ASCII encoded files, with automatic detection of type.
+	 *
+	 * The loader returns a non-indexed buffer geometry.
+	 *
+	 * Limitations:
+	 *  Binary decoding supports "Magics" color format (http://en.wikipedia.org/wiki/STL_(file_format)#Color_in_binary_STL).
+	 *  There is perhaps some question as to how valid it is to always assume little-endian-ness.
+	 *  ASCII decoding assumes file is UTF-8.
+	 *
+	 * Usage:
+	 *  var loader = new STLLoader();
+	 *  loader.load( './models/stl/slotted_disk.stl', function ( geometry ) {
+	 *    scene.add( new THREE.Mesh( geometry ) );
+	 *  });
+	 *
+	 * For binary STLs geometry might contain colors for vertices. To use it:
+	 *  // use the same code to load STL as above
+	 *  if (geometry.hasColors) {
+	 *    material = new THREE.MeshPhongMaterial({ opacity: geometry.alpha, vertexColors: true });
+	 *  } else { .... }
+	 *  var mesh = new THREE.Mesh( geometry, material );
+	 *
+	 * For ASCII STLs containing multiple solids, each solid is assigned to a different group.
+	 * Groups can be used to assign a different color by defining an array of materials with the same length of
+	 * geometry.groups and passing it to the Mesh constructor:
+	 *
+	 * var mesh = new THREE.Mesh( geometry, material );
+	 *
+	 * For example:
+	 *
+	 *  var materials = [];
+	 *  var nGeometryGroups = geometry.groups.length;
+	 *
+	 *  var colorMap = ...; // Some logic to index colors.
+	 *
+	 *  for (var i = 0; i < nGeometryGroups; i++) {
+	 *
+	 *		var material = new THREE.MeshPhongMaterial({
+	 *			color: colorMap[i],
+	 *			wireframe: false
+	 *		});
+	 *
+	 *  }
+	 *
+	 *  materials.push(material);
+	 *  var mesh = new THREE.Mesh(geometry, materials);
+	 */
+
+
+	var STLLoader = function ( manager ) {
+
+		Loader.call( this, manager );
+
+	};
+
+	STLLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
+
+		constructor: STLLoader,
+
+		load: function ( url, onLoad, onProgress, onError ) {
+
+			var scope = this;
+
+			var loader = new FileLoader( scope.manager );
+			loader.setPath( scope.path );
+			loader.setResponseType( 'arraybuffer' );
+			loader.load( url, function ( text ) {
+
+				try {
+
+					onLoad( scope.parse( text ) );
+
+				} catch ( e ) {
+
+					if ( onError ) {
+
+						onError( e );
+
+					} else {
+
+						console.error( e );
+
+					}
+
+					scope.manager.itemError( url );
+
+				}
+
+			}, onProgress, onError );
+
+		},
+
+		parse: function ( data ) {
+
+			function isBinary( data ) {
+
+				var expect, face_size, n_faces, reader;
+				reader = new DataView( data );
+				face_size = ( 32 / 8 * 3 ) + ( ( 32 / 8 * 3 ) * 3 ) + ( 16 / 8 );
+				n_faces = reader.getUint32( 80, true );
+				expect = 80 + ( 32 / 8 ) + ( n_faces * face_size );
+
+				if ( expect === reader.byteLength ) {
+
+					return true;
+
+				}
+
+				// An ASCII STL data must begin with 'solid ' as the first six bytes.
+				// However, ASCII STLs lacking the SPACE after the 'd' are known to be
+				// plentiful.  So, check the first 5 bytes for 'solid'.
+
+				// Several encodings, such as UTF-8, precede the text with up to 5 bytes:
+				// https://en.wikipedia.org/wiki/Byte_order_mark#Byte_order_marks_by_encoding
+				// Search for "solid" to start anywhere after those prefixes.
+
+				// US-ASCII ordinal values for 's', 'o', 'l', 'i', 'd'
+
+				var solid = [ 115, 111, 108, 105, 100 ];
+
+				for ( var off = 0; off < 5; off ++ ) {
+
+					// If "solid" text is matched to the current offset, declare it to be an ASCII STL.
+
+					if ( matchDataViewAt( solid, reader, off ) ) return false;
+
+				}
+
+				// Couldn't find "solid" text at the beginning; it is binary STL.
+
+				return true;
+
+			}
+
+			function matchDataViewAt( query, reader, offset ) {
+
+				// Check if each byte in query matches the corresponding byte from the current offset
+
+				for ( var i = 0, il = query.length; i < il; i ++ ) {
+
+					if ( query[ i ] !== reader.getUint8( offset + i, false ) ) return false;
+
+				}
+
+				return true;
+
+			}
+
+			function parseBinary( data ) {
+
+				var reader = new DataView( data );
+				var faces = reader.getUint32( 80, true );
+
+				var r, g, b, hasColors = false, colors;
+				var defaultR, defaultG, defaultB, alpha;
+
+				// process STL header
+				// check for default color in header ("COLOR=rgba" sequence).
+
+				for ( var index = 0; index < 80 - 10; index ++ ) {
+
+					if ( ( reader.getUint32( index, false ) == 0x434F4C4F /*COLO*/ ) &&
+						( reader.getUint8( index + 4 ) == 0x52 /*'R'*/ ) &&
+						( reader.getUint8( index + 5 ) == 0x3D /*'='*/ ) ) {
+
+						hasColors = true;
+						colors = new Float32Array( faces * 3 * 3 );
+
+						defaultR = reader.getUint8( index + 6 ) / 255;
+						defaultG = reader.getUint8( index + 7 ) / 255;
+						defaultB = reader.getUint8( index + 8 ) / 255;
+						alpha = reader.getUint8( index + 9 ) / 255;
+
+					}
+
+				}
+
+				var dataOffset = 84;
+				var faceLength = 12 * 4 + 2;
+
+				var geometry = new BufferGeometry();
+
+				var vertices = new Float32Array( faces * 3 * 3 );
+				var normals = new Float32Array( faces * 3 * 3 );
+
+				for ( var face = 0; face < faces; face ++ ) {
+
+					var start = dataOffset + face * faceLength;
+					var normalX = reader.getFloat32( start, true );
+					var normalY = reader.getFloat32( start + 4, true );
+					var normalZ = reader.getFloat32( start + 8, true );
+
+					if ( hasColors ) {
+
+						var packedColor = reader.getUint16( start + 48, true );
+
+						if ( ( packedColor & 0x8000 ) === 0 ) {
+
+							// facet has its own unique color
+
+							r = ( packedColor & 0x1F ) / 31;
+							g = ( ( packedColor >> 5 ) & 0x1F ) / 31;
+							b = ( ( packedColor >> 10 ) & 0x1F ) / 31;
+
+						} else {
+
+							r = defaultR;
+							g = defaultG;
+							b = defaultB;
+
+						}
+
+					}
+
+					for ( var i = 1; i <= 3; i ++ ) {
+
+						var vertexstart = start + i * 12;
+						var componentIdx = ( face * 3 * 3 ) + ( ( i - 1 ) * 3 );
+
+						vertices[ componentIdx ] = reader.getFloat32( vertexstart, true );
+						vertices[ componentIdx + 1 ] = reader.getFloat32( vertexstart + 4, true );
+						vertices[ componentIdx + 2 ] = reader.getFloat32( vertexstart + 8, true );
+
+						normals[ componentIdx ] = normalX;
+						normals[ componentIdx + 1 ] = normalY;
+						normals[ componentIdx + 2 ] = normalZ;
+
+						if ( hasColors ) {
+
+							colors[ componentIdx ] = r;
+							colors[ componentIdx + 1 ] = g;
+							colors[ componentIdx + 2 ] = b;
+
+						}
+
+					}
+
+				}
+
+				geometry.setAttribute( 'position', new BufferAttribute( vertices, 3 ) );
+				geometry.setAttribute( 'normal', new BufferAttribute( normals, 3 ) );
+
+				if ( hasColors ) {
+
+					geometry.setAttribute( 'color', new BufferAttribute( colors, 3 ) );
+					geometry.hasColors = true;
+					geometry.alpha = alpha;
+
+				}
+
+				return geometry;
+
+			}
+
+			function parseASCII( data ) {
+
+				var geometry = new BufferGeometry();
+				var patternSolid = /solid([\s\S]*?)endsolid/g;
+				var patternFace = /facet([\s\S]*?)endfacet/g;
+				var faceCounter = 0;
+
+				var patternFloat = /[\s]+([+-]?(?:\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?)/.source;
+				var patternVertex = new RegExp( 'vertex' + patternFloat + patternFloat + patternFloat, 'g' );
+				var patternNormal = new RegExp( 'normal' + patternFloat + patternFloat + patternFloat, 'g' );
+
+				var vertices = [];
+				var normals = [];
+
+				var normal = new Vector3();
+
+				var result;
+
+				var groupCount = 0;
+				var startVertex = 0;
+				var endVertex = 0;
+
+				while ( ( result = patternSolid.exec( data ) ) !== null ) {
+
+					startVertex = endVertex;
+
+					var solid = result[ 0 ];
+
+					while ( ( result = patternFace.exec( solid ) ) !== null ) {
+
+						var vertexCountPerFace = 0;
+						var normalCountPerFace = 0;
+
+						var text = result[ 0 ];
+
+						while ( ( result = patternNormal.exec( text ) ) !== null ) {
+
+							normal.x = parseFloat( result[ 1 ] );
+							normal.y = parseFloat( result[ 2 ] );
+							normal.z = parseFloat( result[ 3 ] );
+							normalCountPerFace ++;
+
+						}
+
+						while ( ( result = patternVertex.exec( text ) ) !== null ) {
+
+							vertices.push( parseFloat( result[ 1 ] ), parseFloat( result[ 2 ] ), parseFloat( result[ 3 ] ) );
+							normals.push( normal.x, normal.y, normal.z );
+							vertexCountPerFace ++;
+							endVertex ++;
+
+						}
+
+						// every face have to own ONE valid normal
+
+						if ( normalCountPerFace !== 1 ) {
+
+							console.error( 'THREE.STLLoader: Something isn\'t right with the normal of face number ' + faceCounter );
+
+						}
+
+						// each face have to own THREE valid vertices
+
+						if ( vertexCountPerFace !== 3 ) {
+
+							console.error( 'THREE.STLLoader: Something isn\'t right with the vertices of face number ' + faceCounter );
+
+						}
+
+						faceCounter ++;
+
+					}
+
+					var start = startVertex;
+					var count = endVertex - startVertex;
+
+					geometry.addGroup( start, count, groupCount );
+					groupCount ++;
+
+				}
+
+				geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+				geometry.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+
+				return geometry;
+
+			}
+
+			function ensureString( buffer ) {
+
+				if ( typeof buffer !== 'string' ) {
+
+					return LoaderUtils.decodeText( new Uint8Array( buffer ) );
+
+				}
+
+				return buffer;
+
+			}
+
+			function ensureBinary( buffer ) {
+
+				if ( typeof buffer === 'string' ) {
+
+					var array_buffer = new Uint8Array( buffer.length );
+					for ( var i = 0; i < buffer.length; i ++ ) {
+
+						array_buffer[ i ] = buffer.charCodeAt( i ) & 0xff; // implicitly assumes little-endian
+
+					}
+
+					return array_buffer.buffer || array_buffer;
+
+				} else {
+
+					return buffer;
+
+				}
+
+			}
+
+			// start
+
+			var binData = ensureBinary( data );
+
+			return isBinary( binData ) ? parseBinary( binData ) : parseASCII( ensureString( data ) );
+
+		}
+
+	} );
 
 	/**
 	 * @author Daosheng Mu / https://github.com/DaoshengMu/
@@ -58226,2014 +59210,6 @@
 
 	} );
 
-	/**
-	 * @author mrdoob / http://mrdoob.com/
-	 */
-
-	var OBJLoader = ( function () {
-
-		// o object_name | g group_name
-		var object_pattern = /^[og]\s*(.+)?/;
-		// mtllib file_reference
-		var material_library_pattern = /^mtllib /;
-		// usemtl material_name
-		var material_use_pattern = /^usemtl /;
-		// usemap map_name
-		var map_use_pattern = /^usemap /;
-
-		var vA = new Vector3();
-		var vB = new Vector3();
-		var vC = new Vector3();
-
-		var ab = new Vector3();
-		var cb = new Vector3();
-
-		function ParserState() {
-
-			var state = {
-				objects: [],
-				object: {},
-
-				vertices: [],
-				normals: [],
-				colors: [],
-				uvs: [],
-
-				materials: {},
-				materialLibraries: [],
-
-				startObject: function ( name, fromDeclaration ) {
-
-					// If the current object (initial from reset) is not from a g/o declaration in the parsed
-					// file. We need to use it for the first parsed g/o to keep things in sync.
-					if ( this.object && this.object.fromDeclaration === false ) {
-
-						this.object.name = name;
-						this.object.fromDeclaration = ( fromDeclaration !== false );
-						return;
-
-					}
-
-					var previousMaterial = ( this.object && typeof this.object.currentMaterial === 'function' ? this.object.currentMaterial() : undefined );
-
-					if ( this.object && typeof this.object._finalize === 'function' ) {
-
-						this.object._finalize( true );
-
-					}
-
-					this.object = {
-						name: name || '',
-						fromDeclaration: ( fromDeclaration !== false ),
-
-						geometry: {
-							vertices: [],
-							normals: [],
-							colors: [],
-							uvs: [],
-							hasNormalIndices: false,
-							hasUVIndices: false
-						},
-						materials: [],
-						smooth: true,
-
-						startMaterial: function ( name, libraries ) {
-
-							var previous = this._finalize( false );
-
-							// New usemtl declaration overwrites an inherited material, except if faces were declared
-							// after the material, then it must be preserved for proper MultiMaterial continuation.
-							if ( previous && ( previous.inherited || previous.groupCount <= 0 ) ) {
-
-								this.materials.splice( previous.index, 1 );
-
-							}
-
-							var material = {
-								index: this.materials.length,
-								name: name || '',
-								mtllib: ( Array.isArray( libraries ) && libraries.length > 0 ? libraries[ libraries.length - 1 ] : '' ),
-								smooth: ( previous !== undefined ? previous.smooth : this.smooth ),
-								groupStart: ( previous !== undefined ? previous.groupEnd : 0 ),
-								groupEnd: - 1,
-								groupCount: - 1,
-								inherited: false,
-
-								clone: function ( index ) {
-
-									var cloned = {
-										index: ( typeof index === 'number' ? index : this.index ),
-										name: this.name,
-										mtllib: this.mtllib,
-										smooth: this.smooth,
-										groupStart: 0,
-										groupEnd: - 1,
-										groupCount: - 1,
-										inherited: false
-									};
-									cloned.clone = this.clone.bind( cloned );
-									return cloned;
-
-								}
-							};
-
-							this.materials.push( material );
-
-							return material;
-
-						},
-
-						currentMaterial: function () {
-
-							if ( this.materials.length > 0 ) {
-
-								return this.materials[ this.materials.length - 1 ];
-
-							}
-
-							return undefined;
-
-						},
-
-						_finalize: function ( end ) {
-
-							var lastMultiMaterial = this.currentMaterial();
-							if ( lastMultiMaterial && lastMultiMaterial.groupEnd === - 1 ) {
-
-								lastMultiMaterial.groupEnd = this.geometry.vertices.length / 3;
-								lastMultiMaterial.groupCount = lastMultiMaterial.groupEnd - lastMultiMaterial.groupStart;
-								lastMultiMaterial.inherited = false;
-
-							}
-
-							// Ignore objects tail materials if no face declarations followed them before a new o/g started.
-							if ( end && this.materials.length > 1 ) {
-
-								for ( var mi = this.materials.length - 1; mi >= 0; mi -- ) {
-
-									if ( this.materials[ mi ].groupCount <= 0 ) {
-
-										this.materials.splice( mi, 1 );
-
-									}
-
-								}
-
-							}
-
-							// Guarantee at least one empty material, this makes the creation later more straight forward.
-							if ( end && this.materials.length === 0 ) {
-
-								this.materials.push( {
-									name: '',
-									smooth: this.smooth
-								} );
-
-							}
-
-							return lastMultiMaterial;
-
-						}
-					};
-
-					// Inherit previous objects material.
-					// Spec tells us that a declared material must be set to all objects until a new material is declared.
-					// If a usemtl declaration is encountered while this new object is being parsed, it will
-					// overwrite the inherited material. Exception being that there was already face declarations
-					// to the inherited material, then it will be preserved for proper MultiMaterial continuation.
-
-					if ( previousMaterial && previousMaterial.name && typeof previousMaterial.clone === 'function' ) {
-
-						var declared = previousMaterial.clone( 0 );
-						declared.inherited = true;
-						this.object.materials.push( declared );
-
-					}
-
-					this.objects.push( this.object );
-
-				},
-
-				finalize: function () {
-
-					if ( this.object && typeof this.object._finalize === 'function' ) {
-
-						this.object._finalize( true );
-
-					}
-
-				},
-
-				parseVertexIndex: function ( value, len ) {
-
-					var index = parseInt( value, 10 );
-					return ( index >= 0 ? index - 1 : index + len / 3 ) * 3;
-
-				},
-
-				parseNormalIndex: function ( value, len ) {
-
-					var index = parseInt( value, 10 );
-					return ( index >= 0 ? index - 1 : index + len / 3 ) * 3;
-
-				},
-
-				parseUVIndex: function ( value, len ) {
-
-					var index = parseInt( value, 10 );
-					return ( index >= 0 ? index - 1 : index + len / 2 ) * 2;
-
-				},
-
-				addVertex: function ( a, b, c ) {
-
-					var src = this.vertices;
-					var dst = this.object.geometry.vertices;
-
-					dst.push( src[ a + 0 ], src[ a + 1 ], src[ a + 2 ] );
-					dst.push( src[ b + 0 ], src[ b + 1 ], src[ b + 2 ] );
-					dst.push( src[ c + 0 ], src[ c + 1 ], src[ c + 2 ] );
-
-				},
-
-				addVertexPoint: function ( a ) {
-
-					var src = this.vertices;
-					var dst = this.object.geometry.vertices;
-
-					dst.push( src[ a + 0 ], src[ a + 1 ], src[ a + 2 ] );
-
-				},
-
-				addVertexLine: function ( a ) {
-
-					var src = this.vertices;
-					var dst = this.object.geometry.vertices;
-
-					dst.push( src[ a + 0 ], src[ a + 1 ], src[ a + 2 ] );
-
-				},
-
-				addNormal: function ( a, b, c ) {
-
-					var src = this.normals;
-					var dst = this.object.geometry.normals;
-
-					dst.push( src[ a + 0 ], src[ a + 1 ], src[ a + 2 ] );
-					dst.push( src[ b + 0 ], src[ b + 1 ], src[ b + 2 ] );
-					dst.push( src[ c + 0 ], src[ c + 1 ], src[ c + 2 ] );
-
-				},
-
-				addFaceNormal: function ( a, b, c ) {
-
-					var src = this.vertices;
-					var dst = this.object.geometry.normals;
-
-					vA.fromArray( src, a );
-					vB.fromArray( src, b );
-					vC.fromArray( src, c );
-
-					cb.subVectors( vC, vB );
-					ab.subVectors( vA, vB );
-					cb.cross( ab );
-
-					cb.normalize();
-
-					dst.push( cb.x, cb.y, cb.z );
-					dst.push( cb.x, cb.y, cb.z );
-					dst.push( cb.x, cb.y, cb.z );
-
-				},
-
-				addColor: function ( a, b, c ) {
-
-					var src = this.colors;
-					var dst = this.object.geometry.colors;
-
-					if ( src[ a ] !== undefined ) dst.push( src[ a + 0 ], src[ a + 1 ], src[ a + 2 ] );
-					if ( src[ b ] !== undefined ) dst.push( src[ b + 0 ], src[ b + 1 ], src[ b + 2 ] );
-					if ( src[ c ] !== undefined ) dst.push( src[ c + 0 ], src[ c + 1 ], src[ c + 2 ] );
-
-				},
-
-				addUV: function ( a, b, c ) {
-
-					var src = this.uvs;
-					var dst = this.object.geometry.uvs;
-
-					dst.push( src[ a + 0 ], src[ a + 1 ] );
-					dst.push( src[ b + 0 ], src[ b + 1 ] );
-					dst.push( src[ c + 0 ], src[ c + 1 ] );
-
-				},
-
-				addDefaultUV: function () {
-
-					var dst = this.object.geometry.uvs;
-
-					dst.push( 0, 0 );
-					dst.push( 0, 0 );
-					dst.push( 0, 0 );
-
-				},
-
-				addUVLine: function ( a ) {
-
-					var src = this.uvs;
-					var dst = this.object.geometry.uvs;
-
-					dst.push( src[ a + 0 ], src[ a + 1 ] );
-
-				},
-
-				addFace: function ( a, b, c, ua, ub, uc, na, nb, nc ) {
-
-					var vLen = this.vertices.length;
-
-					var ia = this.parseVertexIndex( a, vLen );
-					var ib = this.parseVertexIndex( b, vLen );
-					var ic = this.parseVertexIndex( c, vLen );
-
-					this.addVertex( ia, ib, ic );
-					this.addColor( ia, ib, ic );
-
-					// normals
-
-					if ( na !== undefined && na !== '' ) {
-
-						var nLen = this.normals.length;
-
-						ia = this.parseNormalIndex( na, nLen );
-						ib = this.parseNormalIndex( nb, nLen );
-						ic = this.parseNormalIndex( nc, nLen );
-
-						this.addNormal( ia, ib, ic );
-
-						this.object.geometry.hasNormalIndices = true;
-
-					} else {
-
-						this.addFaceNormal( ia, ib, ic );
-
-					}
-
-					// uvs
-
-					if ( ua !== undefined && ua !== '' ) {
-
-						var uvLen = this.uvs.length;
-
-						ia = this.parseUVIndex( ua, uvLen );
-						ib = this.parseUVIndex( ub, uvLen );
-						ic = this.parseUVIndex( uc, uvLen );
-
-						this.addUV( ia, ib, ic );
-
-						this.object.geometry.hasUVIndices = true;
-
-					} else {
-
-						// add placeholder values (for inconsistent face definitions)
-
-						this.addDefaultUV();
-
-					}
-
-				},
-
-				addPointGeometry: function ( vertices ) {
-
-					this.object.geometry.type = 'Points';
-
-					var vLen = this.vertices.length;
-
-					for ( var vi = 0, l = vertices.length; vi < l; vi ++ ) {
-
-						this.addVertexPoint( this.parseVertexIndex( vertices[ vi ], vLen ) );
-
-					}
-
-				},
-
-				addLineGeometry: function ( vertices, uvs ) {
-
-					this.object.geometry.type = 'Line';
-
-					var vLen = this.vertices.length;
-					var uvLen = this.uvs.length;
-
-					for ( var vi = 0, l = vertices.length; vi < l; vi ++ ) {
-
-						this.addVertexLine( this.parseVertexIndex( vertices[ vi ], vLen ) );
-
-					}
-
-					for ( var uvi = 0, l = uvs.length; uvi < l; uvi ++ ) {
-
-						this.addUVLine( this.parseUVIndex( uvs[ uvi ], uvLen ) );
-
-					}
-
-				}
-
-			};
-
-			state.startObject( '', false );
-
-			return state;
-
-		}
-
-		//
-
-		function OBJLoader( manager ) {
-
-			Loader.call( this, manager );
-
-			this.materials = null;
-
-		}
-
-		OBJLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
-
-			constructor: OBJLoader,
-
-			load: function ( url, onLoad, onProgress, onError ) {
-
-				var scope = this;
-
-				var loader = new FileLoader( scope.manager );
-				loader.setPath( this.path );
-				loader.load( url, function ( text ) {
-
-					try {
-
-						onLoad( scope.parse( text ) );
-
-					} catch ( e ) {
-
-						if ( onError ) {
-
-							onError( e );
-
-						} else {
-
-							console.error( e );
-
-						}
-
-						scope.manager.itemError( url );
-
-					}
-
-				}, onProgress, onError );
-
-			},
-
-			setMaterials: function ( materials ) {
-
-				this.materials = materials;
-
-				return this;
-
-			},
-
-			parse: function ( text ) {
-
-				var state = new ParserState();
-
-				if ( text.indexOf( '\r\n' ) !== - 1 ) {
-
-					// This is faster than String.split with regex that splits on both
-					text = text.replace( /\r\n/g, '\n' );
-
-				}
-
-				if ( text.indexOf( '\\\n' ) !== - 1 ) {
-
-					// join lines separated by a line continuation character (\)
-					text = text.replace( /\\\n/g, '' );
-
-				}
-
-				var lines = text.split( '\n' );
-				var line = '', lineFirstChar = '';
-				var lineLength = 0;
-				var result = [];
-
-				// Faster to just trim left side of the line. Use if available.
-				var trimLeft = ( typeof ''.trimLeft === 'function' );
-
-				for ( var i = 0, l = lines.length; i < l; i ++ ) {
-
-					line = lines[ i ];
-
-					line = trimLeft ? line.trimLeft() : line.trim();
-
-					lineLength = line.length;
-
-					if ( lineLength === 0 ) continue;
-
-					lineFirstChar = line.charAt( 0 );
-
-					// @todo invoke passed in handler if any
-					if ( lineFirstChar === '#' ) continue;
-
-					if ( lineFirstChar === 'v' ) {
-
-						var data = line.split( /\s+/ );
-
-						switch ( data[ 0 ] ) {
-
-							case 'v':
-								state.vertices.push(
-									parseFloat( data[ 1 ] ),
-									parseFloat( data[ 2 ] ),
-									parseFloat( data[ 3 ] )
-								);
-								if ( data.length >= 7 ) {
-
-									state.colors.push(
-										parseFloat( data[ 4 ] ),
-										parseFloat( data[ 5 ] ),
-										parseFloat( data[ 6 ] )
-
-									);
-
-								} else {
-
-									// if no colors are defined, add placeholders so color and vertex indices match
-
-									state.colors.push( undefined, undefined, undefined );
-
-								}
-
-								break;
-							case 'vn':
-								state.normals.push(
-									parseFloat( data[ 1 ] ),
-									parseFloat( data[ 2 ] ),
-									parseFloat( data[ 3 ] )
-								);
-								break;
-							case 'vt':
-								state.uvs.push(
-									parseFloat( data[ 1 ] ),
-									parseFloat( data[ 2 ] )
-								);
-								break;
-
-						}
-
-					} else if ( lineFirstChar === 'f' ) {
-
-						var lineData = line.substr( 1 ).trim();
-						var vertexData = lineData.split( /\s+/ );
-						var faceVertices = [];
-
-						// Parse the face vertex data into an easy to work with format
-
-						for ( var j = 0, jl = vertexData.length; j < jl; j ++ ) {
-
-							var vertex = vertexData[ j ];
-
-							if ( vertex.length > 0 ) {
-
-								var vertexParts = vertex.split( '/' );
-								faceVertices.push( vertexParts );
-
-							}
-
-						}
-
-						// Draw an edge between the first vertex and all subsequent vertices to form an n-gon
-
-						var v1 = faceVertices[ 0 ];
-
-						for ( var j = 1, jl = faceVertices.length - 1; j < jl; j ++ ) {
-
-							var v2 = faceVertices[ j ];
-							var v3 = faceVertices[ j + 1 ];
-
-							state.addFace(
-								v1[ 0 ], v2[ 0 ], v3[ 0 ],
-								v1[ 1 ], v2[ 1 ], v3[ 1 ],
-								v1[ 2 ], v2[ 2 ], v3[ 2 ]
-							);
-
-						}
-
-					} else if ( lineFirstChar === 'l' ) {
-
-						var lineParts = line.substring( 1 ).trim().split( " " );
-						var lineVertices = [], lineUVs = [];
-
-						if ( line.indexOf( "/" ) === - 1 ) {
-
-							lineVertices = lineParts;
-
-						} else {
-
-							for ( var li = 0, llen = lineParts.length; li < llen; li ++ ) {
-
-								var parts = lineParts[ li ].split( "/" );
-
-								if ( parts[ 0 ] !== "" ) lineVertices.push( parts[ 0 ] );
-								if ( parts[ 1 ] !== "" ) lineUVs.push( parts[ 1 ] );
-
-							}
-
-						}
-
-						state.addLineGeometry( lineVertices, lineUVs );
-
-					} else if ( lineFirstChar === 'p' ) {
-
-						var lineData = line.substr( 1 ).trim();
-						var pointData = lineData.split( " " );
-
-						state.addPointGeometry( pointData );
-
-					} else if ( ( result = object_pattern.exec( line ) ) !== null ) {
-
-						// o object_name
-						// or
-						// g group_name
-
-						// WORKAROUND: https://bugs.chromium.org/p/v8/issues/detail?id=2869
-						// var name = result[ 0 ].substr( 1 ).trim();
-						var name = ( " " + result[ 0 ].substr( 1 ).trim() ).substr( 1 );
-
-						state.startObject( name );
-
-					} else if ( material_use_pattern.test( line ) ) {
-
-						// material
-
-						state.object.startMaterial( line.substring( 7 ).trim(), state.materialLibraries );
-
-					} else if ( material_library_pattern.test( line ) ) {
-
-						// mtl file
-
-						state.materialLibraries.push( line.substring( 7 ).trim() );
-
-					} else if ( map_use_pattern.test( line ) ) {
-
-						// the line is parsed but ignored since the loader assumes textures are defined MTL files
-						// (according to https://www.okino.com/conv/imp_wave.htm, 'usemap' is the old-style Wavefront texture reference method)
-
-						console.warn( 'THREE.OBJLoader: Rendering identifier "usemap" not supported. Textures must be defined in MTL files.' );
-
-					} else if ( lineFirstChar === 's' ) {
-
-						result = line.split( ' ' );
-
-						// smooth shading
-
-						// @todo Handle files that have varying smooth values for a set of faces inside one geometry,
-						// but does not define a usemtl for each face set.
-						// This should be detected and a dummy material created (later MultiMaterial and geometry groups).
-						// This requires some care to not create extra material on each smooth value for "normal" obj files.
-						// where explicit usemtl defines geometry groups.
-						// Example asset: examples/models/obj/cerberus/Cerberus.obj
-
-						/*
-						 * http://paulbourke.net/dataformats/obj/
-						 * or
-						 * http://www.cs.utah.edu/~boulos/cs3505/obj_spec.pdf
-						 *
-						 * From chapter "Grouping" Syntax explanation "s group_number":
-						 * "group_number is the smoothing group number. To turn off smoothing groups, use a value of 0 or off.
-						 * Polygonal elements use group numbers to put elements in different smoothing groups. For free-form
-						 * surfaces, smoothing groups are either turned on or off; there is no difference between values greater
-						 * than 0."
-						 */
-						if ( result.length > 1 ) {
-
-							var value = result[ 1 ].trim().toLowerCase();
-							state.object.smooth = ( value !== '0' && value !== 'off' );
-
-						} else {
-
-							// ZBrush can produce "s" lines #11707
-							state.object.smooth = true;
-
-						}
-
-						var material = state.object.currentMaterial();
-						if ( material ) material.smooth = state.object.smooth;
-
-					} else {
-
-						// Handle null terminated files without exception
-						if ( line === '\0' ) continue;
-
-						console.warn( 'THREE.OBJLoader: Unexpected line: "' + line + '"' );
-
-					}
-
-				}
-
-				state.finalize();
-
-				var container = new Group();
-				container.materialLibraries = [].concat( state.materialLibraries );
-
-				for ( var i = 0, l = state.objects.length; i < l; i ++ ) {
-
-					var object = state.objects[ i ];
-					var geometry = object.geometry;
-					var materials = object.materials;
-					var isLine = ( geometry.type === 'Line' );
-					var isPoints = ( geometry.type === 'Points' );
-					var hasVertexColors = false;
-
-					// Skip o/g line declarations that did not follow with any faces
-					if ( geometry.vertices.length === 0 ) continue;
-
-					var buffergeometry = new BufferGeometry();
-
-					buffergeometry.setAttribute( 'position', new Float32BufferAttribute( geometry.vertices, 3 ) );
-
-					if ( geometry.hasNormalIndices === true ) {
-
-						buffergeometry.setAttribute( 'normal', new Float32BufferAttribute( geometry.normals, 3 ) );
-
-					}
-
-					if ( geometry.colors.length > 0 ) {
-
-						hasVertexColors = true;
-						buffergeometry.setAttribute( 'color', new Float32BufferAttribute( geometry.colors, 3 ) );
-
-					}
-
-					if ( geometry.hasUVIndices === true ) {
-
-						buffergeometry.setAttribute( 'uv', new Float32BufferAttribute( geometry.uvs, 2 ) );
-
-					}
-
-					// Create materials
-
-					var createdMaterials = [];
-
-					for ( var mi = 0, miLen = materials.length; mi < miLen; mi ++ ) {
-
-						var sourceMaterial = materials[ mi ];
-						var materialHash = sourceMaterial.name + '_' + sourceMaterial.smooth + '_' + hasVertexColors;
-						var material = state.materials[ materialHash ];
-
-						if ( this.materials !== null ) {
-
-							material = this.materials.create( sourceMaterial.name );
-
-							// mtl etc. loaders probably can't create line materials correctly, copy properties to a line material.
-							if ( isLine && material && ! ( material instanceof LineBasicMaterial ) ) {
-
-								var materialLine = new LineBasicMaterial();
-								Material.prototype.copy.call( materialLine, material );
-								materialLine.color.copy( material.color );
-								material = materialLine;
-
-							} else if ( isPoints && material && ! ( material instanceof PointsMaterial ) ) {
-
-								var materialPoints = new PointsMaterial( { size: 10, sizeAttenuation: false } );
-								Material.prototype.copy.call( materialPoints, material );
-								materialPoints.color.copy( material.color );
-								materialPoints.map = material.map;
-								material = materialPoints;
-
-							}
-
-						}
-
-						if ( material === undefined ) {
-
-							if ( isLine ) {
-
-								material = new LineBasicMaterial();
-
-							} else if ( isPoints ) {
-
-								material = new PointsMaterial( { size: 1, sizeAttenuation: false } );
-
-							} else {
-
-								material = new MeshPhongMaterial();
-
-							}
-
-							material.name = sourceMaterial.name;
-							material.flatShading = sourceMaterial.smooth ? false : true;
-							material.vertexColors = hasVertexColors;
-
-							state.materials[ materialHash ] = material;
-
-						}
-
-						createdMaterials.push( material );
-
-					}
-
-					// Create mesh
-
-					var mesh;
-
-					if ( createdMaterials.length > 1 ) {
-
-						for ( var mi = 0, miLen = materials.length; mi < miLen; mi ++ ) {
-
-							var sourceMaterial = materials[ mi ];
-							buffergeometry.addGroup( sourceMaterial.groupStart, sourceMaterial.groupCount, mi );
-
-						}
-
-						if ( isLine ) {
-
-							mesh = new LineSegments( buffergeometry, createdMaterials );
-
-						} else if ( isPoints ) {
-
-							mesh = new Points( buffergeometry, createdMaterials );
-
-						} else {
-
-							mesh = new Mesh( buffergeometry, createdMaterials );
-
-						}
-
-					} else {
-
-						if ( isLine ) {
-
-							mesh = new LineSegments( buffergeometry, createdMaterials[ 0 ] );
-
-						} else if ( isPoints ) {
-
-							mesh = new Points( buffergeometry, createdMaterials[ 0 ] );
-
-						} else {
-
-							mesh = new Mesh( buffergeometry, createdMaterials[ 0 ] );
-
-						}
-
-					}
-
-					mesh.name = object.name;
-
-					container.add( mesh );
-
-				}
-
-				return container;
-
-			}
-
-		} );
-
-		return OBJLoader;
-
-	} )();
-
-	/**
-	 * @author qiao / https://github.com/qiao
-	 * @author mrdoob / http://mrdoob.com
-	 * @author alteredq / http://alteredqualia.com/
-	 * @author WestLangley / http://github.com/WestLangley
-	 * @author erich666 / http://erichaines.com
-	 * @author ScieCode / http://github.com/sciecode
-	 */
-
-	// This set of controls performs orbiting, dollying (zooming), and panning.
-	// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
-	//
-	//    Orbit - left mouse / touch: one-finger move
-	//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
-	//    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
-
-	var OrbitControls = function ( object, domElement ) {
-
-		if ( domElement === undefined ) console.warn( 'THREE.OrbitControls: The second parameter "domElement" is now mandatory.' );
-		if ( domElement === document ) console.error( 'THREE.OrbitControls: "document" should not be used as the target "domElement". Please use "renderer.domElement" instead.' );
-
-		this.object = object;
-		this.domElement = domElement;
-
-		// Set to false to disable this control
-		this.enabled = true;
-
-		// "target" sets the location of focus, where the object orbits around
-		this.target = new Vector3();
-
-		// How far you can dolly in and out ( PerspectiveCamera only )
-		this.minDistance = 0;
-		this.maxDistance = Infinity;
-
-		// How far you can zoom in and out ( OrthographicCamera only )
-		this.minZoom = 0;
-		this.maxZoom = Infinity;
-
-		// How far you can orbit vertically, upper and lower limits.
-		// Range is 0 to Math.PI radians.
-		this.minPolarAngle = 0; // radians
-		this.maxPolarAngle = Math.PI; // radians
-
-		// How far you can orbit horizontally, upper and lower limits.
-		// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
-		this.minAzimuthAngle = - Infinity; // radians
-		this.maxAzimuthAngle = Infinity; // radians
-
-		// Set to true to enable damping (inertia)
-		// If damping is enabled, you must call controls.update() in your animation loop
-		this.enableDamping = false;
-		this.dampingFactor = 0.05;
-
-		// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
-		// Set to false to disable zooming
-		this.enableZoom = true;
-		this.zoomSpeed = 1.0;
-
-		// Set to false to disable rotating
-		this.enableRotate = true;
-		this.rotateSpeed = 1.0;
-
-		// Set to false to disable panning
-		this.enablePan = true;
-		this.panSpeed = 1.0;
-		this.screenSpacePanning = false; // if true, pan in screen-space
-		this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
-
-		// Set to true to automatically rotate around the target
-		// If auto-rotate is enabled, you must call controls.update() in your animation loop
-		this.autoRotate = false;
-		this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
-
-		// Set to false to disable use of the keys
-		this.enableKeys = true;
-
-		// The four arrow keys
-		this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
-
-		// Mouse buttons
-		this.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN };
-
-		// Touch fingers
-		this.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN };
-
-		// for reset
-		this.target0 = this.target.clone();
-		this.position0 = this.object.position.clone();
-		this.zoom0 = this.object.zoom;
-
-		//
-		// public methods
-		//
-
-		this.getPolarAngle = function () {
-
-			return spherical.phi;
-
-		};
-
-		this.getAzimuthalAngle = function () {
-
-			return spherical.theta;
-
-		};
-
-		this.saveState = function () {
-
-			scope.target0.copy( scope.target );
-			scope.position0.copy( scope.object.position );
-			scope.zoom0 = scope.object.zoom;
-
-		};
-
-		this.reset = function () {
-
-			scope.target.copy( scope.target0 );
-			scope.object.position.copy( scope.position0 );
-			scope.object.zoom = scope.zoom0;
-
-			scope.object.updateProjectionMatrix();
-			scope.dispatchEvent( changeEvent );
-
-			scope.update();
-
-			state = STATE.NONE;
-
-		};
-
-		// this method is exposed, but perhaps it would be better if we can make it private...
-		this.update = function () {
-
-			var offset = new Vector3();
-
-			// so camera.up is the orbit axis
-			var quat = new Quaternion().setFromUnitVectors( object.up, new Vector3( 0, 1, 0 ) );
-			var quatInverse = quat.clone().inverse();
-
-			var lastPosition = new Vector3();
-			var lastQuaternion = new Quaternion();
-
-			return function update() {
-
-				var position = scope.object.position;
-
-				offset.copy( position ).sub( scope.target );
-
-				// rotate offset to "y-axis-is-up" space
-				offset.applyQuaternion( quat );
-
-				// angle from z-axis around y-axis
-				spherical.setFromVector3( offset );
-
-				if ( scope.autoRotate && state === STATE.NONE ) {
-
-					rotateLeft( getAutoRotationAngle() );
-
-				}
-
-				if ( scope.enableDamping ) {
-
-					spherical.theta += sphericalDelta.theta * scope.dampingFactor;
-					spherical.phi += sphericalDelta.phi * scope.dampingFactor;
-
-				} else {
-
-					spherical.theta += sphericalDelta.theta;
-					spherical.phi += sphericalDelta.phi;
-
-				}
-
-				// restrict theta to be between desired limits
-				spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
-
-				// restrict phi to be between desired limits
-				spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
-
-				spherical.makeSafe();
-
-
-				spherical.radius *= scale;
-
-				// restrict radius to be between desired limits
-				spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
-
-				// move target to panned location
-
-				if ( scope.enableDamping === true ) {
-
-					scope.target.addScaledVector( panOffset, scope.dampingFactor );
-
-				} else {
-
-					scope.target.add( panOffset );
-
-				}
-
-				offset.setFromSpherical( spherical );
-
-				// rotate offset back to "camera-up-vector-is-up" space
-				offset.applyQuaternion( quatInverse );
-
-				position.copy( scope.target ).add( offset );
-
-				scope.object.lookAt( scope.target );
-
-				if ( scope.enableDamping === true ) {
-
-					sphericalDelta.theta *= ( 1 - scope.dampingFactor );
-					sphericalDelta.phi *= ( 1 - scope.dampingFactor );
-
-					panOffset.multiplyScalar( 1 - scope.dampingFactor );
-
-				} else {
-
-					sphericalDelta.set( 0, 0, 0 );
-
-					panOffset.set( 0, 0, 0 );
-
-				}
-
-				scale = 1;
-
-				// update condition is:
-				// min(camera displacement, camera rotation in radians)^2 > EPS
-				// using small-angle approximation cos(x/2) = 1 - x^2 / 8
-
-				if ( zoomChanged ||
-					lastPosition.distanceToSquared( scope.object.position ) > EPS ||
-					8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
-
-					scope.dispatchEvent( changeEvent );
-
-					lastPosition.copy( scope.object.position );
-					lastQuaternion.copy( scope.object.quaternion );
-					zoomChanged = false;
-
-					return true;
-
-				}
-
-				return false;
-
-			};
-
-		}();
-
-		this.dispose = function () {
-
-			scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
-			scope.domElement.removeEventListener( 'mousedown', onMouseDown, false );
-			scope.domElement.removeEventListener( 'wheel', onMouseWheel, false );
-
-			scope.domElement.removeEventListener( 'touchstart', onTouchStart, false );
-			scope.domElement.removeEventListener( 'touchend', onTouchEnd, false );
-			scope.domElement.removeEventListener( 'touchmove', onTouchMove, false );
-
-			document.removeEventListener( 'mousemove', onMouseMove, false );
-			document.removeEventListener( 'mouseup', onMouseUp, false );
-
-			scope.domElement.removeEventListener( 'keydown', onKeyDown, false );
-
-			//scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
-
-		};
-
-		//
-		// internals
-		//
-
-		var scope = this;
-
-		var changeEvent = { type: 'change' };
-		var startEvent = { type: 'start' };
-		var endEvent = { type: 'end' };
-
-		var STATE = {
-			NONE: - 1,
-			ROTATE: 0,
-			DOLLY: 1,
-			PAN: 2,
-			TOUCH_ROTATE: 3,
-			TOUCH_PAN: 4,
-			TOUCH_DOLLY_PAN: 5,
-			TOUCH_DOLLY_ROTATE: 6
-		};
-
-		var state = STATE.NONE;
-
-		var EPS = 0.000001;
-
-		// current position in spherical coordinates
-		var spherical = new Spherical();
-		var sphericalDelta = new Spherical();
-
-		var scale = 1;
-		var panOffset = new Vector3();
-		var zoomChanged = false;
-
-		var rotateStart = new Vector2();
-		var rotateEnd = new Vector2();
-		var rotateDelta = new Vector2();
-
-		var panStart = new Vector2();
-		var panEnd = new Vector2();
-		var panDelta = new Vector2();
-
-		var dollyStart = new Vector2();
-		var dollyEnd = new Vector2();
-		var dollyDelta = new Vector2();
-
-		function getAutoRotationAngle() {
-
-			return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
-
-		}
-
-		function getZoomScale() {
-
-			return Math.pow( 0.95, scope.zoomSpeed );
-
-		}
-
-		function rotateLeft( angle ) {
-
-			sphericalDelta.theta -= angle;
-
-		}
-
-		function rotateUp( angle ) {
-
-			sphericalDelta.phi -= angle;
-
-		}
-
-		var panLeft = function () {
-
-			var v = new Vector3();
-
-			return function panLeft( distance, objectMatrix ) {
-
-				v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
-				v.multiplyScalar( - distance );
-
-				panOffset.add( v );
-
-			};
-
-		}();
-
-		var panUp = function () {
-
-			var v = new Vector3();
-
-			return function panUp( distance, objectMatrix ) {
-
-				if ( scope.screenSpacePanning === true ) {
-
-					v.setFromMatrixColumn( objectMatrix, 1 );
-
-				} else {
-
-					v.setFromMatrixColumn( objectMatrix, 0 );
-					v.crossVectors( scope.object.up, v );
-
-				}
-
-				v.multiplyScalar( distance );
-
-				panOffset.add( v );
-
-			};
-
-		}();
-
-		// deltaX and deltaY are in pixels; right and down are positive
-		var pan = function () {
-
-			var offset = new Vector3();
-
-			return function pan( deltaX, deltaY ) {
-
-				var element = scope.domElement;
-
-				if ( scope.object.isPerspectiveCamera ) {
-
-					// perspective
-					var position = scope.object.position;
-					offset.copy( position ).sub( scope.target );
-					var targetDistance = offset.length();
-
-					// half of the fov is center to top of screen
-					targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
-
-					// we use only clientHeight here so aspect ratio does not distort speed
-					panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix );
-					panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix );
-
-				} else if ( scope.object.isOrthographicCamera ) {
-
-					// orthographic
-					panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix );
-					panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix );
-
-				} else {
-
-					// camera neither orthographic nor perspective
-					console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
-					scope.enablePan = false;
-
-				}
-
-			};
-
-		}();
-
-		function dollyOut( dollyScale ) {
-
-			if ( scope.object.isPerspectiveCamera ) {
-
-				scale /= dollyScale;
-
-			} else if ( scope.object.isOrthographicCamera ) {
-
-				scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom * dollyScale ) );
-				scope.object.updateProjectionMatrix();
-				zoomChanged = true;
-
-			} else {
-
-				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
-				scope.enableZoom = false;
-
-			}
-
-		}
-
-		function dollyIn( dollyScale ) {
-
-			if ( scope.object.isPerspectiveCamera ) {
-
-				scale *= dollyScale;
-
-			} else if ( scope.object.isOrthographicCamera ) {
-
-				scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom / dollyScale ) );
-				scope.object.updateProjectionMatrix();
-				zoomChanged = true;
-
-			} else {
-
-				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
-				scope.enableZoom = false;
-
-			}
-
-		}
-
-		//
-		// event callbacks - update the object state
-		//
-
-		function handleMouseDownRotate( event ) {
-
-			rotateStart.set( event.clientX, event.clientY );
-
-		}
-
-		function handleMouseDownDolly( event ) {
-
-			dollyStart.set( event.clientX, event.clientY );
-
-		}
-
-		function handleMouseDownPan( event ) {
-
-			panStart.set( event.clientX, event.clientY );
-
-		}
-
-		function handleMouseMoveRotate( event ) {
-
-			rotateEnd.set( event.clientX, event.clientY );
-
-			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
-
-			var element = scope.domElement;
-
-			rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
-
-			rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
-
-			rotateStart.copy( rotateEnd );
-
-			scope.update();
-
-		}
-
-		function handleMouseMoveDolly( event ) {
-
-			dollyEnd.set( event.clientX, event.clientY );
-
-			dollyDelta.subVectors( dollyEnd, dollyStart );
-
-			if ( dollyDelta.y > 0 ) {
-
-				dollyOut( getZoomScale() );
-
-			} else if ( dollyDelta.y < 0 ) {
-
-				dollyIn( getZoomScale() );
-
-			}
-
-			dollyStart.copy( dollyEnd );
-
-			scope.update();
-
-		}
-
-		function handleMouseMovePan( event ) {
-
-			panEnd.set( event.clientX, event.clientY );
-
-			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
-
-			pan( panDelta.x, panDelta.y );
-
-			panStart.copy( panEnd );
-
-			scope.update();
-
-		}
-
-		function handleMouseWheel( event ) {
-
-			if ( event.deltaY < 0 ) {
-
-				dollyIn( getZoomScale() );
-
-			} else if ( event.deltaY > 0 ) {
-
-				dollyOut( getZoomScale() );
-
-			}
-
-			scope.update();
-
-		}
-
-		function handleKeyDown( event ) {
-
-			var needsUpdate = false;
-
-			switch ( event.keyCode ) {
-
-				case scope.keys.UP:
-					pan( 0, scope.keyPanSpeed );
-					needsUpdate = true;
-					break;
-
-				case scope.keys.BOTTOM:
-					pan( 0, - scope.keyPanSpeed );
-					needsUpdate = true;
-					break;
-
-				case scope.keys.LEFT:
-					pan( scope.keyPanSpeed, 0 );
-					needsUpdate = true;
-					break;
-
-				case scope.keys.RIGHT:
-					pan( - scope.keyPanSpeed, 0 );
-					needsUpdate = true;
-					break;
-
-			}
-
-			if ( needsUpdate ) {
-
-				// prevent the browser from scrolling on cursor keys
-				event.preventDefault();
-
-				scope.update();
-
-			}
-
-
-		}
-
-		function handleTouchStartRotate( event ) {
-
-			if ( event.touches.length == 1 ) {
-
-				rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-
-			} else {
-
-				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
-				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
-
-				rotateStart.set( x, y );
-
-			}
-
-		}
-
-		function handleTouchStartPan( event ) {
-
-			if ( event.touches.length == 1 ) {
-
-				panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-
-			} else {
-
-				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
-				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
-
-				panStart.set( x, y );
-
-			}
-
-		}
-
-		function handleTouchStartDolly( event ) {
-
-			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-
-			var distance = Math.sqrt( dx * dx + dy * dy );
-
-			dollyStart.set( 0, distance );
-
-		}
-
-		function handleTouchStartDollyPan( event ) {
-
-			if ( scope.enableZoom ) handleTouchStartDolly( event );
-
-			if ( scope.enablePan ) handleTouchStartPan( event );
-
-		}
-
-		function handleTouchStartDollyRotate( event ) {
-
-			if ( scope.enableZoom ) handleTouchStartDolly( event );
-
-			if ( scope.enableRotate ) handleTouchStartRotate( event );
-
-		}
-
-		function handleTouchMoveRotate( event ) {
-
-			if ( event.touches.length == 1 ) {
-
-				rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-
-			} else {
-
-				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
-				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
-
-				rotateEnd.set( x, y );
-
-			}
-
-			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
-
-			var element = scope.domElement;
-
-			rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
-
-			rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
-
-			rotateStart.copy( rotateEnd );
-
-		}
-
-		function handleTouchMovePan( event ) {
-
-			if ( event.touches.length == 1 ) {
-
-				panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-
-			} else {
-
-				var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
-				var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
-
-				panEnd.set( x, y );
-
-			}
-
-			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
-
-			pan( panDelta.x, panDelta.y );
-
-			panStart.copy( panEnd );
-
-		}
-
-		function handleTouchMoveDolly( event ) {
-
-			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-
-			var distance = Math.sqrt( dx * dx + dy * dy );
-
-			dollyEnd.set( 0, distance );
-
-			dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );
-
-			dollyOut( dollyDelta.y );
-
-			dollyStart.copy( dollyEnd );
-
-		}
-
-		function handleTouchMoveDollyPan( event ) {
-
-			if ( scope.enableZoom ) handleTouchMoveDolly( event );
-
-			if ( scope.enablePan ) handleTouchMovePan( event );
-
-		}
-
-		function handleTouchMoveDollyRotate( event ) {
-
-			if ( scope.enableZoom ) handleTouchMoveDolly( event );
-
-			if ( scope.enableRotate ) handleTouchMoveRotate( event );
-
-		}
-
-		//
-		// event handlers - FSM: listen for events and reset state
-		//
-
-		function onMouseDown( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			// Prevent the browser from scrolling.
-			event.preventDefault();
-
-			// Manually set the focus since calling preventDefault above
-			// prevents the browser from setting it automatically.
-
-			scope.domElement.focus ? scope.domElement.focus() : window.focus();
-
-			var mouseAction;
-
-			switch ( event.button ) {
-
-				case 0:
-
-					mouseAction = scope.mouseButtons.LEFT;
-					break;
-
-				case 1:
-
-					mouseAction = scope.mouseButtons.MIDDLE;
-					break;
-
-				case 2:
-
-					mouseAction = scope.mouseButtons.RIGHT;
-					break;
-
-				default:
-
-					mouseAction = - 1;
-
-			}
-
-			switch ( mouseAction ) {
-
-				case MOUSE.DOLLY:
-
-					if ( scope.enableZoom === false ) return;
-
-					handleMouseDownDolly( event );
-
-					state = STATE.DOLLY;
-
-					break;
-
-				case MOUSE.ROTATE:
-
-					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
-
-						if ( scope.enablePan === false ) return;
-
-						handleMouseDownPan( event );
-
-						state = STATE.PAN;
-
-					} else {
-
-						if ( scope.enableRotate === false ) return;
-
-						handleMouseDownRotate( event );
-
-						state = STATE.ROTATE;
-
-					}
-
-					break;
-
-				case MOUSE.PAN:
-
-					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
-
-						if ( scope.enableRotate === false ) return;
-
-						handleMouseDownRotate( event );
-
-						state = STATE.ROTATE;
-
-					} else {
-
-						if ( scope.enablePan === false ) return;
-
-						handleMouseDownPan( event );
-
-						state = STATE.PAN;
-
-					}
-
-					break;
-
-				default:
-
-					state = STATE.NONE;
-
-			}
-
-			if ( state !== STATE.NONE ) {
-
-				document.addEventListener( 'mousemove', onMouseMove, false );
-				document.addEventListener( 'mouseup', onMouseUp, false );
-
-				scope.dispatchEvent( startEvent );
-
-			}
-
-		}
-
-		function onMouseMove( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault();
-
-			switch ( state ) {
-
-				case STATE.ROTATE:
-
-					if ( scope.enableRotate === false ) return;
-
-					handleMouseMoveRotate( event );
-
-					break;
-
-				case STATE.DOLLY:
-
-					if ( scope.enableZoom === false ) return;
-
-					handleMouseMoveDolly( event );
-
-					break;
-
-				case STATE.PAN:
-
-					if ( scope.enablePan === false ) return;
-
-					handleMouseMovePan( event );
-
-					break;
-
-			}
-
-		}
-
-		function onMouseUp( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			document.removeEventListener( 'mousemove', onMouseMove, false );
-			document.removeEventListener( 'mouseup', onMouseUp, false );
-
-			scope.dispatchEvent( endEvent );
-
-			state = STATE.NONE;
-
-		}
-
-		function onMouseWheel( event ) {
-
-			if ( scope.enabled === false || scope.enableZoom === false || ( state !== STATE.NONE && state !== STATE.ROTATE ) ) return;
-
-			event.preventDefault();
-			event.stopPropagation();
-
-			scope.dispatchEvent( startEvent );
-
-			handleMouseWheel( event );
-
-			scope.dispatchEvent( endEvent );
-
-		}
-
-		function onKeyDown( event ) {
-
-			if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
-
-			handleKeyDown( event );
-
-		}
-
-		function onTouchStart( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault(); // prevent scrolling
-
-			switch ( event.touches.length ) {
-
-				case 1:
-
-					switch ( scope.touches.ONE ) {
-
-						case TOUCH.ROTATE:
-
-							if ( scope.enableRotate === false ) return;
-
-							handleTouchStartRotate( event );
-
-							state = STATE.TOUCH_ROTATE;
-
-							break;
-
-						case TOUCH.PAN:
-
-							if ( scope.enablePan === false ) return;
-
-							handleTouchStartPan( event );
-
-							state = STATE.TOUCH_PAN;
-
-							break;
-
-						default:
-
-							state = STATE.NONE;
-
-					}
-
-					break;
-
-				case 2:
-
-					switch ( scope.touches.TWO ) {
-
-						case TOUCH.DOLLY_PAN:
-
-							if ( scope.enableZoom === false && scope.enablePan === false ) return;
-
-							handleTouchStartDollyPan( event );
-
-							state = STATE.TOUCH_DOLLY_PAN;
-
-							break;
-
-						case TOUCH.DOLLY_ROTATE:
-
-							if ( scope.enableZoom === false && scope.enableRotate === false ) return;
-
-							handleTouchStartDollyRotate( event );
-
-							state = STATE.TOUCH_DOLLY_ROTATE;
-
-							break;
-
-						default:
-
-							state = STATE.NONE;
-
-					}
-
-					break;
-
-				default:
-
-					state = STATE.NONE;
-
-			}
-
-			if ( state !== STATE.NONE ) {
-
-				scope.dispatchEvent( startEvent );
-
-			}
-
-		}
-
-		function onTouchMove( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault(); // prevent scrolling
-			event.stopPropagation();
-
-			switch ( state ) {
-
-				case STATE.TOUCH_ROTATE:
-
-					if ( scope.enableRotate === false ) return;
-
-					handleTouchMoveRotate( event );
-
-					scope.update();
-
-					break;
-
-				case STATE.TOUCH_PAN:
-
-					if ( scope.enablePan === false ) return;
-
-					handleTouchMovePan( event );
-
-					scope.update();
-
-					break;
-
-				case STATE.TOUCH_DOLLY_PAN:
-
-					if ( scope.enableZoom === false && scope.enablePan === false ) return;
-
-					handleTouchMoveDollyPan( event );
-
-					scope.update();
-
-					break;
-
-				case STATE.TOUCH_DOLLY_ROTATE:
-
-					if ( scope.enableZoom === false && scope.enableRotate === false ) return;
-
-					handleTouchMoveDollyRotate( event );
-
-					scope.update();
-
-					break;
-
-				default:
-
-					state = STATE.NONE;
-
-			}
-
-		}
-
-		function onTouchEnd( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			scope.dispatchEvent( endEvent );
-
-			state = STATE.NONE;
-
-		}
-
-		function onContextMenu( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault();
-
-		}
-
-		//
-
-		scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
-
-		scope.domElement.addEventListener( 'mousedown', onMouseDown, false );
-		scope.domElement.addEventListener( 'wheel', onMouseWheel, false );
-
-		scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
-		scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
-		scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
-
-		scope.domElement.addEventListener( 'keydown', onKeyDown, false );
-
-		// make sure element can receive keys.
-
-		if ( scope.domElement.tabIndex === - 1 ) {
-
-			scope.domElement.tabIndex = 0;
-
-		}
-
-		// force an update at start
-
-		this.update();
-
-	};
-
-	OrbitControls.prototype = Object.create( EventDispatcher.prototype );
-	OrbitControls.prototype.constructor = OrbitControls;
-
-
-	// This set of controls performs orbiting, dollying (zooming), and panning.
-	// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
-	// This is very similar to OrbitControls, another set of touch behavior
-	//
-	//    Orbit - right mouse, or left mouse + ctrl/meta/shiftKey / touch: two-finger rotate
-	//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
-	//    Pan - left mouse, or arrow keys / touch: one-finger move
-
-	var MapControls = function ( object, domElement ) {
-
-		OrbitControls.call( this, object, domElement );
-
-		this.mouseButtons.LEFT = MOUSE.PAN;
-		this.mouseButtons.RIGHT = MOUSE.ROTATE;
-
-		this.touches.ONE = TOUCH.PAN;
-		this.touches.TWO = TOUCH.DOLLY_ROTATE;
-
-	};
-
-	MapControls.prototype = Object.create( EventDispatcher.prototype );
-	MapControls.prototype.constructor = MapControls;
-
 	function URDFColliderClone(...args) {
 
 	    const proto = Object.getPrototypeOf(this);
@@ -61057,1266 +60033,115 @@
 
 	}
 
-	const tempVec2 = new Vector2();
-
-	// urdf-viewer element
-	// Loads and displays a 3D view of a URDF-formatted robot
-
-	// Events
-	// urdf-change: Fires when the URDF has finished loading and getting processed
-	// urdf-processed: Fires when the URDF has finished loading and getting processed
-	// geometry-loaded: Fires when all the geometry has been fully loaded
-	// ignore-limits-change: Fires when the 'ignore-limits' attribute changes
-	// angle-change: Fires when an angle changes
-	class URDFViewer extends HTMLElement {
-
-	    static get observedAttributes() {
-
-	        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits'];
-
-	    }
-
-	    get package() { return this.getAttribute('package') || ''; }
-	    set package(val) { this.setAttribute('package', val); }
-
-	    get urdf() { return this.getAttribute('urdf') || ''; }
-	    set urdf(val) { this.setAttribute('urdf', val); }
-
-	    get ignoreLimits() { return this.hasAttribute('ignore-limits') || false; }
-	    set ignoreLimits(val) { val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits'); }
-
-	    get up() { return this.getAttribute('up') || '+Z'; }
-	    set up(val) { this.setAttribute('up', val); }
-
-	    get displayShadow() { return this.hasAttribute('display-shadow') || false; }
-	    set displayShadow(val) { val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow'); }
-
-	    get ambientColor() { return this.getAttribute('ambient-color') || '#455A64'; }
-	    set ambientColor(val) { val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color'); }
-
-	    get autoRedraw() { return this.hasAttribute('auto-redraw') || false; }
-	    set autoRedraw(val) { val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw'); }
-
-	    get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
-	    set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
-
-	    get angles() {
-
-	        const angles = {};
-	        if (this.robot) {
-
-	            for (const name in this.robot.joints) angles[name] = this.robot.joints[name].angle;
-
-	        }
-
-	        return angles;
-
-	    }
-	    set angles(val) { this._setAngles(val); }
-
-	    /* Lifecycle Functions */
-	    constructor() {
-
-	        super();
-
-	        this._requestId = 0;
-	        this._dirty = false;
-	        this._loadScheduled = false;
-	        this.robot = null;
-	        this.loadMeshFunc = null;
-	        this.urlModifierFunc = null;
-
-	        // Scene setup
-	        const scene = new Scene();
-
-	        const ambientLight = new HemisphereLight(this.ambientColor, '#000');
-	        ambientLight.groundColor.lerp(ambientLight.color, 0.5);
-	        ambientLight.intensity = 0.5;
-	        ambientLight.position.set(0, 1, 0);
-	        scene.add(ambientLight);
-
-	        // Light setup
-	        const dirLight = new DirectionalLight(0xffffff);
-	        dirLight.position.set(4, 10, 1);
-	        dirLight.shadow.mapSize.width = 2048;
-	        dirLight.shadow.mapSize.height = 2048;
-	        dirLight.castShadow = true;
-	        scene.add(dirLight);
-	        scene.add(dirLight.target);
-
-	        // Renderer setup
-	        const renderer = new WebGLRenderer({ antialias: true, alpha: true });
-	        renderer.setClearColor(0xffffff);
-	        renderer.setClearAlpha(0);
-	        renderer.shadowMap.enabled = true;
-	        renderer.shadowMap.type = PCFSoftShadowMap;
-	        renderer.gammaOutput = true;
-
-	        // Camera setup
-	        const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
-	        camera.position.z = -10;
-
-	        // World setup
-	        const world = new Object3D();
-	        scene.add(world);
-
-	        const plane = new Mesh(
-	            new PlaneBufferGeometry(40, 40),
-	            new ShadowMaterial({ side: DoubleSide, transparent: true, opacity: 0.5 })
-	        );
-	        plane.rotation.x = -Math.PI / 2;
-	        plane.position.y = -0.5;
-	        plane.receiveShadow = true;
-	        plane.scale.set(10, 10, 10);
-	        scene.add(plane);
-
-	        // Controls setup
-	        const controls = new OrbitControls(camera, renderer.domElement);
-	        controls.rotateSpeed = 2.0;
-	        controls.zoomSpeed = 5;
-	        controls.panSpeed = 2;
-	        controls.enableZoom = true;
-	        controls.enableDamping = false;
-	        controls.maxDistance = 50;
-	        controls.minDistance = 0.25;
-	        controls.addEventListener('change', () => this.recenter());
-
-	        this.scene = scene;
-	        this.world = world;
-	        this.renderer = renderer;
-	        this.camera = camera;
-	        this.controls = controls;
-	        this.plane = plane;
-	        this.directionalLight = dirLight;
-	        this.ambientLight = ambientLight;
-
-	        this._setUp(this.up);
-
-	        const _renderLoop = () => {
-
-	            if (this.parentNode) {
-
-	                this.updateSize();
-
-	                if (this._dirty || this.autoRedraw) {
-
-	                    if (!this.noAutoRecenter) {
-
-	                        this._updateEnvironment();
-	                    }
-
-	                    this.renderer.render(scene, camera);
-	                    this._dirty = false;
-
-	                }
-
-	                // update controls after the environment in
-	                // case the controls are retargeted
-	                this.controls.update();
-
-	            }
-	            this._renderLoopId = requestAnimationFrame(_renderLoop);
-
-	        };
-	        _renderLoop();
-
-	    }
-
-	    connectedCallback() {
-
-	        // Add our initialize styles for the element if they haven't
-	        // been added yet
-	        if (!this.constructor._styletag) {
-
-	            const styletag = document.createElement('style');
-	            styletag.innerHTML =
-	            `
-                ${ this.tagName } { display: block; }
-                ${ this.tagName } canvas {
-                    width: 100%;
-                    height: 100%;
-                }
-            `;
-	            document.head.appendChild(styletag);
-	            this.constructor._styletag = styletag;
-
-	        }
-
-	        // add the renderer
-	        if (this.childElementCount === 0) {
-
-	            this.appendChild(this.renderer.domElement);
-
-	        }
-
-	        this.updateSize();
-	        requestAnimationFrame(() => this.updateSize());
-
-	    }
-
-	    disconnectedCallback() {
-
-	        cancelAnimationFrame(this._renderLoopId);
-
-	    }
-
-	    attributeChangedCallback(attr, oldval, newval) {
-
-	        this.recenter();
-
-	        switch (attr) {
-
-	            case 'package':
-	            case 'urdf': {
-
-	                this._scheduleLoad();
-	                break;
-
-	            }
-
-	            case 'up': {
-
-	                this._setUp(this.up);
-	                break;
-
-	            }
-
-	            case 'ambient-color': {
-
-	                this.ambientLight.color.set(this.ambientColor);
-	                this.ambientLight.groundColor.set('#000').lerp(this.ambientLight.color, 0.5);
-	                break;
-
-	            }
-
-	            case 'ignore-limits': {
-
-	                this._setIgnoreLimits(this.ignoreLimits, true);
-	                break;
-
-	            }
-
-	        }
-
-	    }
-
-	    /* Public API */
-	    updateSize() {
-
-	        const r = this.renderer;
-	        const w = this.clientWidth;
-	        const h = this.clientHeight;
-	        const currsize = r.getSize(tempVec2);
-
-	        if (currsize.width !== w || currsize.height !== h) {
-
-	            this.recenter();
-
-	        }
-
-	        r.setPixelRatio(window.devicePixelRatio);
-	        r.setSize(w, h, false);
-
-	        this.camera.aspect = w / h;
-	        this.camera.updateProjectionMatrix();
-
-	    }
-
-	    redraw() {
-
-	        this._dirty = true;
-	    }
-
-	    recenter() {
-
-	        this._updateEnvironment();
-	        this.redraw();
-
-	    }
-
-	    // Set the joint with jointName to
-	    // angle in degrees
-	    setAngle(jointName, angle) {
-
-	        if (!this.robot) return;
-	        if (!this.robot.joints[jointName]) return;
-
-	        const origAngle = this.robot.joints[jointName].angle;
-	        const newAngle = this.robot.setAngle(jointName, angle);
-	        if (origAngle !== newAngle) {
-	            this.redraw();
-	        }
-
-	        this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
-
-	    }
-
-	    setAngles(angles) {
-
-	        for (const name in angles) this.setAngle(name, angles[name]);
-
-	    }
-
-	    /* Private Functions */
-	    // Updates the position of the plane to be at the
-	    // lowest point below the robot and focuses the
-	    // camera on the center of the scene
-	    _updateEnvironment() {
-
-	        if (!this.robot) return;
-
-	        this.world.updateMatrixWorld();
-
-	        const bbox = new Box3();
-	        const temp = new Box3();
-
-	        this.robot.traverse(c => {
-
-	            const geometry = c.geometry;
-	            if (geometry) {
-
-	                if (geometry.boundingBox === null) {
-
-	                    geometry.computeBoundingBox();
-
-	                }
-
-	                temp.copy(geometry.boundingBox);
-	                temp.applyMatrix4(c.matrixWorld);
-
-	                bbox.union(temp);
-
-	            }
-
-	        });
-
-	        const center = bbox.getCenter(new Vector3());
-	        this.controls.target.y = center.y;
-	        this.plane.position.y = bbox.min.y - 1e-3;
-
-	        const dirLight = this.directionalLight;
-	        dirLight.castShadow = this.displayShadow;
-
-	        if (this.displayShadow) {
-
-	            // Update the shadow camera rendering bounds to encapsulate the
-	            // model. We use the bounding sphere of the bounding box for
-	            // simplicity -- this could be a tighter fit.
-	            const sphere = bbox.getBoundingSphere(new Sphere());
-	            const minmax = sphere.radius;
-	            const cam = dirLight.shadow.camera;
-	            cam.left = cam.bottom = -minmax;
-	            cam.right = cam.top = minmax;
-
-	            // Update the camera to focus on the center of the model so the
-	            // shadow can encapsulate it
-	            const offset = dirLight.position.clone().sub(dirLight.target.position);
-	            dirLight.target.position.copy(center);
-	            dirLight.position.copy(center).add(offset);
-
-	            cam.updateProjectionMatrix();
-
-	        }
-
-	    }
-
-	    _scheduleLoad() {
-
-	        // if our current model is already what's being requested
-	        // or has been loaded then early out
-	        if (this._prevload === `${ this.package }|${ this.urdf }`) return;
-	        this._prevload = `${ this.package }|${ this.urdf }`;
-
-	        // if we're already waiting on a load then early out
-	        if (this._loadScheduled) return;
-	        this._loadScheduled = true;
-
-	        if (this.robot) {
-
-	            this.robot.traverse(c => c.dispose && c.dispose());
-	            this.robot.parent.remove(this.robot);
-	            this.robot = null;
-
-	        }
-
-	        requestAnimationFrame(() => {
-
-	            this._loadUrdf(this.package, this.urdf);
-	            this._loadScheduled = false;
-
-	        });
-
-	    }
-
-	    // Watch the package and urdf field and load the robot model.
-	    // This should _only_ be called from _scheduleLoad because that
-	    // ensures the that current robot has been removed
-	    _loadUrdf(pkg, urdf) {
-
-	        this.dispatchEvent(new CustomEvent('urdf-change', { bubbles: true, cancelable: true, composed: true }));
-
-	        if (urdf) {
-
-	            // Keep track of this request and make
-	            // sure it doesn't get overwritten by
-	            // a subsequent one
-	            this._requestId++;
-	            const requestId = this._requestId;
-
-	            const updateMaterials = mesh => {
-
-	                mesh.traverse(c => {
-
-	                    if (c.isMesh) {
-
-	                        c.castShadow = true;
-	                        c.receiveShadow = true;
-
-	                        if (c.material) {
-
-	                            const mats =
-	                                (Array.isArray(c.material) ? c.material : [c.material])
-	                                    .map(m => {
-
-	                                        if (m instanceof MeshBasicMaterial) {
-
-	                                            m = new MeshPhongMaterial();
-
-	                                        }
-
-	                                        if (m.map) {
-
-	                                            m.map.encoding = GammaEncoding;
-
-	                                        }
-
-	                                        return m;
-
-	                                    });
-	                            c.material = mats.length === 1 ? mats[0] : mats;
-
-	                        }
-
-	                    }
-
-	                });
-
-	            };
-
-	            if (pkg.includes(':') && (pkg.split(':')[1].substring(0, 2)) !== '//') {
-	                // E.g. pkg = "pkg_name: path/to/pkg_name, pk2: path2/to/pk2"}
-
-	                // Convert pkg(s) into a map. E.g.
-	                // { "pkg_name": "path/to/pkg_name",
-	                //   "pk2":      "path2/to/pk2"      }
-
-	                pkg = pkg.split(',').reduce((map, value) => {
-
-	                    const split = value.split(/:/).filter(x => !!x);
-	                    const pkgName = split.shift().trim();
-	                    const pkgPath = split.join(':').trim();
-	                    map[pkgName] = pkgPath;
-
-	                    return map;
-
-	                }, {});
-	            }
-
-	            let robot = null;
-	            const manager = new LoadingManager();
-	            manager.onLoad = () => {
-
-	                // If another request has come in to load a new
-	                // robot, then ignore this one
-	                if (this._requestId !== requestId) {
-
-	                    robot.traverse(c => c.dispose && c.dispose());
-	                    return;
-
-	                }
-
-	                this.robot = robot;
-	                this.world.add(robot);
-	                updateMaterials(robot);
-
-	                this._setIgnoreLimits(this.ignoreLimits);
-
-	                this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
-	                this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
-
-	                this.recenter();
-
-	            };
-
-	            if (this.urlModifierFunc) {
-
-	                manager.setURLModifier(this.urlModifierFunc);
-
-	            }
-
-	            const loader = new URDFLoader(manager);
-	            loader.packages = pkg;
-	            loader.loadMeshCb = this.loadMeshFunc;
-	            loader.fetchOptions = { mode: 'cors', credentials: 'same-origin' };
-	            loader.load(urdf, model => robot = model);
-
-	        }
-
-	    }
-
-	    // Watch the coordinate frame and update the
-	    // rotation of the scene to match
-	    _setUp(up) {
-
-	        if (!up) up = '+Z';
-	        up = up.toUpperCase();
-	        const sign = up.replace(/[^-+]/g, '')[0] || '+';
-	        const axis = up.replace(/[^XYZ]/gi, '')[0] || 'Z';
-
-	        const PI = Math.PI;
-	        const HALFPI = PI / 2;
-	        if (axis === 'X') this.world.rotation.set(0, 0, sign === '+' ? HALFPI : -HALFPI);
-	        if (axis === 'Z') this.world.rotation.set(sign === '+' ? -HALFPI : HALFPI, 0, 0);
-	        if (axis === 'Y') this.world.rotation.set(sign === '+' ? 0 : PI, 0, 0);
-
-	    }
-
-	    // Updates the current robot's angles to ignore
-	    // joint limits or not
-	    _setIgnoreLimits(ignore, dispatch = false) {
-
-	        if (this.robot) {
-
-	            Object
-	                .values(this.robot.joints)
-	                .forEach(joint => {
-
-	                    joint.ignoreLimits = ignore;
-	                    joint.setAngle(joint.angle);
-
-	                });
-
-	        }
-
-	        if (dispatch) {
-
-	            this.dispatchEvent(new CustomEvent('ignore-limits-change', { bubbles: true, cancelable: true, composed: true }));
-
-	        }
-
-	    }
-
-	}
-
-	// urdf-manipulator element
-	// Displays a URDF model that can be manipulated with the mouse
-
-	// Events
-	// joint-mouseover: Fired when a joint is hovered over
-	// joint-mouseout: Fired when a joint is no longer hovered over
-	// manipulate-start: Fires when a joint is manipulated
-	// manipulate-end: Fires when a joint is done being manipulated
-	class URDFManipulator extends URDFViewer {
-
-	    static get observedAttributes() {
-
-	        return ['highlight-color', ...super.observedAttributes];
-
-	    }
-
-	    get disableDragging() { return this.hasAttribute('disable-dragging'); }
-	    set disableDragging(val) { val ? this.setAttribute('disable-dragging', !!val) : this.removeAttribute('disable-dragging'); }
-
-	    get highlightColor() { return this.getAttribute('highlight-color') || '#FFFFFF'; }
-	    set highlightColor(val) { val ? this.setAttribute('highlight-color', val) : this.removeAttribute('highlight-color'); }
-
-	    constructor(...args) {
-
-	        super(...args);
-
-	        // The highlight material
-	        this.highlightMaterial =
-	            new MeshPhongMaterial({
-	                shininess: 10,
-	                color: this.highlightColor,
-	                emissive: this.highlightColor,
-	                emissiveIntensity: 0.25,
-	            });
-
-	        const el = this.renderer.domElement;
-
-	        // Saved mouse data between frames and initial
-	        // click point in space
-	        const mouse = new Vector2();
-	        const lastMouse = new Vector2();
-	        const clickPoint = new Vector3();
-
-	        // Reuseable variables
-	        const raycaster = new Raycaster();
-	        const delta = new Vector2();
-	        const plane = new Plane();
-	        const line = new Line3();
-
-	        // The joint being manipulated
-	        let dragging = null;
-
-	        const toMouseCoord = (e, v) => {
-
-	            v.x = ((e.pageX - el.offsetLeft) / el.offsetWidth) * 2 - 1;
-	            v.y = -((e.pageY - el.offsetTop) / el.offsetHeight) * 2 + 1;
-
-	        };
-
-	        // Get which part of the robot is hit by the mouse click
-	        const getCollisions = m => {
-
-	            if (!this.robot) return [];
-
-	            raycaster.setFromCamera(m, this.camera);
-
-	            const meshes = [];
-	            this.robot.traverse(c => c.type === 'Mesh' && meshes.push(c));
-
-	            return raycaster.intersectObjects(meshes);
-
-	        };
-
-	        const isJoint = j => {
-
-	            return j.isURDFJoint && j.jointType !== 'fixed';
-
-	        };
-
-	        // Find the nearest parent that is a joint
-	        const findNearestJoint = m => {
-
-	            let curr = m;
-	            while (curr) {
-
-	                if (isJoint(curr)) {
-
-	                    break;
-
-	                }
-
-	                curr = curr.parent;
-
-	            }
-
-	            return curr;
-
-	        };
-
-	        // Highlight the link geometry under a joint
-	        const highlightLinkGeometry = (m, revert) => {
-
-	            const traverse = c => {
-
-	                // Set or revert the highlight color
-	                if (c.type === 'Mesh') {
-
-	                    if (revert) {
-
-	                        c.material = c.__origMaterial;
-	                        delete c.__origMaterial;
-
-	                    } else {
-
-	                        c.__origMaterial = c.material;
-	                        c.material = this.highlightMaterial;
-
-	                    }
-
-	                }
-
-	                // Look into the children and stop if the next child is
-	                // another joint
-	                if (c === m || !isJoint(c)) {
-
-	                    for (let i = 0; i < c.children.length; i++) {
-
-	                        traverse(c.children[i]);
-
-	                    }
-
-	                }
-
-	            };
-
-	            traverse(m);
-
-	        };
-
-	        const temp = new Vector3();
-	        const intersect1 = new Vector3();
-	        const intersect2 = new Vector3();
-
-	        // Get the changed angle between mouse position 1 and 2
-	        // when manipulating target
-	        const getAngle = (tg, m1, m2) => {
-
-	            // TODO: Why is the constant negated?
-	            plane.normal.copy(tg.axis).transformDirection(tg.matrixWorld).normalize();
-	            plane.constant = -plane.normal.dot(clickPoint);
-
-	            // If the camera is looking at the rotation axis at a skewed angle
-	            temp.copy(this.camera.position).sub(clickPoint).normalize();
-	            if (Math.abs(temp.dot(plane.normal)) < 0.2) {
-
-	                // distance to the clicked point
-	                const dist = temp.copy(clickPoint).sub(this.camera.position).length() * 0.9;
-
-	                // Get the point closest to the original clicked point
-	                // and use that as center of the rotation axis
-	                temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
-	                temp.addScaledVector(plane.normal, -plane.distanceToPoint(temp));
-
-	                // Project out from the camera
-	                raycaster.setFromCamera(m1, this.camera);
-	                intersect1.copy(raycaster.ray.origin).add(
-	                    raycaster.ray.direction.normalize().multiplyScalar(dist)
-	                );
-	                intersect1.sub(temp);
-
-	                raycaster.setFromCamera(m2, this.camera);
-	                intersect2.copy(raycaster.ray.origin).add(
-	                    raycaster.ray.direction.normalize().multiplyScalar(dist)
-	                );
-	                intersect2.sub(temp);
-
-	                temp.crossVectors(intersect2, intersect1).normalize();
-
-	                // Multiply by a magic number to make it feel good
-	                return temp.dot(plane.normal) * intersect2.angleTo(intersect1) * 2;
-
-	            } else {
-
-	                // Get the point closest to the original clicked point
-	                // and use that as center of the rotation axis
-	                temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
-	                temp.addScaledVector(plane.normal, -plane.distanceToPoint(temp));
-
-	                // project onto the plane of rotation
-	                raycaster.setFromCamera(m1, this.camera);
-	                line.start.copy(raycaster.ray.origin);
-	                line.end.copy(raycaster.ray.origin).add(raycaster.ray.direction.normalize().multiplyScalar(1e5));
-	                plane.intersectLine(line, intersect1);
-	                intersect1.sub(temp);
-
-	                raycaster.setFromCamera(m2, this.camera);
-	                line.start.copy(raycaster.ray.origin);
-	                line.end.copy(raycaster.ray.origin).add(raycaster.ray.direction.normalize().multiplyScalar(1e5));
-	                plane.intersectLine(line, intersect2);
-	                intersect2.sub(temp);
-
-	                temp.crossVectors(intersect2, intersect1);
-
-	                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1);
-
-	            }
-
-	        };
-
-	        // Get the amount to move the prismatic joint based on the mouse move
-	        const getMove = (tg, m1, m2) => {
-
-	            const dist = temp.copy(clickPoint).sub(this.camera.position).length();
-
-	            raycaster.setFromCamera(m1, this.camera);
-	            raycaster.ray.direction.normalize().multiplyScalar(dist);
-	            intersect1.copy(raycaster.ray.origin).add(raycaster.ray.direction);
-
-	            raycaster.setFromCamera(m2, this.camera);
-	            raycaster.ray.direction.normalize().multiplyScalar(dist);
-	            intersect2.copy(raycaster.ray.origin).add(raycaster.ray.direction);
-
-	            temp.copy(intersect2).sub(intersect1);
-
-	            plane.normal.copy(tg.axis).transformDirection(tg.parent.matrixWorld).normalize();
-
-	            return temp.length() * -Math.sign(temp.dot(plane.normal));
-
-	        };
-
-	        el.addEventListener('mousedown', e => {
-
-	            if (this.disableDragging) return;
-
-	            toMouseCoord(e, mouse);
-	            lastMouse.copy(mouse);
-
-	            // get the information on the clicked item
-	            // and set the dragged joint
-	            const target = getCollisions(mouse).shift();
-	            if (target) {
-
-	                dragging = findNearestJoint(target.object);
-
-	                if (dragging) {
-
-	                    clickPoint.copy(target.point);
-	                    this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.name }));
-	                    this.controls.enabled = false;
-
-	                }
-
-	            }
-
-	        }, true);
-
-	        let hovered = null;
-	        this._mouseMoveFunc = e => {
-
-	            toMouseCoord(e, mouse);
-	            delta.copy(mouse).sub(lastMouse);
-
-	            // Keep track of the hovered item. If an item is being
-	            // dragged, then it is considered hovered
-	            const wasHovered = hovered;
-	            if (hovered) {
-
-	                hovered = null;
-	            }
-
-	            if (dragging == null && this.disableDragging === false) {
-
-	                const collision = getCollisions(mouse).shift() || null;
-	                const joint = collision && findNearestJoint(collision.object);
-	                if (joint) {
-
-	                    hovered = joint;
-
-	                }
-
-	            } else if (dragging) {
-
-	                hovered = dragging;
-
-	            }
-
-	            // Highlight the meshes and broadcast events if the hovered item changed
-	            if (hovered !== wasHovered) {
-
-	                if (wasHovered) {
-
-	                    highlightLinkGeometry(wasHovered, true);
-	                    this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: wasHovered.name }));
-
-	                }
-
-	                if (hovered) {
-
-	                    highlightLinkGeometry(hovered, false);
-	                    this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.name }));
-
-	                }
-
-	                this.redraw();
-
-	            }
-
-	            // Apply the manipulation
-	            if (dragging !== null) {
-
-	                let delta = null;
-	                if (dragging.jointType === 'revolute' || dragging.jointType === 'continuous') {
-
-	                    delta = getAngle(dragging, mouse, lastMouse);
-
-	                } else if (dragging.jointType === 'prismatic') {
-
-	                    delta = getMove(dragging, mouse, lastMouse);
-
-	                }
-
-	                if (delta) {
-
-	                    this.setAngle(dragging.name, dragging.angle + delta);
-
-	                }
-
-	            }
-
-	            lastMouse.copy(mouse);
-
-	        };
-
-	        // Clean up
-	        this._mouseUpFunc = e => {
-
-	            if (dragging) {
-
-	                this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: dragging.name }));
-	                dragging = null;
-	                this.controls.enabled = true;
-
-	            }
-
-	        };
-
-	    }
-
-	    connectedCallback() {
-
-	        super.connectedCallback();
-	        window.addEventListener('mousemove', this._mouseMoveFunc, true);
-	        window.addEventListener('mouseup', this._mouseUpFunc, true);
-
-	    }
-
-	    disconnectedCallback() {
-
-	        super.disconnectedCallback();
-	        window.removeEventListener('mousemove', this._mouseMoveFunc, true);
-	        window.removeEventListener('mouseup', this._mouseUpFunc, true);
-
-	    }
-
-	    attributeChangedCallback(attr, oldval, newval) {
-
-	        super.attributeChangedCallback(attr, oldval, newval);
-
-	        switch (attr) {
-
-	            case 'highlight-color':
-	                this.highlightMaterial.color.set(this.highlightColor);
-	                this.highlightMaterial.emissive.set(this.highlightColor);
-	                break;
-
-	        }
-
-	    }
-
-	}
-
-	/* globals */
-
-	customElements.define('urdf-viewer', URDFManipulator);
-
-	// declare these globally for the sake of the example.
-	// Hack to make the build work with webpack for now.
-	// TODO: Remove this once modules or parcel is being used
-	const viewer = document.querySelector('urdf-viewer');
-
-	const limitsToggle = document.getElementById('ignore-joint-limits');
-	const upSelect = document.getElementById('up-select');
-	const sliderList = document.querySelector('#controls ul');
-	const controlsel = document.getElementById('controls');
-	const controlsToggle = document.getElementById('toggle-controls');
-	const animToggle = document.getElementById('do-animate');
-	const DEG2RAD = Math.PI / 180;
-	const RAD2DEG = 1 / DEG2RAD;
-	let sliders = {};
-
-	// Global Functions
-	const setColor = color => {
-
-	    document.body.style.backgroundColor = color;
-	    viewer.highlightColor = '#' + (new Color(0xffffff)).lerp(new Color(color), 0.35).getHexString();
-
-	};
-
-	// Events
-	// toggle checkbox
-	limitsToggle.addEventListener('click', () => {
-	    limitsToggle.classList.toggle('checked');
-	    viewer.ignoreLimits = limitsToggle.classList.contains('checked');
-	});
-
-	upSelect.addEventListener('change', () => viewer.up = upSelect.value);
-
-	controlsToggle.addEventListener('click', () => controlsel.classList.toggle('hidden'));
-
-	// watch for urdf changes
-	viewer.addEventListener('urdf-change', () => {
-
-	    Object
-	        .values(sliders)
-	        .forEach(sl => sl.remove());
-	    sliders = {};
-
-	});
-
-	viewer.addEventListener('ignore-limits-change', () => {
-
-	    Object
-	        .values(sliders)
-	        .forEach(sl => sl.update());
-
-	});
-
-	viewer.addEventListener('angle-change', e => {
-
-	    if (sliders[e.detail]) sliders[e.detail].update();
-
-	});
-
-	viewer.addEventListener('joint-mouseover', e => {
-
-	    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
-	    if (j) j.setAttribute('robot-hovered', true);
-
-	});
-
-	viewer.addEventListener('joint-mouseout', e => {
-
-	    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
-	    if (j) j.removeAttribute('robot-hovered');
-
-	});
-
-	let originalNoAutoRecenter;
-	viewer.addEventListener('manipulate-start', e => {
-
-	    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
-	    if (j) {
-	        j.scrollIntoView({ block: 'nearest' });
-	        window.scrollTo(0, 0);
-	    }
-
-	    originalNoAutoRecenter = viewer.noAutoRecenter;
-	    viewer.noAutoRecenter = true;
-
-	});
-
-	viewer.addEventListener('manipulate-end', e => {
-
-	    viewer.noAutoRecenter = originalNoAutoRecenter;
-
-	});
-
-	// create the sliders
-	viewer.addEventListener('urdf-processed', () => {
-
-	    const r = viewer.robot;
-	    Object
-	        .keys(r.joints)
-	        .sort((a, b) => {
-
-	            const da = a.split(/[^\d]+/g).filter(v => !!v).pop();
-	            const db = b.split(/[^\d]+/g).filter(v => !!v).pop();
-
-	            if (da !== undefined && db !== undefined) {
-	                const delta = parseFloat(da) - parseFloat(db);
-	                if (delta !== 0) return delta;
-	            }
-
-	            if (a > b) return 1;
-	            if (b > a) return -1;
-	            return 0;
-
-	        })
-	        .map(key => r.joints[key])
-	        .forEach(joint => {
-
-	            const li = document.createElement('li');
-	            li.innerHTML =
-	            `
-            <span title="${ joint.name }">${ joint.name }</span>
-            <input type="range" value="0" step="0.0001"/>
-            <input type="number" step="0.0001" />
-            `;
-	            li.setAttribute('joint-type', joint.jointType);
-	            li.setAttribute('joint-name', joint.name);
-
-	            sliderList.appendChild(li);
-
-	            // update the joint display
-	            const slider = li.querySelector('input[type="range"]');
-	            const input = li.querySelector('input[type="number"]');
-	            li.update = () => {
-	                let degVal = joint.angle;
-
-	                if (joint.jointType === 'revolute' || joint.jointType === 'continuous') {
-	                    degVal *= RAD2DEG;
-	                }
-
-	                if (Math.abs(degVal) > 1) {
-	                    degVal = degVal.toFixed(1);
-	                } else {
-	                    degVal = degVal.toPrecision(2);
-	                }
-
-	                input.value = parseFloat(degVal);
-
-	                // directly input the value
-	                slider.value = joint.angle;
-
-	                if (viewer.ignoreLimits || joint.jointType === 'continuous') {
-	                    slider.min = -6.28;
-	                    slider.max = 6.28;
-
-	                    input.min = -6.28 * RAD2DEG;
-	                    input.max = 6.28 * RAD2DEG;
-	                } else {
-	                    slider.min = joint.limit.lower;
-	                    slider.max = joint.limit.upper;
-
-	                    input.min = joint.limit.lower * RAD2DEG;
-	                    input.max = joint.limit.upper * RAD2DEG;
-	                }
-	            };
-
-	            switch (joint.jointType) {
-
-	                case 'continuous':
-	                case 'prismatic':
-	                case 'revolute':
-	                    break;
-	                default:
-	                    li.update = () => {};
-	                    input.remove();
-	                    slider.remove();
-
-	            }
-
-	            slider.addEventListener('input', () => {
-	                viewer.setAngle(joint.name, slider.value);
-	                li.update();
-	            });
-
-	            input.addEventListener('change', () => {
-	                viewer.setAngle(joint.name, input.value * DEG2RAD);
-	                li.update();
-	            });
-
-	            li.update();
-
-	            sliders[joint.name] = li;
-
-	        });
-
-	});
-
-	document.addEventListener('WebComponentsReady', () => {
-
-	    viewer.loadMeshFunc = (path, manager, done) => {
-
+	let scene, camera, renderer, robot, controls;
+
+	init();
+	render();
+
+	function init() {
+
+	    scene = new Scene();
+	    scene.background = new Color(0xffab40);
+	    camera = new PerspectiveCamera();
+
+	    camera.position.set(15, 15, 15);
+	    renderer = new WebGLRenderer({ antialias: true });
+	    renderer.outputEncoding = sRGBEncoding;
+	    renderer.shadowMap.enabled = true;
+	    renderer.shadowMap.type = PCFSoftShadowMap;
+	    document.body.appendChild(renderer.domElement);
+
+	    const directionalLight = new DirectionalLight(0xffffff, 1.0);
+	    directionalLight.castShadow = true;
+	    directionalLight.shadow.mapSize.setScalar(1024);
+	    directionalLight.position.set(5, 30, 5);
+	    scene.add(directionalLight);
+
+	    const ambientLight = new AmbientLight(0xffb74d, 0.5);
+	    scene.add(ambientLight);
+
+	    const ground = new Mesh(new PlaneBufferGeometry(), new ShadowMaterial({ opacity: 0.25 }));
+	    ground.material.color.set(0xe65100).convertSRGBToLinear();
+	    ground.rotation.x = -Math.PI / 2;
+	    ground.scale.setScalar(30);
+	    ground.receiveShadow = true;
+	    scene.add(ground);
+
+	    controls = new OrbitControls(camera, renderer.domElement);
+
+	    const manager = new LoadingManager();
+	    const loader = new URDFLoader(manager);
+	    loader.loadMeshCb = function(path, manager, onComplete) {
 	        const ext = path.split(/\./g).pop().toLowerCase();
+
 	        switch (ext) {
 
 	            case 'gltf':
 	                new GLTFLoader(manager).load(
 	                    path,
-	                    result => done(result.scene),
+	                    result => onComplete(result.scene),
 	                    null,
-	                    err => done(null, err)
+	                    err => onComplete(null, err),
 	                );
 	                break;
-	            case 'obj':
-	                new OBJLoader(manager).load(
-	                    path,
-	                    result => done(result),
-	                    null,
-	                    err => done(null, err)
-	                );
-	                break;
-	            case 'dae':
-	                new ColladaLoader(manager).load(
-	                    path,
-	                    result => done(result.scene),
-	                    null,
-	                    err => done(null, err)
-	                );
-	                break;
-	            case 'stl':
-	                new STLLoader(manager).load(
-	                    path,
-	                    result => {
-	                        const material = new MeshPhongMaterial();
-	                        const mesh = new Mesh(result, material);
-	                        done(mesh);
-	                    },
-	                    null,
-	                    err => done(null, err)
-	                );
-	                break;
+	            default:
+	                loader.defaultMeshLoader(path, manager, onComplete);
 
 	        }
 
 	    };
-
-	    document.querySelector('li[urdf]').dispatchEvent(new Event('click'));
-
-	    if (/javascript\/example\/build/i.test(window.location)) {
-	        viewer.package = '../../../urdf';
-	    }
-
-	    registerDragEvents(viewer, () => {
-	        setColor('#263238');
-	        animToggle.classList.remove('checked');
+	    loader.load('../../urdf/T12/urdf/T12_flipped.URDF', result => {
+	        robot = result;
 	    });
 
-	});
+	    manager.onLoad = function() {
 
-	// init 2D UI and animation
-	const updateAngles = () => {
+	        robot.rotation.x = Math.PI / 2;
+	        robot.traverse(c => {
+	            c.castShadow = true;
+	        });
+	        for (let i = 1; i <= 6; i++) {
 
-	    if (!viewer.setAngle) return;
+	            robot.joints[`HP${ i }`].setAngle(MathUtils.degToRad(30));
+	            robot.joints[`KP${ i }`].setAngle(MathUtils.degToRad(120));
+	            robot.joints[`AP${ i }`].setAngle(MathUtils.degToRad(-60));
 
-	    // reset everything to 0 first
-	    const resetangles = viewer.angles;
-	    for (const name in resetangles) resetangles[name] = 0;
-	    viewer.setAngles(resetangles);
+	        }
+	        robot.updateMatrixWorld(true);
 
-	    // animate the legs
-	    const time = Date.now() / 3e2;
-	    for (let i = 1; i <= 6; i++) {
+	        const bb = new Box3();
+	        bb.setFromObject(robot);
 
-	        const offset = i * Math.PI / 3;
-	        const ratio = Math.max(0, Math.sin(time + offset));
+	        console.log(robot);
+	        robot.position.y -= bb.min.y;
+	        console.log(bb);
 
-	        viewer.setAngle(`HP${ i }`, MathUtils.lerp(30, 0, ratio) * DEG2RAD);
-	        viewer.setAngle(`KP${ i }`, MathUtils.lerp(90, 150, ratio) * DEG2RAD);
-	        viewer.setAngle(`AP${ i }`, MathUtils.lerp(-30, -60, ratio) * DEG2RAD);
+	        scene.add(robot);
 
-	        viewer.setAngle(`TC${ i }A`, MathUtils.lerp(0, 0.065, ratio));
-	        viewer.setAngle(`TC${ i }B`, MathUtils.lerp(0, 0.065, ratio));
+	    };
 
-	        viewer.setAngle(`W${ i }`, window.performance.now() * 0.001);
+	    onResize();
+	    window.addEventListener('resize', onResize);
 
-	    }
+	}
 
-	};
+	function onResize() {
 
-	const updateLoop = () => {
+	    renderer.setSize(window.innerWidth, window.innerHeight);
+	    renderer.setPixelRatio();
 
-	    if (animToggle.classList.contains('checked')) {
-	        updateAngles();
-	    }
+	    camera.aspect = window.innerWidth / window.innerHeight;
+	    camera.updateProjectionMatrix();
 
-	    requestAnimationFrame(updateLoop);
+	}
 
-	};
+	function render() {
 
-	document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
+	    requestAnimationFrame(render);
 
-	    el.addEventListener('click', e => {
+	    renderer.render(scene, camera);
 
-	        const urdf = e.target.getAttribute('urdf');
-	        const color = e.target.getAttribute('color');
-
-	        viewer.up = '-Z';
-	        document.getElementById('up-select').value = viewer.up;
-	        viewer.urdf = urdf;
-	        animToggle.classList.add('checked');
-	        setColor(color);
-
-	    });
-
-	});
-
-	document.addEventListener('WebComponentsReady', () => {
-
-	    animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
-
-	    // stop the animation if user tried to manipulate the model
-	    viewer.addEventListener('manipulate-start', e => animToggle.classList.remove('checked'));
-	    viewer.addEventListener('urdf-processed', e => updateAngles());
-	    updateLoop();
-	    viewer.camera.position.set(-5.5, 3.5, 5.5);
-
-	});
+	}
 
 }());
-//# sourceMappingURL=index.bundle.js.map
+//# sourceMappingURL=simple.js.map
