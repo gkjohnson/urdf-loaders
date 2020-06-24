@@ -61162,7 +61162,7 @@
 
 	        const plane = new Mesh(
 	            new PlaneBufferGeometry(40, 40),
-	            new ShadowMaterial({ side: DoubleSide, transparent: true, opacity: 0.5 })
+	            new ShadowMaterial({ side: DoubleSide, transparent: true, opacity: 0.5 }),
 	        );
 	        plane.rotation.x = -Math.PI / 2;
 	        plane.position.y = -0.5;
@@ -61774,13 +61774,13 @@
 	                // Project out from the camera
 	                raycaster.setFromCamera(m1, this.camera);
 	                intersect1.copy(raycaster.ray.origin).add(
-	                    raycaster.ray.direction.normalize().multiplyScalar(dist)
+	                    raycaster.ray.direction.normalize().multiplyScalar(dist),
 	                );
 	                intersect1.sub(temp);
 
 	                raycaster.setFromCamera(m2, this.camera);
 	                intersect2.copy(raycaster.ray.origin).add(
-	                    raycaster.ray.direction.normalize().multiplyScalar(dist)
+	                    raycaster.ray.direction.normalize().multiplyScalar(dist),
 	                );
 	                intersect2.sub(temp);
 
