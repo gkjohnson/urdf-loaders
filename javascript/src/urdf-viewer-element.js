@@ -1,6 +1,8 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from './URDFLoader.js';
+
+const tempVec2 = new THREE.Vector2();
 
 // urdf-viewer element
 // Loads and displays a 3D view of a URDF-formatted robot
@@ -11,7 +13,6 @@ import URDFLoader from './URDFLoader.js';
 // geometry-loaded: Fires when all the geometry has been fully loaded
 // ignore-limits-change: Fires when the 'ignore-limits' attribute changes
 // angle-change: Fires when an angle changes
-const tempVec2 = new THREE.Vector2();
 export default
 class URDFViewer extends HTMLElement {
 

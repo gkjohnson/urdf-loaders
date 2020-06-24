@@ -1,5 +1,3 @@
-/* globals animToggle viewer setColor */
-
 // Converts a datatransfer structer into an object with all paths and files
 // listed out. Returns a promise that resolves with the file structure.
 function dataTransferToFiles(dataTransfer) {
@@ -75,77 +73,78 @@ function dataTransferToFiles(dataTransfer) {
         }
     });
 }
+export function registerDragEvents(viewer, callback) {
 
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('dragenter', e => e.preventDefault());
-document.addEventListener('drop', e => {
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('dragenter', e => e.preventDefault());
+    document.addEventListener('drop', e => {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    // convert the files
-    dataTransferToFiles(e.dataTransfer)
-        .then(files => {
+        // convert the files
+        dataTransferToFiles(e.dataTransfer)
+            .then(files => {
 
-            // removes '..' and '.' tokens and normalizes slashes
-            const cleanFilePath = path => {
+                // removes '..' and '.' tokens and normalizes slashes
+                const cleanFilePath = path => {
 
-                return path
-                    .replace(/\\/g, '/')
-                    .split(/\//g)
-                    .reduce((acc, el) => {
+                    return path
+                        .replace(/\\/g, '/')
+                        .split(/\//g)
+                        .reduce((acc, el) => {
 
-                        if (el === '..') acc.pop();
-                        else if (el !== '.') acc.push(el);
-                        return acc;
+                            if (el === '..') acc.pop();
+                            else if (el !== '.') acc.push(el);
+                            return acc;
 
-                    }, [])
-                    .join('/');
+                        }, [])
+                        .join('/');
 
-            };
+                };
 
-            // set the loader url modifier to check the list
-            // of files
-            const fileNames = Object.keys(files).map(n => cleanFilePath(n));
-            viewer.urlModifierFunc = url => {
+                // set the loader url modifier to check the list
+                // of files
+                const fileNames = Object.keys(files).map(n => cleanFilePath(n));
+                viewer.urlModifierFunc = url => {
 
-                // find the matching file given the requested url
-                const cleaned = cleanFilePath(url.replace(viewer.package, ''));
-                const fileName = fileNames
-                    .filter(name => {
+                    // find the matching file given the requested url
+                    const cleaned = cleanFilePath(url.replace(viewer.package, ''));
+                    const fileName = fileNames
+                        .filter(name => {
 
-                        // check if the end of file and url are the same
-                        const len = Math.min(name.length, cleaned.length);
-                        return cleaned.substr(cleaned.length - len) === name.substr(name.length - len);
+                            // check if the end of file and url are the same
+                            const len = Math.min(name.length, cleaned.length);
+                            return cleaned.substr(cleaned.length - len) === name.substr(name.length - len);
 
-                    }).pop();
+                        }).pop();
 
-                if (fileName !== undefined) {
+                    if (fileName !== undefined) {
 
-                    // revoke the url after it's been used
-                    const bloburl = URL.createObjectURL(files[fileName]);
-                    requestAnimationFrame(() => URL.revokeObjectURL(bloburl));
+                        // revoke the url after it's been used
+                        const bloburl = URL.createObjectURL(files[fileName]);
+                        requestAnimationFrame(() => URL.revokeObjectURL(bloburl));
 
-                    return bloburl;
+                        return bloburl;
 
-                }
+                    }
 
-                return url;
+                    return url;
 
-            };
+                };
 
-            // set the source of the element to the most likely intended display model
-            const filesNames = Object.keys(files);
-            viewer.up = '+Z';
-            document.getElementById('up-select').value = viewer.up;
+                // set the source of the element to the most likely intended display model
+                const filesNames = Object.keys(files);
+                viewer.up = '+Z';
+                document.getElementById('up-select').value = viewer.up;
 
-            viewer.urdf =
-                filesNames
-                    .filter(n => /urdf$/i.test(n))
-                    .shift();
+                viewer.urdf =
+                    filesNames
+                        .filter(n => /urdf$/i.test(n))
+                        .shift();
 
-        });
+            });
 
-    setColor('#263238');
-    window.animToggle.classList.remove('checked');
+        callback();
+    });
 
-});
+}
