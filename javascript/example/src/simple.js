@@ -66,6 +66,7 @@ function init() {
     scene.add(ground);
 
     controls = new OrbitControls(camera, renderer.domElement);
+    controls.minDistance = 1e-2;
 
     const manager = new LoadingManager();
     const loader = new URDFLoader(manager);
@@ -137,8 +138,6 @@ function onResize() {
 function render() {
 
     const vrEnabled = Boolean(renderer.xr.getSession());
-    controls.enabled = !vrEnabled;
-
     cameraContainer.position.copy(camera.position);
     renderer.render(scene, vrEnabled ? vrCamera : camera);
 
