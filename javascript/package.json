@@ -6,7 +6,7 @@
   "module": "src/URDFLoader.js",
   "scripts": {
     "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
-    "build": "rollup -c && cd example && webpack",
+    "build": "rollup -c && cd example",
     "test": "jest",
     "lint": "eslint ./src/*.js ./test/*.js && tsc -p tsconfig.json --noEmit",
     "coverage": "nyc report --reporter=html & opn coverage/index.html"
