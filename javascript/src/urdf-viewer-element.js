@@ -1,6 +1,8 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/js/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from './URDFLoader.js';
+
+const tempVec2 = new THREE.Vector2();
 
 // urdf-viewer element
 // Loads and displays a 3D view of a URDF-formatted robot
@@ -106,7 +108,7 @@ class URDFViewer extends HTMLElement {
 
         const plane = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(40, 40),
-            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 }),
         );
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -0.5;
@@ -250,7 +252,7 @@ class URDFViewer extends HTMLElement {
         const r = this.renderer;
         const w = this.clientWidth;
         const h = this.clientHeight;
-        const currsize = r.getSize();
+        const currsize = r.getSize(tempVec2);
 
         if (currsize.width !== w || currsize.height !== h) {
 

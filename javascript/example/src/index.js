@@ -1,21 +1,31 @@
-/* globals viewer THREE */
+/* globals */
+import * as THREE from 'three';
+import { registerDragEvents } from './dragAndDrop.js';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import URDFManipulator from '../../src/urdf-manipulator-element.js';
+
+customElements.define('urdf-viewer', URDFManipulator);
 
 // declare these globally for the sake of the example.
 // Hack to make the build work with webpack for now.
 // TODO: Remove this once modules or parcel is being used
-viewer = document.querySelector('urdf-viewer');
+const viewer = document.querySelector('urdf-viewer');
 
 const limitsToggle = document.getElementById('ignore-joint-limits');
 const upSelect = document.getElementById('up-select');
 const sliderList = document.querySelector('#controls ul');
 const controlsel = document.getElementById('controls');
 const controlsToggle = document.getElementById('toggle-controls');
-var DEG2RAD = Math.PI / 180;
+const animToggle = document.getElementById('do-animate');
+const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 1 / DEG2RAD;
 let sliders = {};
 
 // Global Functions
-window.setColor = color => {
+const setColor = color => {
 
     document.body.style.backgroundColor = color;
     viewer.highlightColor = '#' + (new THREE.Color(0xffffff)).lerp(new THREE.Color(color), 0.35).getHexString();
@@ -198,7 +208,47 @@ document.addEventListener('WebComponentsReady', () => {
 
     viewer.loadMeshFunc = (path, manager, done) => {
 
-        new THREE.ModelLoader(manager).load(path, res => done(res.model), null, err => done(null, err));
+        const ext = path.split(/\./g).pop().toLowerCase();
+        switch (ext) {
+
+            case 'gltf':
+                new GLTFLoader(manager).load(
+                    path,
+                    result => done(result.scene),
+                    null,
+                    err => done(null, err)
+                );
+                break;
+            case 'obj':
+                new OBJLoader(manager).load(
+                    path,
+                    result => done(result),
+                    null,
+                    err => done(null, err)
+                );
+                break;
+            case 'dae':
+                new ColladaLoader(manager).load(
+                    path,
+                    result => done(result.scene),
+                    null,
+                    err => done(null, err)
+                );
+                break;
+            case 'stl':
+                new STLLoader(manager).load(
+                    path,
+                    result => {
+                        const material = new THREE.MeshPhongMaterial();
+                        const mesh = new THREE.Mesh(result, material);
+                        done(mesh);
+                    },
+                    null,
+                    err => done(null, err)
+                );
+                break;
+
+        }
 
     };
 
@@ -207,5 +257,79 @@ document.addEventListener('WebComponentsReady', () => {
     if (/javascript\/example\/build/i.test(window.location)) {
         viewer.package = '../../../urdf';
     }
+
+    registerDragEvents(viewer, () => {
+        setColor('#263238');
+        animToggle.classList.remove('checked');
+    });
+
+});
+
+// init 2D UI and animation
+const updateAngles = () => {
+
+    if (!viewer.setAngle) return;
+
+    // reset everything to 0 first
+    const resetangles = viewer.angles;
+    for (const name in resetangles) resetangles[name] = 0;
+    viewer.setAngles(resetangles);
+
+    // animate the legs
+    const time = Date.now() / 3e2;
+    for (let i = 1; i <= 6; i++) {
+
+        const offset = i * Math.PI / 3;
+        const ratio = Math.max(0, Math.sin(time + offset));
+
+        viewer.setAngle(`HP${ i }`, THREE.MathUtils.lerp(30, 0, ratio) * DEG2RAD);
+        viewer.setAngle(`KP${ i }`, THREE.MathUtils.lerp(90, 150, ratio) * DEG2RAD);
+        viewer.setAngle(`AP${ i }`, THREE.MathUtils.lerp(-30, -60, ratio) * DEG2RAD);
+
+        viewer.setAngle(`TC${ i }A`, THREE.MathUtils.lerp(0, 0.065, ratio));
+        viewer.setAngle(`TC${ i }B`, THREE.MathUtils.lerp(0, 0.065, ratio));
+
+        viewer.setAngle(`W${ i }`, window.performance.now() * 0.001);
+
+    }
+
+};
+
+const updateLoop = () => {
+
+    if (animToggle.classList.contains('checked')) {
+        updateAngles();
+    }
+
+    requestAnimationFrame(updateLoop);
+
+};
+
+document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
+
+    el.addEventListener('click', e => {
+
+        const urdf = e.target.getAttribute('urdf');
+        const color = e.target.getAttribute('color');
+
+        viewer.up = '-Z';
+        document.getElementById('up-select').value = viewer.up;
+        viewer.urdf = urdf;
+        animToggle.classList.add('checked');
+        setColor(color);
+
+    });
+
+});
+
+document.addEventListener('WebComponentsReady', () => {
+
+    animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
+
+    // stop the animation if user tried to manipulate the model
+    viewer.addEventListener('manipulate-start', e => animToggle.classList.remove('checked'));
+    viewer.addEventListener('urdf-processed', e => updateAngles());
+    updateLoop();
+    viewer.camera.position.set(-5.5, 3.5, 5.5);
 
 });
