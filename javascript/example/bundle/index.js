@@ -62196,6 +62196,7 @@
 	        switch (ext) {
 
 	            case 'gltf':
+	            case 'glb':
 	                new GLTFLoader(manager).load(
 	                    path,
 	                    result => done(result.scene),

@@ -1,8 +1,8 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/loaders/STLLoader.js'), require('three/examples/jsm/loaders/ColladaLoader.js')) :
     typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/loaders/STLLoader.js', 'three/examples/jsm/loaders/ColladaLoader.js'], factory) :
-    (global.URDFLoader = factory(global.THREE,global.THREE,global.THREE));
-}(this, (function (THREE,STLLoader_js,ColladaLoader_js) { 'use strict';
+    (global = global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
+}(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
 
     function URDFColliderClone(...args) {
 
@@ -11,7 +11,7 @@
         result.isURDFCollider = true;
         return result;
 
-    }
+    };
 
     function makeURDFCollider(object) {
 
@@ -826,7 +826,7 @@
 
         }
 
-    }
+    };
 
     return URDFLoader;
 

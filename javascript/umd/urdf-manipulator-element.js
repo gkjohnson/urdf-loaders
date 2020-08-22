@@ -1,10 +1,10 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('./urdf-viewer-element.js')) :
     typeof define === 'function' && define.amd ? define(['three', './urdf-viewer-element.js'], factory) :
-    (global.URDFManipulator = factory(global.THREE,global.URDFViewer));
-}(this, (function (THREE,URDFViewer) { 'use strict';
+    (global = global || self, global.URDFManipulator = factory(global.THREE, global.URDFViewer));
+}(this, (function (THREE, URDFViewer) { 'use strict';
 
-    URDFViewer = URDFViewer && URDFViewer.hasOwnProperty('default') ? URDFViewer['default'] : URDFViewer;
+    URDFViewer = URDFViewer && Object.prototype.hasOwnProperty.call(URDFViewer, 'default') ? URDFViewer['default'] : URDFViewer;
 
     // urdf-manipulator element
     // Displays a URDF model that can be manipulated with the mouse
@@ -172,13 +172,13 @@
                     // Project out from the camera
                     raycaster.setFromCamera(m1, this.camera);
                     intersect1.copy(raycaster.ray.origin).add(
-                        raycaster.ray.direction.normalize().multiplyScalar(dist)
+                        raycaster.ray.direction.normalize().multiplyScalar(dist),
                     );
                     intersect1.sub(temp);
 
                     raycaster.setFromCamera(m2, this.camera);
                     intersect2.copy(raycaster.ray.origin).add(
-                        raycaster.ray.direction.normalize().multiplyScalar(dist)
+                        raycaster.ray.direction.normalize().multiplyScalar(dist),
                     );
                     intersect2.sub(temp);
 
@@ -389,7 +389,7 @@
 
         }
 
-    }
+    };
 
     return URDFManipulator;
 

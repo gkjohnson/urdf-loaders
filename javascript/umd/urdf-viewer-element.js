@@ -1,10 +1,12 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/js/controls/OrbitControls'), require('./URDFLoader.js')) :
-    typeof define === 'function' && define.amd ? define(['three', 'three/examples/js/controls/OrbitControls', './URDFLoader.js'], factory) :
-    (global.URDFViewer = factory(global.THREE,global.THREE,global.URDFLoader));
-}(this, (function (THREE,OrbitControls,URDFLoader) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/controls/OrbitControls.js'), require('./URDFLoader.js')) :
+    typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/controls/OrbitControls.js', './URDFLoader.js'], factory) :
+    (global = global || self, global.URDFViewer = factory(global.THREE, global.THREE, global.URDFLoader));
+}(this, (function (THREE, OrbitControls_js, URDFLoader) { 'use strict';
 
-    URDFLoader = URDFLoader && URDFLoader.hasOwnProperty('default') ? URDFLoader['default'] : URDFLoader;
+    URDFLoader = URDFLoader && Object.prototype.hasOwnProperty.call(URDFLoader, 'default') ? URDFLoader['default'] : URDFLoader;
+
+    const tempVec2 = new THREE.Vector2();
 
     // urdf-viewer element
     // Loads and displays a 3D view of a URDF-formatted robot
@@ -109,7 +111,7 @@
 
             const plane = new THREE.Mesh(
                 new THREE.PlaneBufferGeometry(40, 40),
-                new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+                new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 }),
             );
             plane.rotation.x = -Math.PI / 2;
             plane.position.y = -0.5;
@@ -118,7 +120,7 @@
             scene.add(plane);
 
             // Controls setup
-            const controls = new OrbitControls.OrbitControls(camera, renderer.domElement);
+            const controls = new OrbitControls_js.OrbitControls(camera, renderer.domElement);
             controls.rotateSpeed = 2.0;
             controls.zoomSpeed = 5;
             controls.panSpeed = 2;
@@ -253,7 +255,7 @@
             const r = this.renderer;
             const w = this.clientWidth;
             const h = this.clientHeight;
-            const currsize = r.getSize();
+            const currsize = r.getSize(tempVec2);
 
             if (currsize.width !== w || currsize.height !== h) {
 
@@ -553,7 +555,7 @@
 
         }
 
-    }
+    };
 
     return URDFViewer;
 
