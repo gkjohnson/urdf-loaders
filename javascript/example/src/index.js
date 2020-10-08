@@ -187,12 +187,12 @@ viewer.addEventListener('urdf-processed', () => {
             }
 
             slider.addEventListener('input', () => {
-                viewer.setAngle(joint.name, slider.value);
+                viewer.setJointValue(joint.name, slider.value);
                 li.update();
             });
 
             input.addEventListener('change', () => {
-                viewer.setAngle(joint.name, input.value * DEG2RAD);
+                viewer.setJointValue(joint.name, input.value * DEG2RAD);
                 li.update();
             });
 
@@ -269,12 +269,12 @@ document.addEventListener('WebComponentsReady', () => {
 // init 2D UI and animation
 const updateAngles = () => {
 
-    if (!viewer.setAngle) return;
+    if (!viewer.setJointValue) return;
 
     // reset everything to 0 first
-    const resetangles = viewer.angles;
-    for (const name in resetangles) resetangles[name] = 0;
-    viewer.setAngles(resetangles);
+    const resetJointValues = viewer.angles;
+    for (const name in resetJointValues) resetJointValues[name] = 0;
+    viewer.setJointValues(resetJointValues);
 
     // animate the legs
     const time = Date.now() / 3e2;
@@ -283,14 +283,14 @@ const updateAngles = () => {
         const offset = i * Math.PI / 3;
         const ratio = Math.max(0, Math.sin(time + offset));
 
-        viewer.setAngle(`HP${ i }`, THREE.MathUtils.lerp(30, 0, ratio) * DEG2RAD);
-        viewer.setAngle(`KP${ i }`, THREE.MathUtils.lerp(90, 150, ratio) * DEG2RAD);
-        viewer.setAngle(`AP${ i }`, THREE.MathUtils.lerp(-30, -60, ratio) * DEG2RAD);
+        viewer.setJointValue(`HP${ i }`, THREE.MathUtils.lerp(30, 0, ratio) * DEG2RAD);
+        viewer.setJointValue(`KP${ i }`, THREE.MathUtils.lerp(90, 150, ratio) * DEG2RAD);
+        viewer.setJointValue(`AP${ i }`, THREE.MathUtils.lerp(-30, -60, ratio) * DEG2RAD);
 
-        viewer.setAngle(`TC${ i }A`, THREE.MathUtils.lerp(0, 0.065, ratio));
-        viewer.setAngle(`TC${ i }B`, THREE.MathUtils.lerp(0, 0.065, ratio));
+        viewer.setJointValue(`TC${ i }A`, THREE.MathUtils.lerp(0, 0.065, ratio));
+        viewer.setJointValue(`TC${ i }B`, THREE.MathUtils.lerp(0, 0.065, ratio));
 
-        viewer.setAngle(`W${ i }`, window.performance.now() * 0.001);
+        viewer.setJointValue(`W${ i }`, window.performance.now() * 0.001);
 
     }
 

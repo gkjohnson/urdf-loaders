@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `URDFRobot.colliders` map.
 - Visual and collider nodes now get the name of the associated urdf node.
 - Typescript definitions for URDFVisual and URDFCollider objects.
+- `setJointValue` function to `URDFJoint` and `URDFRobot`.
+- `getFrame` function to `URDFRobot`.
 
 ### Changed
 - Transparent materials now set `depthWrite` to false.
+- Removed `setOffset`, `setAngles`, and `setAngle` functions from `URDFJoint` and `URDFRobot`.
 
 ### Fixed
 - Incorrect use of `worldMatrixNeedsUpdate` to `matrixWorldNeedsUpdate`.
