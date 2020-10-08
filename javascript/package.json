@@ -58,7 +58,7 @@
     "puppeteer-to-istanbul": "^1.4.0",
     "rollup": "^2.29.0",
     "static-server": "^3.0.0",
-    "three": "^0.117.0",
+    "three": "^0.119.0",
     "typescript": "^3.9.7"
   },
   "dependencies": {}

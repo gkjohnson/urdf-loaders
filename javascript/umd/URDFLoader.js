@@ -181,7 +181,7 @@
                     this.position.addScaledVector(this.axis, angle);
 
                     this.jointValue = angle;
-                    this.worldMatrixNeedsUpdate = true;
+                    this.matrixWorldNeedsUpdate = true;
                     break;
 
                 }
