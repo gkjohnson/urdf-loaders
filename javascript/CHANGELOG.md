@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- `URDFRobot.frames` map.
+- `URDFRobot.visual` map.
+- `URDFRobot.colliders` map.
+- Visual and collider nodes now get the name of the associated urdf node.
+- Typescript definitions for URDFVisual and URDFCollider objects.
+
+### Changed
+- Transparent materials now set `depthWrite` to false.
+
+### Fixed
+- Incorrect use of `worldMatrixNeedsUpdate` to `matrixWorldNeedsUpdate`.
+
 ## [0.8.2] - 2020-06-08
 ### Changed
 - License text in README to remove unnecessary copy.

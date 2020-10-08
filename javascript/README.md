@@ -32,10 +32,10 @@ loader.packages = {
 loader.load(
   'T12/urdf/T12.URDF',                    // The path to the URDF within the package OR absolute
   robot => {
-    
-    // The robot is loaded!  
+
+    // The robot is loaded!
     scene.add( robot );
-  
+
   }
 );
 ```
@@ -55,15 +55,15 @@ loader.loadMeshCb = function( path, manager, onComplete ) {
 
     const gltfLoader = new GLTFLoader( manager );
     gltfLoader.load( path, result => {
-    
+
         onComplete( result.scene );
-    
+
     } );
 
 };
 loader.load( 'T12/urdf/T12.URDF', robot => {
-    
-    // The robot is loaded!  
+
+    // The robot is loaded!
     scene.add( robot );
 
 } );
@@ -87,10 +87,10 @@ xacroLoader.load( url, xml => {
 
     const urdfLoader = new URDFLoader();
     urdfLoader.workingPath = LoaderUtils.extractUrlBase( url );
-    
+
     const robot = urdfLoader.parse( xml );
     scene.add( robot );
-  
+
 } );
 ```
 
@@ -318,6 +318,30 @@ joints : { [key] : URDFJoint }
 ```
 
 A dictionary of `jointName : URDFJoint` with all joints in the robot.
+
+### .colliders
+
+```js
+colliders : { [key] : Object3D }
+```
+
+A dictionary of `colliderName : Object3D` with all collision nodes in the robot.
+
+### .visual
+
+```js
+visual : { [key] : Object3D }
+```
+
+A dictionary of `visualName : Object3D` with all visual nodes in the robot.
+
+### .frames
+
+```js
+joints : { [key] : URDFJoint }
+```
+
+A dictionary of all the named frames in the robot including links, joints, colliders, and visual.
 
 ## urdf-viewer Element
 ```html
