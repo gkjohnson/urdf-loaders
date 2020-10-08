@@ -375,13 +375,8 @@ class URDFLoader {
         function processLinkElement(vn, linkObj, materialMap = {}) {
 
             const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
-            let xyz = [0, 0, 0];
-            let rpy = [0, 0, 0];
-            let scale = [1, 1, 1];
-
             const children = [ ...vn.children ];
             let material = null;
-            let primitiveModel = null;
 
             // get the material first
             const materialNode = children.filter(n => n.nodeName.toLowerCase() === 'material')[0];
@@ -404,6 +399,15 @@ class URDFLoader {
 
             }
 
+            const group = new THREE.Group();
+            group.name = vn.getAttribute('name');
+            linkObj.add( group );
+            if (isCollisionNode) {
+
+                makeURDFCollider(group);
+
+            }
+
             children.forEach(n => {
 
                 const type = n.nodeName.toLowerCase();
@@ -419,7 +423,12 @@ class URDFLoader {
                         if (filePath !== null) {
 
                             const scaleAttr = n.children[0].getAttribute('scale');
-                            if (scaleAttr) scale = processTuple(scaleAttr);
+                            let scale = [1, 1, 1];
+                            if (scaleAttr) {
+
+                                scale = processTuple(scaleAttr);
+
+                            }
 
                             loadMeshCb(filePath, manager, (obj, err) => {
 
@@ -435,11 +444,6 @@ class URDFLoader {
 
                                     }
 
-                                    linkObj.add(obj);
-
-                                    obj.position.set(xyz[0], xyz[1], xyz[2]);
-                                    obj.rotation.set(0, 0, 0);
-
                                     // multiply the existing scale by the scale components because
                                     // the loaded model could have important scale values already applied
                                     // to the root. Collada files, for example, can load in with a scale
@@ -448,13 +452,7 @@ class URDFLoader {
                                     obj.scale.y *= scale[1];
                                     obj.scale.z *= scale[2];
 
-                                    applyRotation(obj, rpy);
-
-                                    if (isCollisionNode) {
-
-                                        makeURDFCollider(obj);
-
-                                    }
+                                    group.add(obj);
 
                                 }
 
@@ -464,14 +462,14 @@ class URDFLoader {
 
                     } else if (geoType === 'box') {
 
-                        primitiveModel = new THREE.Mesh();
+                        const primitiveModel = new THREE.Mesh();
                         primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
                         primitiveModel.material = material;
 
                         const size = processTuple(n.children[0].getAttribute('size'));
-
-                        linkObj.add(primitiveModel);
                         primitiveModel.scale.set(size[0], size[1], size[2]);
+
+                        group.add(primitiveModel);
 
                         if (isCollisionNode) {
 
@@ -479,16 +477,18 @@ class URDFLoader {
 
                         }
 
+                        return primitiveModel;
+
                     } else if (geoType === 'sphere') {
 
-                        primitiveModel = new THREE.Mesh();
+                        const primitiveModel = new THREE.Mesh();
                         primitiveModel.geometry = new THREE.SphereBufferGeometry(1, 30, 30);
                         primitiveModel.material = material;
 
                         const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
                         primitiveModel.scale.set(radius, radius, radius);
 
-                        linkObj.add(primitiveModel);
+                        group.add(primitiveModel);
 
                         if (isCollisionNode) {
 
@@ -496,9 +496,11 @@ class URDFLoader {
 
                         }
 
+                        return p
+
                     } else if (geoType === 'cylinder') {
 
-                        primitiveModel = new THREE.Mesh();
+                        const primitiveModel = new THREE.Mesh();
                         primitiveModel.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
                         primitiveModel.material = material;
 
@@ -507,7 +509,7 @@ class URDFLoader {
                         primitiveModel.scale.set(radius, length, radius);
                         primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
-                        linkObj.add(primitiveModel);
+                        group.add(primitiveModel);
 
                         if (isCollisionNode) {
 
@@ -519,22 +521,16 @@ class URDFLoader {
 
                 } else if (type === 'origin') {
 
-                    xyz = processTuple(n.getAttribute('xyz'));
-                    rpy = processTuple(n.getAttribute('rpy'));
+                    const xyz = processTuple(n.getAttribute('xyz'));
+                    const rpy = processTuple(n.getAttribute('rpy'));
+
+                    group.position.set(xyz[0], xyz[1], xyz[2]);
+                    group.rotation.set(0, 0, 0);
+                    applyRotation(group, rpy);
 
                 }
 
             });
-
-            // apply the position and rotation to the primitive geometry after
-            // the fact because it's guaranteed to have been scraped from the child
-            // nodes by this point
-            if (primitiveModel) {
-
-                applyRotation(primitiveModel, rpy, true);
-                primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
-
-            }
 
         }
 
