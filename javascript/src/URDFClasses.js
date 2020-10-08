@@ -300,7 +300,7 @@ class URDFRobot extends URDFLink {
         if (joint) {
 
             joint.setJointValue(...angle);
-            return true
+            return true;
 
         }
 
