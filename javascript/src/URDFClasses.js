@@ -166,7 +166,7 @@ class URDFJoint extends Object3D {
             case 'revolute': {
 
                 let angle = values[0];
-                if (angle == null) return false
+                if (angle == null) return false;
                 if (angle === this.jointValue) return false;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
@@ -181,7 +181,7 @@ class URDFJoint extends Object3D {
                 const delta = new Quaternion().setFromAxisAngle(this.axis, angle);
                 this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
 
-                if ( this.jointValue[0] !== angle ) {
+                if (this.jointValue[0] !== angle) {
 
                     this.jointValue[0] = angle;
                     this.matrixWorldNeedsUpdate = true;
@@ -211,7 +211,7 @@ class URDFJoint extends Object3D {
                 this.position.copy(this.origPosition);
                 this.position.addScaledVector(this.axis, pos);
 
-                if ( this.jointValue[0] !== pos) {
+                if (this.jointValue[0] !== pos) {
 
                     this.jointValue[0] = pos;
                     this.matrixWorldNeedsUpdate = true;
