@@ -1,4 +1,4 @@
-/* global THREE URDFLoader expect */
+/* global THREE URDFLoader */
 
 // Using custom `looseEquals` instead of `toEqual` here because with `toEqual`, -0 does not equal 0,
 // which can cause some of these cases to fail.

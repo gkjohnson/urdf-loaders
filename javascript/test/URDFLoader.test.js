@@ -1,7 +1,5 @@
 /* global
     THREE URDFLoader
-    jest
-    describe it beforeAll afterAll beforeEach afterEach expect
 */
 import puppeteer from 'puppeteer';
 import pti from 'puppeteer-to-istanbul';

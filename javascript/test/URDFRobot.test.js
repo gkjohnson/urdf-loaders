@@ -1,4 +1,3 @@
-import { Color } from 'three';
 import { JSDOM } from 'jsdom';
 import URDFLoader from '../src/URDFLoader.js';
 

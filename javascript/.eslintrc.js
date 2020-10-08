@@ -11,9 +11,10 @@ module.exports =
   "env": {
     "es6": true,
     "node": true,
-    "browser": true
+    "browser": true,
+    "jest/globals": true
   },
-  "plugins": [],
+  "plugins": ["jest"],
   "globals": {
     "document": false,
     "navigator": false,
