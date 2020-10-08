@@ -1,7 +1,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/loaders/STLLoader.js'), require('three/examples/jsm/loaders/ColladaLoader.js')) :
     typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/loaders/STLLoader.js', 'three/examples/jsm/loaders/ColladaLoader.js'], factory) :
-    (global = global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
 }(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
 
     function URDFColliderClone(...args) {
@@ -212,6 +212,7 @@
 
             this.links = null;
             this.joints = null;
+            this.frames = null;
 
         }
 
@@ -240,6 +241,8 @@
                 }
 
             });
+
+            this.frames = { ...this.links, ...this.joints };
 
             return this;
 
@@ -497,6 +500,7 @@
 
                 obj.joints = jointMap;
                 obj.links = linkMap;
+                obj.frames = { ...linkMap, ...jointMap };
 
                 return obj;
 
@@ -610,6 +614,7 @@
                         material.color.setRGB(rgba[0], rgba[1], rgba[2]);
                         material.opacity = rgba[3];
                         material.transparent = rgba[3] < 1;
+                        material.depthWrite = !material.transparent;
 
                     } else if (type === 'texture') {
 

@@ -1,10 +1,12 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/controls/OrbitControls.js'), require('./URDFLoader.js')) :
     typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/controls/OrbitControls.js', './URDFLoader.js'], factory) :
-    (global = global || self, global.URDFViewer = factory(global.THREE, global.THREE, global.URDFLoader));
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFViewer = factory(global.THREE, global.THREE, global.URDFLoader));
 }(this, (function (THREE, OrbitControls_js, URDFLoader) { 'use strict';
 
-    URDFLoader = URDFLoader && Object.prototype.hasOwnProperty.call(URDFLoader, 'default') ? URDFLoader['default'] : URDFLoader;
+    function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+    var URDFLoader__default = /*#__PURE__*/_interopDefaultLegacy(URDFLoader);
 
     const tempVec2 = new THREE.Vector2();
 
@@ -503,7 +505,7 @@
 
                 }
 
-                const loader = new URDFLoader(manager);
+                const loader = new URDFLoader__default['default'](manager);
                 loader.packages = pkg;
                 loader.loadMeshCb = this.loadMeshFunc;
                 loader.fetchOptions = { mode: 'cors', credentials: 'same-origin' };

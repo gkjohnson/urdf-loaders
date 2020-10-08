@@ -1,10 +1,12 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('./urdf-viewer-element.js')) :
     typeof define === 'function' && define.amd ? define(['three', './urdf-viewer-element.js'], factory) :
-    (global = global || self, global.URDFManipulator = factory(global.THREE, global.URDFViewer));
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFManipulator = factory(global.THREE, global.URDFViewer));
 }(this, (function (THREE, URDFViewer) { 'use strict';
 
-    URDFViewer = URDFViewer && Object.prototype.hasOwnProperty.call(URDFViewer, 'default') ? URDFViewer['default'] : URDFViewer;
+    function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+    var URDFViewer__default = /*#__PURE__*/_interopDefaultLegacy(URDFViewer);
 
     // urdf-manipulator element
     // Displays a URDF model that can be manipulated with the mouse
@@ -14,7 +16,7 @@
     // joint-mouseout: Fired when a joint is no longer hovered over
     // manipulate-start: Fires when a joint is manipulated
     // manipulate-end: Fires when a joint is done being manipulated
-    class URDFManipulator extends URDFViewer {
+    class URDFManipulator extends URDFViewer__default['default'] {
 
         static get observedAttributes() {
 
