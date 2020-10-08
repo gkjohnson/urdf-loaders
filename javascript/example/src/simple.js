@@ -102,9 +102,9 @@ function init() {
         });
         for (let i = 1; i <= 6; i++) {
 
-            robot.joints[`HP${ i }`].setAngle(MathUtils.degToRad(30));
-            robot.joints[`KP${ i }`].setAngle(MathUtils.degToRad(120));
-            robot.joints[`AP${ i }`].setAngle(MathUtils.degToRad(-60));
+            robot.joints[`HP${ i }`].setJointValue(MathUtils.degToRad(30));
+            robot.joints[`KP${ i }`].setJointValue(MathUtils.degToRad(120));
+            robot.joints[`AP${ i }`].setJointValue(MathUtils.degToRad(-60));
 
         }
         robot.updateMatrixWorld(true);
