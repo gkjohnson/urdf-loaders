@@ -3,10 +3,10 @@
     jest
     describe it beforeAll afterAll beforeEach afterEach expect
 */
-const puppeteer = require('puppeteer');
-const pti = require('puppeteer-to-istanbul');
-const path = require('path');
-const { loadURDF, testJointAngles } = require('./utils.js');
+import puppeteer from 'puppeteer';
+import pti from 'puppeteer-to-istanbul';
+import path from 'path';
+import { loadURDF, testJointAngles } from './puppeteer-utils.js';
 
 // TODO: Add tests for multipackage loading, other files
 // TODO: Don't load from the web
