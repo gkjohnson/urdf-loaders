@@ -96,7 +96,7 @@ class URDFViewer extends HTMLElement {
         renderer.setClearAlpha(0);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.gammaOutput = true;
+        renderer.outputEncoding = THREE.sRGBEncoding;
 
         // Camera setup
         const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -314,27 +314,7 @@ class URDFViewer extends HTMLElement {
         this.world.updateMatrixWorld();
 
         const bbox = new THREE.Box3();
-        const temp = new THREE.Box3();
-
-        this.robot.traverse(c => {
-
-            const geometry = c.geometry;
-            if (geometry) {
-
-                if (geometry.boundingBox === null) {
-
-                    geometry.computeBoundingBox();
-
-                }
-
-                temp.copy(geometry.boundingBox);
-                temp.applyMatrix4(c.matrixWorld);
-
-                bbox.union(temp);
-
-            }
-
-        });
+        bbox.setFromObject(this.robot);
 
         const center = bbox.getCenter(new THREE.Vector3());
         this.controls.target.y = center.y;
