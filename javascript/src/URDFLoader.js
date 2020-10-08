@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { URDFRobot, URDFJoint, URDFLink, makeURDFCollider } from './URDFClasses.js';
+import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -318,11 +318,25 @@ class URDFLoader {
 
             if (parseVisual) {
                 const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
-                visualNodes.forEach(vn => processLinkElement(vn, target, materialMap));
+                visualNodes.forEach(vn => {
+
+                    const name = vn.getAttribute('name');
+                    const v = processLinkElement(vn, materialMap);
+                    v.name = name;
+                    target.add( v );
+
+                });
             }
             if (parseCollision) {
                 const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
-                collisionNodes.forEach(vn => processLinkElement(vn, target));
+                collisionNodes.forEach(vn => {
+
+                    const name = vn.getAttribute('name');
+                    const c = processLinkElement(vn);
+                    c.name = name;
+                    target.add( c );
+
+                });
             }
 
             return target;
@@ -372,7 +386,7 @@ class URDFLoader {
         }
 
         // Process the visual and collision nodes into meshes
-        function processLinkElement(vn, linkObj, materialMap = {}) {
+        function processLinkElement(vn, materialMap = {}) {
 
             const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
             const children = [ ...vn.children ];
@@ -399,14 +413,7 @@ class URDFLoader {
 
             }
 
-            const group = new THREE.Group();
-            group.name = vn.getAttribute('name');
-            linkObj.add( group );
-            if (isCollisionNode) {
-
-                makeURDFCollider(group);
-
-            }
+            const group = isCollisionNode ? new URDFCollider() : new URDFVisual();
 
             children.forEach(n => {
 
@@ -471,14 +478,6 @@ class URDFLoader {
 
                         group.add(primitiveModel);
 
-                        if (isCollisionNode) {
-
-                            makeURDFCollider(primitiveModel);
-
-                        }
-
-                        return primitiveModel;
-
                     } else if (geoType === 'sphere') {
 
                         const primitiveModel = new THREE.Mesh();
@@ -489,14 +488,6 @@ class URDFLoader {
                         primitiveModel.scale.set(radius, radius, radius);
 
                         group.add(primitiveModel);
-
-                        if (isCollisionNode) {
-
-                            makeURDFCollider(primitiveModel);
-
-                        }
-
-                        return p
 
                     } else if (geoType === 'cylinder') {
 
@@ -510,12 +501,6 @@ class URDFLoader {
                         primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
                         group.add(primitiveModel);
-
-                        if (isCollisionNode) {
-
-                            makeURDFCollider(primitiveModel);
-
-                        }
 
                     }
 
@@ -531,6 +516,8 @@ class URDFLoader {
                 }
 
             });
+
+            return group;
 
         }
 

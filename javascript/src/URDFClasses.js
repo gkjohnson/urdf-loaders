@@ -1,18 +1,26 @@
 import { Object3D, Quaternion } from 'three';
 
-function URDFColliderClone(...args) {
+class URDFCollider extends Object3D {
 
-    const proto = Object.getPrototypeOf(this);
-    const result = proto.clone.call(this, ...args);
-    result.isURDFCollider = true;
-    return result;
+    constructor(...args) {
 
-};
+        super(...args);
+        this.isURDFCollider = true;
+        this.type = 'URDFCollider';
 
-function makeURDFCollider(object) {
+    }
 
-    object.isURDFCollider = true;
-    object.clone = URDFColliderClone;
+}
+
+class URDFVisual extends Object3D {
+
+    constructor(...args) {
+
+        super(...args);
+        this.isURDFVisual = true;
+        this.type = 'URDFVisual';
+
+    }
 
 }
 
@@ -265,4 +273,4 @@ class URDFRobot extends URDFLink {
 
 }
 
-export { URDFRobot, URDFLink, URDFJoint, makeURDFCollider };
+export { URDFRobot, URDFLink, URDFJoint, URDFVisual, URDFCollider };
