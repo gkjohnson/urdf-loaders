@@ -268,14 +268,15 @@ ignoreLimits : boolean
 
 Whether or not to ignore the joint limits when setting a the joint position.
 
-### .setAngle, .setOffset
+### .setJointValue
 
 ```js
-setAngle( angle : number ) : void
-setOffset( position : number ) : void
+setJointValue( jointValue : number ) : Boolean
 ```
 
-Takes the position off of the starting position to rotate or move the joint to.
+Sets the joint value for the given joint. The interpretation of the value depends on the joint type. If the joint value specifies an angle it must be in radians.
+
+Returns true if the joint changed.
 
 ## URDFLink
 
@@ -342,6 +343,22 @@ joints : { [key] : URDFJoint }
 ```
 
 A dictionary of all the named frames in the robot including links, joints, colliders, and visual.
+
+### .setJointValue
+
+```js
+setJointValue( name : String, value : Number ) : Boolean
+```
+
+Sets the joint value of the joint with the given name. Returns true if the joint changed.
+
+### .setJointValues
+
+```js
+setJointValues( jointValueDictionary : Object ) : Boolean
+```
+
+Sets the joint values for all the joints in the dictionary indexed by joint name. Returns true if a joint changed.
 
 ## urdf-viewer Element
 ```html
@@ -429,18 +446,18 @@ Sets or gets the angles of the robot as a dictionary of `joint-name` to `radian`
 
 ### Functions
 
-#### setAngle
+#### .setJointValue
 
 ```js
-setAngle( jointName : string, angle : Number ) : void
+setJointValue( jointName : string, angle : Number ) : void
 ```
 
 Sets the given joint to the provided angle in radians.
 
-#### .setAngles
+#### .setJointValues
 
 ```js
-setAngles( jointDictionary : Object ) : void
+setJointValues( jointValueDictionary : Object ) : void
 ```
 
 Sets all joint names specified as keys to radian angle value.
