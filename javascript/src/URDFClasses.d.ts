@@ -3,6 +3,14 @@ import { Object3D, Vector3 } from 'three';
 export class URDFCollider extends Object3D {
 
     isURDFCollider: true;
+    urdfNode: Element | null;
+
+}
+
+export class URDFVisual extends Object3D {
+
+    isURDFVisual: true;
+    urdfNode: Element | null;
 
 }
 

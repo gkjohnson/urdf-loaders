@@ -7,6 +7,7 @@ class URDFCollider extends Object3D {
         super(...args);
         this.isURDFCollider = true;
         this.type = 'URDFCollider';
+        this.urdfNode = null;
 
     }
 
@@ -19,6 +20,7 @@ class URDFVisual extends Object3D {
         super(...args);
         this.isURDFVisual = true;
         this.type = 'URDFVisual';
+        this.urdfNode = null;
 
     }
 

@@ -414,6 +414,7 @@ class URDFLoader {
             }
 
             const group = isCollisionNode ? new URDFCollider() : new URDFVisual();
+            group.urdfNode = vn;
 
             children.forEach(n => {
 
