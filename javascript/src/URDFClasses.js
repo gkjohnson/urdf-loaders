@@ -208,6 +208,7 @@ class URDFRobot extends URDFLink {
 
         this.links = null;
         this.joints = null;
+        this.frames = null;
 
     }
 
@@ -236,6 +237,8 @@ class URDFRobot extends URDFLink {
             }
 
         });
+
+        this.frames =  {...this.links, ...this.joints };
 
         return this;
 

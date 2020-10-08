@@ -235,6 +235,7 @@ class URDFLoader {
 
             obj.joints = jointMap;
             obj.links = linkMap;
+            obj.frames = { ...linkMap, ...jointMap };
 
             return obj;
 

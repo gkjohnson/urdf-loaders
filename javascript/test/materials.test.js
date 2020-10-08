@@ -6,18 +6,6 @@ const jsdom = new JSDOM();
 const window = jsdom.window;
 global.DOMParser = window.DOMParser;
 global.XMLSerializer = window.XMLSerializer;
-global.fetch = function(url) {
-    url = url.replace(/^(\.\/)+/, './');
-    return Promise.resolve({
-        text() {
-            if (url in files) {
-                return Promise.resolve(files[url]);
-            } else {
-                return Promise.reject(new Error());
-            }
-        },
-    });
-};
 
 describe('URDFLoader', () => {
     it('should parse material colors and name.', () => {
