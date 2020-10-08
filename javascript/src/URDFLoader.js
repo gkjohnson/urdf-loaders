@@ -217,11 +217,13 @@ class URDFLoader {
             });
 
             // Create the <link> map
+            const visualMap = {};
+            const colliderMap = {}
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
                 const isRoot = robot.querySelector(`child[link="${ name }"]`) === null;
-                linkMap[name] = processLink(l, isRoot ? obj : null);
+                linkMap[name] = processLink(l, visualMap, colliderMap, isRoot ? obj : null);
 
             });
 
@@ -235,7 +237,15 @@ class URDFLoader {
 
             obj.joints = jointMap;
             obj.links = linkMap;
-            obj.frames = { ...linkMap, ...jointMap };
+            obj.colliders = colliderMap;
+            obj.visual = visualMap;
+
+            obj.frames = {
+                ...colliderMap,
+                ...visualMap,
+                ...linkMap,
+                ...jointMap,
+            };
 
             return obj;
 
@@ -304,7 +314,7 @@ class URDFLoader {
         }
 
         // Process the <link> nodes
-        function processLink(link, target = null) {
+        function processLink(link, visualMap, colliderMap, target = null) {
 
             if (target === null) {
 
@@ -317,26 +327,43 @@ class URDFLoader {
             target.urdfNode = link;
 
             if (parseVisual) {
+
                 const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
                 visualNodes.forEach(vn => {
 
-                    const name = vn.getAttribute('name');
                     const v = processLinkElement(vn, materialMap);
-                    v.name = name;
                     target.add( v );
 
-                });
-            }
-            if (parseCollision) {
-                const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
-                collisionNodes.forEach(vn => {
+                    if (vn.hasAttribute('name')) {
 
-                    const name = vn.getAttribute('name');
-                    const c = processLinkElement(vn);
-                    c.name = name;
+                        const name = vn.getAttribute('name');
+                        v.name = name;
+                        visualMap[name] = v;
+
+                    }
+
+                });
+
+            }
+
+            if (parseCollision) {
+
+                const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
+                collisionNodes.forEach(cn => {
+
+                    const c = processLinkElement(cn);
                     target.add( c );
 
+                    if (cn.hasAttribute('name')) {
+
+                        const name = cn.getAttribute('name');
+                        c.name = name;
+                        colliderMap[name] = c;
+
+                    }
+
                 });
+
             }
 
             return target;

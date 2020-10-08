@@ -11,6 +11,15 @@ class URDFCollider extends Object3D {
 
     }
 
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+        this.urdfNode = source.urdfNode;
+
+        return this;
+
+    }
+
 }
 
 class URDFVisual extends Object3D {
@@ -21,6 +30,15 @@ class URDFVisual extends Object3D {
         this.isURDFVisual = true;
         this.type = 'URDFVisual';
         this.urdfNode = null;
+
+    }
+
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+        this.urdfNode = source.urdfNode;
+
+        return this;
 
     }
 
@@ -218,6 +236,8 @@ class URDFRobot extends URDFLink {
 
         this.links = null;
         this.joints = null;
+        this.colliders = null;
+        this.visual = null;
         this.frames = null;
 
     }
@@ -231,6 +251,8 @@ class URDFRobot extends URDFLink {
 
         this.links = {};
         this.joints = {};
+        this.colliders = {};
+        this.visual = {};
 
         this.traverse(c => {
 
@@ -246,9 +268,26 @@ class URDFRobot extends URDFLink {
 
             }
 
+            if (c.isURDFCollider && c.name in source.colliders) {
+
+                this.colliders[c.name] = c;
+
+            }
+
+            if (c.isURDFVisual && c.name in source.visual) {
+
+                this.visual[c.name] = c;
+
+            }
+
         });
 
-        this.frames = { ...this.links, ...this.joints };
+        this.frames = {
+            ...this.colliders,
+            ...this.visual,
+            ...this.links,
+            ...this.joints,
+        };
 
         return this;
 

@@ -46,6 +46,8 @@ export class URDFRobot extends URDFLink {
 
     links: { [ key: string ]: URDFLink };
     joints: { [ key: string ]: URDFJoint };
+    colliders: { [ key: string ]: URDFCollider };
+    visual: { [ key: string ]: URDFVisual };
     frames: { [ key: string ]: Object3D };
 
     setAngle(value0: Number, value1?: Number, value2?: Number): Number | Number[] | null;
