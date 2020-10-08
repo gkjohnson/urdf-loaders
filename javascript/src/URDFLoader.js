@@ -348,6 +348,7 @@ class URDFLoader {
                     material.color.setRGB(rgba[0], rgba[1], rgba[2]);
                     material.opacity = rgba[3];
                     material.transparent = rgba[3] < 1;
+                    material.depthWrite = !material.transparent;
 
                 } else if (type === 'texture') {
 
