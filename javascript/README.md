@@ -436,20 +436,20 @@ Recenter the camera only after loading the model.
 
 All of the above attributes have corresponding camel case properties.
 
-#### .angles
+#### .jointValues
 
 ```js
-angles : Object
+jointValues : Object
 ```
 
-Sets or gets the angles of the robot as a dictionary of `joint-name` to `radian` pairs.
+Sets or gets the jointValues of the robot as a dictionary of `joint-name` to `radian` pairs.
 
 ### Functions
 
 #### .setJointValue
 
 ```js
-setJointValue( jointName : string, angle : Number ) : void
+setJointValue( jointName : String, jointValue : Number ) : void
 ```
 
 Sets the given joint to the provided angle in radians.
