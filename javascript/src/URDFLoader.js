@@ -218,7 +218,7 @@ class URDFLoader {
 
             // Create the <link> map
             const visualMap = {};
-            const colliderMap = {}
+            const colliderMap = {};
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
@@ -332,7 +332,7 @@ class URDFLoader {
                 visualNodes.forEach(vn => {
 
                     const v = processLinkElement(vn, materialMap);
-                    target.add( v );
+                    target.add(v);
 
                     if (vn.hasAttribute('name')) {
 
@@ -352,7 +352,7 @@ class URDFLoader {
                 collisionNodes.forEach(cn => {
 
                     const c = processLinkElement(cn);
-                    target.add( c );
+                    target.add(c);
 
                     if (cn.hasAttribute('name')) {
 
