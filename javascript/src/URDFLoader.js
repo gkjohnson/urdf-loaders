@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { URDFRobot, URDFJoint, URDFLink, makeURDFCollider } from './URDFClasses.js';
+import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -217,11 +217,13 @@ class URDFLoader {
             });
 
             // Create the <link> map
+            const visualMap = {};
+            const colliderMap = {};
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
                 const isRoot = robot.querySelector(`child[link="${ name }"]`) === null;
-                linkMap[name] = processLink(l, isRoot ? obj : null);
+                linkMap[name] = processLink(l, visualMap, colliderMap, isRoot ? obj : null);
 
             });
 
@@ -235,7 +237,15 @@ class URDFLoader {
 
             obj.joints = jointMap;
             obj.links = linkMap;
-            obj.frames = { ...linkMap, ...jointMap };
+            obj.colliders = colliderMap;
+            obj.visual = visualMap;
+
+            obj.frames = {
+                ...colliderMap,
+                ...visualMap,
+                ...linkMap,
+                ...jointMap,
+            };
 
             return obj;
 
@@ -304,7 +314,7 @@ class URDFLoader {
         }
 
         // Process the <link> nodes
-        function processLink(link, target = null) {
+        function processLink(link, visualMap, colliderMap, target = null) {
 
             if (target === null) {
 
@@ -317,12 +327,43 @@ class URDFLoader {
             target.urdfNode = link;
 
             if (parseVisual) {
+
                 const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
-                visualNodes.forEach(vn => processLinkElement(vn, target, materialMap));
+                visualNodes.forEach(vn => {
+
+                    const v = processLinkElement(vn, materialMap);
+                    target.add(v);
+
+                    if (vn.hasAttribute('name')) {
+
+                        const name = vn.getAttribute('name');
+                        v.name = name;
+                        visualMap[name] = v;
+
+                    }
+
+                });
+
             }
+
             if (parseCollision) {
+
                 const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
-                collisionNodes.forEach(vn => processLinkElement(vn, target));
+                collisionNodes.forEach(cn => {
+
+                    const c = processLinkElement(cn);
+                    target.add(c);
+
+                    if (cn.hasAttribute('name')) {
+
+                        const name = cn.getAttribute('name');
+                        c.name = name;
+                        colliderMap[name] = c;
+
+                    }
+
+                });
+
             }
 
             return target;
@@ -372,16 +413,11 @@ class URDFLoader {
         }
 
         // Process the visual and collision nodes into meshes
-        function processLinkElement(vn, linkObj, materialMap = {}) {
+        function processLinkElement(vn, materialMap = {}) {
 
             const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
-            let xyz = [0, 0, 0];
-            let rpy = [0, 0, 0];
-            let scale = [1, 1, 1];
-
             const children = [ ...vn.children ];
             let material = null;
-            let primitiveModel = null;
 
             // get the material first
             const materialNode = children.filter(n => n.nodeName.toLowerCase() === 'material')[0];
@@ -404,6 +440,9 @@ class URDFLoader {
 
             }
 
+            const group = isCollisionNode ? new URDFCollider() : new URDFVisual();
+            group.urdfNode = vn;
+
             children.forEach(n => {
 
                 const type = n.nodeName.toLowerCase();
@@ -419,7 +458,12 @@ class URDFLoader {
                         if (filePath !== null) {
 
                             const scaleAttr = n.children[0].getAttribute('scale');
-                            if (scaleAttr) scale = processTuple(scaleAttr);
+                            let scale = [1, 1, 1];
+                            if (scaleAttr) {
+
+                                scale = processTuple(scaleAttr);
+
+                            }
 
                             loadMeshCb(filePath, manager, (obj, err) => {
 
@@ -435,11 +479,6 @@ class URDFLoader {
 
                                     }
 
-                                    linkObj.add(obj);
-
-                                    obj.position.set(xyz[0], xyz[1], xyz[2]);
-                                    obj.rotation.set(0, 0, 0);
-
                                     // multiply the existing scale by the scale components because
                                     // the loaded model could have important scale values already applied
                                     // to the root. Collada files, for example, can load in with a scale
@@ -448,13 +487,7 @@ class URDFLoader {
                                     obj.scale.y *= scale[1];
                                     obj.scale.z *= scale[2];
 
-                                    applyRotation(obj, rpy);
-
-                                    if (isCollisionNode) {
-
-                                        makeURDFCollider(obj);
-
-                                    }
+                                    group.add(obj);
 
                                 }
 
@@ -464,41 +497,29 @@ class URDFLoader {
 
                     } else if (geoType === 'box') {
 
-                        primitiveModel = new THREE.Mesh();
+                        const primitiveModel = new THREE.Mesh();
                         primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
                         primitiveModel.material = material;
 
                         const size = processTuple(n.children[0].getAttribute('size'));
-
-                        linkObj.add(primitiveModel);
                         primitiveModel.scale.set(size[0], size[1], size[2]);
 
-                        if (isCollisionNode) {
-
-                            makeURDFCollider(primitiveModel);
-
-                        }
+                        group.add(primitiveModel);
 
                     } else if (geoType === 'sphere') {
 
-                        primitiveModel = new THREE.Mesh();
+                        const primitiveModel = new THREE.Mesh();
                         primitiveModel.geometry = new THREE.SphereBufferGeometry(1, 30, 30);
                         primitiveModel.material = material;
 
                         const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
                         primitiveModel.scale.set(radius, radius, radius);
 
-                        linkObj.add(primitiveModel);
-
-                        if (isCollisionNode) {
-
-                            makeURDFCollider(primitiveModel);
-
-                        }
+                        group.add(primitiveModel);
 
                     } else if (geoType === 'cylinder') {
 
-                        primitiveModel = new THREE.Mesh();
+                        const primitiveModel = new THREE.Mesh();
                         primitiveModel.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
                         primitiveModel.material = material;
 
@@ -507,34 +528,24 @@ class URDFLoader {
                         primitiveModel.scale.set(radius, length, radius);
                         primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
-                        linkObj.add(primitiveModel);
-
-                        if (isCollisionNode) {
-
-                            makeURDFCollider(primitiveModel);
-
-                        }
+                        group.add(primitiveModel);
 
                     }
 
                 } else if (type === 'origin') {
 
-                    xyz = processTuple(n.getAttribute('xyz'));
-                    rpy = processTuple(n.getAttribute('rpy'));
+                    const xyz = processTuple(n.getAttribute('xyz'));
+                    const rpy = processTuple(n.getAttribute('rpy'));
+
+                    group.position.set(xyz[0], xyz[1], xyz[2]);
+                    group.rotation.set(0, 0, 0);
+                    applyRotation(group, rpy);
 
                 }
 
             });
 
-            // apply the position and rotation to the primitive geometry after
-            // the fact because it's guaranteed to have been scraped from the child
-            // nodes by this point
-            if (primitiveModel) {
-
-                applyRotation(primitiveModel, rpy, true);
-                primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
-
-            }
+            return group;
 
         }
 

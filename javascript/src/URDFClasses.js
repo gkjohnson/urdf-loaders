@@ -1,18 +1,46 @@
 import { Object3D, Quaternion } from 'three';
 
-function URDFColliderClone(...args) {
+class URDFCollider extends Object3D {
 
-    const proto = Object.getPrototypeOf(this);
-    const result = proto.clone.call(this, ...args);
-    result.isURDFCollider = true;
-    return result;
+    constructor(...args) {
 
-};
+        super(...args);
+        this.isURDFCollider = true;
+        this.type = 'URDFCollider';
+        this.urdfNode = null;
 
-function makeURDFCollider(object) {
+    }
 
-    object.isURDFCollider = true;
-    object.clone = URDFColliderClone;
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+        this.urdfNode = source.urdfNode;
+
+        return this;
+
+    }
+
+}
+
+class URDFVisual extends Object3D {
+
+    constructor(...args) {
+
+        super(...args);
+        this.isURDFVisual = true;
+        this.type = 'URDFVisual';
+        this.urdfNode = null;
+
+    }
+
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+        this.urdfNode = source.urdfNode;
+
+        return this;
+
+    }
 
 }
 
@@ -208,6 +236,8 @@ class URDFRobot extends URDFLink {
 
         this.links = null;
         this.joints = null;
+        this.colliders = null;
+        this.visual = null;
         this.frames = null;
 
     }
@@ -221,6 +251,8 @@ class URDFRobot extends URDFLink {
 
         this.links = {};
         this.joints = {};
+        this.colliders = {};
+        this.visual = {};
 
         this.traverse(c => {
 
@@ -236,9 +268,26 @@ class URDFRobot extends URDFLink {
 
             }
 
+            if (c.isURDFCollider && c.name in source.colliders) {
+
+                this.colliders[c.name] = c;
+
+            }
+
+            if (c.isURDFVisual && c.name in source.visual) {
+
+                this.visual[c.name] = c;
+
+            }
+
         });
 
-        this.frames = { ...this.links, ...this.joints };
+        this.frames = {
+            ...this.colliders,
+            ...this.visual,
+            ...this.links,
+            ...this.joints,
+        };
 
         return this;
 
@@ -265,4 +314,4 @@ class URDFRobot extends URDFLink {
 
 }
 
-export { URDFRobot, URDFLink, URDFJoint, makeURDFCollider };
+export { URDFRobot, URDFLink, URDFJoint, URDFVisual, URDFCollider };

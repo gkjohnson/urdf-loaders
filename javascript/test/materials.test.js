@@ -26,7 +26,7 @@ describe('URDFLoader', () => {
             </robot>
         `);
 
-        const material = res.children[0].material;
+        const material = res.children[0].children[0].material;
         expect(material.name).toEqual('Cyan');
         expect(material.color).toEqual(new Color(0, 1, 1));
         expect(material.transparent).toEqual(false);
@@ -52,7 +52,7 @@ describe('URDFLoader', () => {
             </robot>
         `);
 
-        const material = res.children[0].material;
+        const material = res.children[0].children[0].material;
         expect(material.name).toEqual('Cyan');
         expect(material.color).toEqual(new Color(0, 1, 1));
         expect(material.transparent).toEqual(true);
