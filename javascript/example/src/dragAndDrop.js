@@ -31,13 +31,33 @@ function dataTransferToFiles(dataTransfer) {
             return new Promise(resolve => {
 
                 const promises = [];
-                reader.readEntries(et => {
-                    et.forEach(e => {
-                        promises.push(recurseDirectory(e));
+
+                // exhaustively read all the directory entries
+                function readNextEntries() {
+
+                    reader.readEntries(et => {
+
+                        if (et.length === 0) {
+
+                            Promise.all(promises).then(() => resolve());
+
+                        } else {
+
+                            et.forEach(e => {
+
+                                promises.push(recurseDirectory(e));
+
+                            });
+                            readNextEntries();
+
+                        }
+
                     });
 
-                    Promise.all(promises).then(() => resolve());
-                });
+                }
+
+                readNextEntries();
+
             });
         }
     }
