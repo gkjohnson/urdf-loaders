@@ -41,20 +41,20 @@
     "three": ">=0.105.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^8.1.0",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "concurrently": "^4.0.1",
-    "eslint": "^7.3.1",
-    "jest": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "@webcomponents/webcomponentsjs": "^2.4.4",
+    "concurrently": "^4.1.2",
+    "eslint": "^7.10.0",
+    "jest": "^24.9.0",
     "jest-cli": "^24.1.0",
     "nyc": "^13.3.0",
     "opn-cli": "^3.1.0",
-    "puppeteer": "^1.19.0",
-    "puppeteer-to-istanbul": "^1.3.1",
-    "rollup": "^2.18.0",
+    "puppeteer": "^1.20.0",
+    "puppeteer-to-istanbul": "^1.4.0",
+    "rollup": "^2.29.0",
     "static-server": "^3.0.0",
     "three": "^0.117.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.9.7"
   },
   "dependencies": {}
 }
