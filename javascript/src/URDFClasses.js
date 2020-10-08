@@ -73,6 +73,7 @@ class URDFJoint extends Object3D {
         return this._jointType;
 
     }
+
     set jointType(v) {
 
         if (this.jointType === v) return;

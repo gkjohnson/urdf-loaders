@@ -28,12 +28,12 @@ export class URDFJoint extends Object3D {
     urdfNode: Element | null;
     axis: Vector3 | null;
     jointType: 'fixed' | 'continuous' | 'revolute' | 'planar' | 'prismatic' | 'floating';
-    angle: Number | Number[] | null;
+    angle: Number;
+    jointValue: Number[];
     limit: { lower: Number, upper: Number }; // TODO: add more
     ignoreLimits: Boolean;
 
-    setAngle(value0: Number, value1?: Number, value2?: Number): Number | Number[];
-    setOffset(value0: Number, value1?: Number, value2?: Number): Number | Number[];
+    setJointValue(value0: Number, value1?: Number, value2?: Number): void;
 
 }
 
@@ -50,7 +50,8 @@ export class URDFRobot extends URDFLink {
     visual: { [ key: string ]: URDFVisual };
     frames: { [ key: string ]: Object3D };
 
-    setAngle(value0: Number, value1?: Number, value2?: Number): Number | Number[] | null;
-    setAngles(angles: { [ key: string ]: Number | Number[] }): void;
+    setJointValue(jointName: String, value0: Number, value1?: Number, value2?: Number): void;
+    setJointValues(values: { [ key: string ]: Number | Number[] }): void;
+    getFrame(name: String): Object3D;
 
 }
