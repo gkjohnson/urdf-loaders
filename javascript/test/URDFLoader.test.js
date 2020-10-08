@@ -333,7 +333,7 @@ describe('TriATHLETE Climbing URDF', () => {
 
         const needsUpdateBefore = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
 
-        await page.evaluate(() => window.robot.joints.HY1.setAngle(10));
+        await page.evaluate(() => window.robot.joints.HY1.setJointValue(10));
 
         const needsUpdateAfter = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
 

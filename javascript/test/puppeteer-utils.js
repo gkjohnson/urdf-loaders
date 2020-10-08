@@ -45,12 +45,12 @@ function loadURDF(page, urdf, options = {}) {
 
 }
 
-function setAngle(page, jointName, angle) {
+function setJointValue(page, jointName, angle) {
 
     return page.evaluate((jointName, angle) => {
 
         const joint = window.robot.joints[jointName];
-        joint.setAngle(angle);
+        joint.setJointValue(angle);
         return joint.angle;
 
     }, jointName, angle);
@@ -72,27 +72,27 @@ async function testJointAngles(page) {
         if (info.jointType === 'continuous') {
 
             const angle = 10000 * Math.random();
-            const res = await setAngle(page, key, angle);
+            const res = await setJointValue(page, key, angle);
             expect(res).looseEquals(angle);
 
         } else if (info.jointType === 'fixed') {
 
             const angle = Math.random() * 1000;
-            const res = await setAngle(page, key, angle);
+            const res = await setJointValue(page, key, angle);
             expect(res).looseEquals(0);
 
         } else if (info.jointType === 'revolute' || info.jointType === 'prismatic') {
 
             const min = info.limit.lower - Math.random() * 1000 - 0.01;
-            const minres = await setAngle(page, key, min);
+            const minres = await setJointValue(page, key, min);
             expect(minres).looseEquals(info.limit.lower);
 
             const max = info.limit.upper + Math.random() * 1000 + 0.01;
-            const maxres = await setAngle(page, key, max);
+            const maxres = await setJointValue(page, key, max);
             expect(maxres).looseEquals(info.limit.upper);
 
             const angle = info.limit.lower + (info.limit.upper - info.limit.lower) * Math.random();
-            const res = await setAngle(page, key, angle);
+            const res = await setJointValue(page, key, angle);
             expect(res).looseEquals(angle);
 
         } else if (info.jointType === 'planar' || info.jointType === 'floating') {
@@ -108,7 +108,7 @@ async function testJointAngles(page) {
 module.exports = {
 
     loadURDF,
-    setAngle,
+    setJointValue,
     testJointAngles,
 
 };
