@@ -158,14 +158,16 @@ class URDFJoint extends Object3D {
         switch (this.jointType) {
 
             case 'fixed': {
-                break;
+
+                return false;
+
             }
             case 'continuous':
             case 'revolute': {
 
                 let angle = values[0];
-                if (angle == null) break;
-                if (angle === this.jointValue) break;
+                if (angle == null) return false
+                if (angle === this.jointValue) return false;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -179,17 +181,25 @@ class URDFJoint extends Object3D {
                 const delta = new Quaternion().setFromAxisAngle(this.axis, angle);
                 this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
 
-                this.jointValue[0] = angle;
-                this.matrixWorldNeedsUpdate = true;
+                if ( this.jointValue[0] !== angle ) {
 
-                break;
+                    this.jointValue[0] = angle;
+                    this.matrixWorldNeedsUpdate = true;
+                    return true;
+
+                } else {
+
+                    return false;
+
+                }
+
             }
 
             case 'prismatic': {
 
                 let pos = values[0];
-                if (pos == null) break;
-                if (pos === this.jointValue) break;
+                if (pos == null) return false;
+                if (pos === this.jointValue) return false;
 
                 if (!this.ignoreLimits) {
 
@@ -201,9 +211,17 @@ class URDFJoint extends Object3D {
                 this.position.copy(this.origPosition);
                 this.position.addScaledVector(this.axis, pos);
 
-                this.jointValue[0] = pos;
-                this.matrixWorldNeedsUpdate = true;
-                break;
+                if ( this.jointValue[0] !== pos) {
+
+                    this.jointValue[0] = pos;
+                    this.matrixWorldNeedsUpdate = true;
+                    return true;
+
+                } else {
+
+                    return false;
+
+                }
 
             }
 
@@ -213,6 +231,8 @@ class URDFJoint extends Object3D {
                 console.warn(`'${ this.jointType }' joint not yet supported`);
 
         }
+
+        return false;
 
     }
 
@@ -299,8 +319,7 @@ class URDFRobot extends URDFLink {
         const joint = this.joints[jointName];
         if (joint) {
 
-            joint.setJointValue(...angle);
-            return true;
+            return joint.setJointValue(...angle);
 
         }
 
@@ -309,20 +328,23 @@ class URDFRobot extends URDFLink {
 
     setJointValues(values) {
 
+        let didChange = false;
         for (const name in values) {
 
             const value = values[name];
             if (Array.isArray(value)) {
 
-                this.setJointValue(name, ...value);
+                didChange = didChange || this.setJointValue(name, ...value);
 
             } else {
 
-                this.setJointValue(name, value);
+                didChange = didChange || this.setJointValue(name, value);
 
             }
 
         }
+
+        return didChange;
 
     }
 
