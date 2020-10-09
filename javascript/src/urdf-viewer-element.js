@@ -533,7 +533,7 @@ class URDFViewer extends HTMLElement {
                 .forEach(joint => {
 
                     joint.ignoreLimits = ignore;
-                    joint.setJointValue(joint.angle);
+                    joint.setJointValue(...joint.jointValues);
 
                 });
 
