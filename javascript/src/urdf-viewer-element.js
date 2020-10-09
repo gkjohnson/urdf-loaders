@@ -46,19 +46,35 @@ class URDFViewer extends HTMLElement {
     get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
     set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
 
-    get angles() {
+    get jointValues() {
 
-        const angles = {};
+        const values = {};
         if (this.robot) {
 
-            for (const name in this.robot.joints) angles[name] = this.robot.joints[name].angle;
+            for (const name in this.robot.joints) {
+
+                const joint = this.robot.joints[name];
+                values[name] = joint.jointValue.length === 1 ? joint.angle : [...joint.jointValue];
+
+            }
 
         }
 
-        return angles;
+        return values;
 
     }
-    set angles(val) { this._setAngles(val); }
+    set jointValues(val) { this.setJointValues(val); }
+
+    get angles() {
+
+        return this.jointValues;
+
+    }
+    set angles(v) {
+
+        this.jointValues = v;
+
+    }
 
     /* Lifecycle Functions */
     constructor() {
@@ -282,24 +298,23 @@ class URDFViewer extends HTMLElement {
 
     // Set the joint with jointName to
     // angle in degrees
-    setAngle(jointName, angle) {
+    setJointValue(jointName, ...values) {
 
         if (!this.robot) return;
         if (!this.robot.joints[jointName]) return;
 
-        const origAngle = this.robot.joints[jointName].angle;
-        const newAngle = this.robot.setAngle(jointName, angle);
-        if (origAngle !== newAngle) {
-            this.redraw();
-        }
+        if (this.robot.joints[jointName].setJointValue(...values)) {
 
-        this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
+            this.redraw();
+            this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
+
+        }
 
     }
 
-    setAngles(angles) {
+    setJointValues(values) {
 
-        for (const name in angles) this.setAngle(name, angles[name]);
+        for (const name in values) this.setJointValue(name, values[name]);
 
     }
 
@@ -518,7 +533,7 @@ class URDFViewer extends HTMLElement {
                 .forEach(joint => {
 
                     joint.ignoreLimits = ignore;
-                    joint.setAngle(joint.angle);
+                    joint.setJointValue(...joint.jointValues);
 
                 });
 

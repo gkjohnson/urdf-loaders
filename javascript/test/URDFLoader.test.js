@@ -254,9 +254,9 @@ describe('Clone', () => {
                         areEqual = areEqual && ra.limit.lower === rb.limit.lower;
                         areEqual = areEqual && ra.limit.upper === rb.limit.upper;
                         areEqual = areEqual && ra.ignoreLimits === rb.ignoreLimits;
-                        areEqual = areEqual && ra.jointValue === rb.jointValue;
-                        areEqual = areEqual && ra.origPosition === rb.origPosition;
-                        areEqual = areEqual && ra.origQuaternion === rb.origQuaternion;
+                        areEqual = areEqual && JSON.stringify(ra.jointValue) === JSON.stringify(rb.jointValue);
+                        areEqual = areEqual && JSON.stringify(ra.origPosition) === JSON.stringify(rb.origPosition);
+                        areEqual = areEqual && JSON.stringify(ra.origQuaternion) === JSON.stringify(rb.origQuaternion);
                         break;
 
                 }
@@ -333,7 +333,7 @@ describe('TriATHLETE Climbing URDF', () => {
 
         const needsUpdateBefore = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
 
-        await page.evaluate(() => window.robot.joints.HY1.setAngle(10));
+        await page.evaluate(() => window.robot.joints.HY1.setJointValue(10));
 
         const needsUpdateAfter = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
 

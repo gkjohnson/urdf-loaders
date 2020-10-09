@@ -329,7 +329,7 @@ class URDFManipulator extends URDFViewer {
 
                 if (delta) {
 
-                    this.setAngle(dragging.name, dragging.angle + delta);
+                    this.setJointValue(dragging.name, dragging.angle + delta);
 
                 }
 

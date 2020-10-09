@@ -73,6 +73,7 @@ class URDFJoint extends Object3D {
         return this._jointType;
 
     }
+
     set jointType(v) {
 
         if (this.jointType === v) return;
@@ -84,7 +85,7 @@ class URDFJoint extends Object3D {
             case 'continuous':
             case 'revolute':
             case 'prismatic':
-                this.jointValue = 0;
+                this.jointValue = new Array(1).fill(0);
                 break;
 
             case 'planar':
@@ -101,7 +102,7 @@ class URDFJoint extends Object3D {
 
     get angle() {
 
-        return this.jointValue;
+        return this.jointValue[0];
 
     }
 
@@ -134,7 +135,7 @@ class URDFJoint extends Object3D {
         this.limit.upper = source.limit.upper;
         this.ignoreLimits = false;
 
-        this.jointValue = Array.isArray(source.jointValue) ? [...source.jointValue] : source.jointValue;
+        this.jointValue = [...source.jointValue];
 
         this.origPosition = source.origPosition ? source.origPosition.clone() : null;
         this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
@@ -143,11 +144,7 @@ class URDFJoint extends Object3D {
     }
 
     /* Public Functions */
-    setAngle(...values) {
-        return this.setOffset(...values);
-    }
-
-    setOffset(...values) {
+    setJointValue(...values) {
 
         values = values.map(v => parseFloat(v));
 
@@ -161,14 +158,16 @@ class URDFJoint extends Object3D {
         switch (this.jointType) {
 
             case 'fixed': {
-                break;
+
+                return false;
+
             }
             case 'continuous':
             case 'revolute': {
 
                 let angle = values[0];
-                if (angle == null) break;
-                if (angle === this.jointValue) break;
+                if (angle == null) return false;
+                if (angle === this.jointValue) return false;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -182,31 +181,47 @@ class URDFJoint extends Object3D {
                 const delta = new Quaternion().setFromAxisAngle(this.axis, angle);
                 this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
 
-                this.jointValue = angle;
-                this.matrixWorldNeedsUpdate = true;
+                if (this.jointValue[0] !== angle) {
 
-                break;
+                    this.jointValue[0] = angle;
+                    this.matrixWorldNeedsUpdate = true;
+                    return true;
+
+                } else {
+
+                    return false;
+
+                }
+
             }
 
             case 'prismatic': {
 
-                let angle = values[0];
-                if (angle == null) break;
-                if (angle === this.jointValue) break;
+                let pos = values[0];
+                if (pos == null) return false;
+                if (pos === this.jointValue) return false;
 
                 if (!this.ignoreLimits) {
 
-                    angle = Math.min(this.limit.upper, angle);
-                    angle = Math.max(this.limit.lower, angle);
+                    pos = Math.min(this.limit.upper, pos);
+                    pos = Math.max(this.limit.lower, pos);
 
                 }
 
                 this.position.copy(this.origPosition);
-                this.position.addScaledVector(this.axis, angle);
+                this.position.addScaledVector(this.axis, pos);
 
-                this.jointValue = angle;
-                this.matrixWorldNeedsUpdate = true;
-                break;
+                if (this.jointValue[0] !== pos) {
+
+                    this.jointValue[0] = pos;
+                    this.matrixWorldNeedsUpdate = true;
+                    return true;
+
+                } else {
+
+                    return false;
+
+                }
 
             }
 
@@ -217,7 +232,7 @@ class URDFJoint extends Object3D {
 
         }
 
-        return this.jointValue;
+        return false;
 
     }
 
@@ -293,22 +308,43 @@ class URDFRobot extends URDFLink {
 
     }
 
-    setAngle(jointName, ...angle) {
+    getFrame(name) {
+
+        return this.frames[name];
+
+    }
+
+    setJointValue(jointName, ...angle) {
 
         const joint = this.joints[jointName];
         if (joint) {
 
-            return joint.setAngle(...angle);
+            return joint.setJointValue(...angle);
 
         }
 
-        return null;
+        return false;
     }
 
-    setAngles(angles) {
+    setJointValues(values) {
 
-        // TODO: How to handle other, multi-dimensional joint types?
-        for (const name in angles) this.setAngle(name, angles[name]);
+        let didChange = false;
+        for (const name in values) {
+
+            const value = values[name];
+            if (Array.isArray(value)) {
+
+                didChange = didChange || this.setJointValue(name, ...value);
+
+            } else {
+
+                didChange = didChange || this.setJointValue(name, value);
+
+            }
+
+        }
+
+        return didChange;
 
     }
 
