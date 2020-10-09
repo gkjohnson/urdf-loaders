@@ -4,19 +4,47 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
 }(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
 
-    function URDFColliderClone(...args) {
+    class URDFCollider extends THREE.Object3D {
 
-        const proto = Object.getPrototypeOf(this);
-        const result = proto.clone.call(this, ...args);
-        result.isURDFCollider = true;
-        return result;
+        constructor(...args) {
 
-    };
+            super(...args);
+            this.isURDFCollider = true;
+            this.type = 'URDFCollider';
+            this.urdfNode = null;
 
-    function makeURDFCollider(object) {
+        }
 
-        object.isURDFCollider = true;
-        object.clone = URDFColliderClone;
+        copy(source, recursive) {
+
+            super.copy(source, recursive);
+            this.urdfNode = source.urdfNode;
+
+            return this;
+
+        }
+
+    }
+
+    class URDFVisual extends THREE.Object3D {
+
+        constructor(...args) {
+
+            super(...args);
+            this.isURDFVisual = true;
+            this.type = 'URDFVisual';
+            this.urdfNode = null;
+
+        }
+
+        copy(source, recursive) {
+
+            super.copy(source, recursive);
+            this.urdfNode = source.urdfNode;
+
+            return this;
+
+        }
 
     }
 
@@ -49,6 +77,7 @@
             return this._jointType;
 
         }
+
         set jointType(v) {
 
             if (this.jointType === v) return;
@@ -60,7 +89,7 @@
                 case 'continuous':
                 case 'revolute':
                 case 'prismatic':
-                    this.jointValue = 0;
+                    this.jointValue = new Array(1).fill(0);
                     break;
 
                 case 'planar':
@@ -77,7 +106,7 @@
 
         get angle() {
 
-            return this.jointValue;
+            return this.jointValue[0];
 
         }
 
@@ -110,7 +139,7 @@
             this.limit.upper = source.limit.upper;
             this.ignoreLimits = false;
 
-            this.jointValue = Array.isArray(source.jointValue) ? [...source.jointValue] : source.jointValue;
+            this.jointValue = [...source.jointValue];
 
             this.origPosition = source.origPosition ? source.origPosition.clone() : null;
             this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
@@ -119,11 +148,7 @@
         }
 
         /* Public Functions */
-        setAngle(...values) {
-            return this.setOffset(...values);
-        }
-
-        setOffset(...values) {
+        setJointValue(...values) {
 
             values = values.map(v => parseFloat(v));
 
@@ -137,14 +162,16 @@
             switch (this.jointType) {
 
                 case 'fixed': {
-                    break;
+
+                    return false;
+
                 }
                 case 'continuous':
                 case 'revolute': {
 
                     let angle = values[0];
-                    if (angle == null) break;
-                    if (angle === this.jointValue) break;
+                    if (angle == null) return false;
+                    if (angle === this.jointValue) return false;
 
                     if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -158,31 +185,47 @@
                     const delta = new THREE.Quaternion().setFromAxisAngle(this.axis, angle);
                     this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
 
-                    this.jointValue = angle;
-                    this.matrixWorldNeedsUpdate = true;
+                    if (this.jointValue[0] !== angle) {
 
-                    break;
+                        this.jointValue[0] = angle;
+                        this.matrixWorldNeedsUpdate = true;
+                        return true;
+
+                    } else {
+
+                        return false;
+
+                    }
+
                 }
 
                 case 'prismatic': {
 
-                    let angle = values[0];
-                    if (angle == null) break;
-                    if (angle === this.jointValue) break;
+                    let pos = values[0];
+                    if (pos == null) return false;
+                    if (pos === this.jointValue) return false;
 
                     if (!this.ignoreLimits) {
 
-                        angle = Math.min(this.limit.upper, angle);
-                        angle = Math.max(this.limit.lower, angle);
+                        pos = Math.min(this.limit.upper, pos);
+                        pos = Math.max(this.limit.lower, pos);
 
                     }
 
                     this.position.copy(this.origPosition);
-                    this.position.addScaledVector(this.axis, angle);
+                    this.position.addScaledVector(this.axis, pos);
 
-                    this.jointValue = angle;
-                    this.matrixWorldNeedsUpdate = true;
-                    break;
+                    if (this.jointValue[0] !== pos) {
+
+                        this.jointValue[0] = pos;
+                        this.matrixWorldNeedsUpdate = true;
+                        return true;
+
+                    } else {
+
+                        return false;
+
+                    }
 
                 }
 
@@ -193,7 +236,7 @@
 
             }
 
-            return this.jointValue;
+            return false;
 
         }
 
@@ -212,6 +255,8 @@
 
             this.links = null;
             this.joints = null;
+            this.colliders = null;
+            this.visual = null;
             this.frames = null;
 
         }
@@ -225,6 +270,8 @@
 
             this.links = {};
             this.joints = {};
+            this.colliders = {};
+            this.visual = {};
 
             this.traverse(c => {
 
@@ -240,30 +287,68 @@
 
                 }
 
+                if (c.isURDFCollider && c.name in source.colliders) {
+
+                    this.colliders[c.name] = c;
+
+                }
+
+                if (c.isURDFVisual && c.name in source.visual) {
+
+                    this.visual[c.name] = c;
+
+                }
+
             });
 
-            this.frames = { ...this.links, ...this.joints };
+            this.frames = {
+                ...this.colliders,
+                ...this.visual,
+                ...this.links,
+                ...this.joints,
+            };
 
             return this;
 
         }
 
-        setAngle(jointName, ...angle) {
+        getFrame(name) {
+
+            return this.frames[name];
+
+        }
+
+        setJointValue(jointName, ...angle) {
 
             const joint = this.joints[jointName];
             if (joint) {
 
-                return joint.setAngle(...angle);
+                return joint.setJointValue(...angle);
 
             }
 
-            return null;
+            return false;
         }
 
-        setAngles(angles) {
+        setJointValues(values) {
 
-            // TODO: How to handle other, multi-dimensional joint types?
-            for (const name in angles) this.setAngle(name, angles[name]);
+            let didChange = false;
+            for (const name in values) {
+
+                const value = values[name];
+                if (Array.isArray(value)) {
+
+                    didChange = didChange || this.setJointValue(name, ...value);
+
+                } else {
+
+                    didChange = didChange || this.setJointValue(name, value);
+
+                }
+
+            }
+
+            return didChange;
 
         }
 
@@ -482,11 +567,13 @@
                 });
 
                 // Create the <link> map
+                const visualMap = {};
+                const colliderMap = {};
                 links.forEach(l => {
 
                     const name = l.getAttribute('name');
                     const isRoot = robot.querySelector(`child[link="${ name }"]`) === null;
-                    linkMap[name] = processLink(l, isRoot ? obj : null);
+                    linkMap[name] = processLink(l, visualMap, colliderMap, isRoot ? obj : null);
 
                 });
 
@@ -500,7 +587,15 @@
 
                 obj.joints = jointMap;
                 obj.links = linkMap;
-                obj.frames = { ...linkMap, ...jointMap };
+                obj.colliders = colliderMap;
+                obj.visual = visualMap;
+
+                obj.frames = {
+                    ...colliderMap,
+                    ...visualMap,
+                    ...linkMap,
+                    ...jointMap,
+                };
 
                 return obj;
 
@@ -569,7 +664,7 @@
             }
 
             // Process the <link> nodes
-            function processLink(link, target = null) {
+            function processLink(link, visualMap, colliderMap, target = null) {
 
                 if (target === null) {
 
@@ -582,12 +677,43 @@
                 target.urdfNode = link;
 
                 if (parseVisual) {
+
                     const visualNodes = children.filter(n => n.nodeName.toLowerCase() === 'visual');
-                    visualNodes.forEach(vn => processLinkElement(vn, target, materialMap));
+                    visualNodes.forEach(vn => {
+
+                        const v = processLinkElement(vn, materialMap);
+                        target.add(v);
+
+                        if (vn.hasAttribute('name')) {
+
+                            const name = vn.getAttribute('name');
+                            v.name = name;
+                            visualMap[name] = v;
+
+                        }
+
+                    });
+
                 }
+
                 if (parseCollision) {
+
                     const collisionNodes = children.filter(n => n.nodeName.toLowerCase() === 'collision');
-                    collisionNodes.forEach(vn => processLinkElement(vn, target));
+                    collisionNodes.forEach(cn => {
+
+                        const c = processLinkElement(cn);
+                        target.add(c);
+
+                        if (cn.hasAttribute('name')) {
+
+                            const name = cn.getAttribute('name');
+                            c.name = name;
+                            colliderMap[name] = c;
+
+                        }
+
+                    });
+
                 }
 
                 return target;
@@ -637,16 +763,11 @@
             }
 
             // Process the visual and collision nodes into meshes
-            function processLinkElement(vn, linkObj, materialMap = {}) {
+            function processLinkElement(vn, materialMap = {}) {
 
                 const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
-                let xyz = [0, 0, 0];
-                let rpy = [0, 0, 0];
-                let scale = [1, 1, 1];
-
                 const children = [ ...vn.children ];
                 let material = null;
-                let primitiveModel = null;
 
                 // get the material first
                 const materialNode = children.filter(n => n.nodeName.toLowerCase() === 'material')[0];
@@ -669,6 +790,9 @@
 
                 }
 
+                const group = isCollisionNode ? new URDFCollider() : new URDFVisual();
+                group.urdfNode = vn;
+
                 children.forEach(n => {
 
                     const type = n.nodeName.toLowerCase();
@@ -684,7 +808,12 @@
                             if (filePath !== null) {
 
                                 const scaleAttr = n.children[0].getAttribute('scale');
-                                if (scaleAttr) scale = processTuple(scaleAttr);
+                                let scale = [1, 1, 1];
+                                if (scaleAttr) {
+
+                                    scale = processTuple(scaleAttr);
+
+                                }
 
                                 loadMeshCb(filePath, manager, (obj, err) => {
 
@@ -700,11 +829,6 @@
 
                                         }
 
-                                        linkObj.add(obj);
-
-                                        obj.position.set(xyz[0], xyz[1], xyz[2]);
-                                        obj.rotation.set(0, 0, 0);
-
                                         // multiply the existing scale by the scale components because
                                         // the loaded model could have important scale values already applied
                                         // to the root. Collada files, for example, can load in with a scale
@@ -713,13 +837,7 @@
                                         obj.scale.y *= scale[1];
                                         obj.scale.z *= scale[2];
 
-                                        applyRotation(obj, rpy);
-
-                                        if (isCollisionNode) {
-
-                                            makeURDFCollider(obj);
-
-                                        }
+                                        group.add(obj);
 
                                     }
 
@@ -729,41 +847,29 @@
 
                         } else if (geoType === 'box') {
 
-                            primitiveModel = new THREE.Mesh();
+                            const primitiveModel = new THREE.Mesh();
                             primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
                             primitiveModel.material = material;
 
                             const size = processTuple(n.children[0].getAttribute('size'));
-
-                            linkObj.add(primitiveModel);
                             primitiveModel.scale.set(size[0], size[1], size[2]);
 
-                            if (isCollisionNode) {
-
-                                makeURDFCollider(primitiveModel);
-
-                            }
+                            group.add(primitiveModel);
 
                         } else if (geoType === 'sphere') {
 
-                            primitiveModel = new THREE.Mesh();
+                            const primitiveModel = new THREE.Mesh();
                             primitiveModel.geometry = new THREE.SphereBufferGeometry(1, 30, 30);
                             primitiveModel.material = material;
 
                             const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
                             primitiveModel.scale.set(radius, radius, radius);
 
-                            linkObj.add(primitiveModel);
-
-                            if (isCollisionNode) {
-
-                                makeURDFCollider(primitiveModel);
-
-                            }
+                            group.add(primitiveModel);
 
                         } else if (geoType === 'cylinder') {
 
-                            primitiveModel = new THREE.Mesh();
+                            const primitiveModel = new THREE.Mesh();
                             primitiveModel.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
                             primitiveModel.material = material;
 
@@ -772,34 +878,24 @@
                             primitiveModel.scale.set(radius, length, radius);
                             primitiveModel.rotation.set(Math.PI / 2, 0, 0);
 
-                            linkObj.add(primitiveModel);
-
-                            if (isCollisionNode) {
-
-                                makeURDFCollider(primitiveModel);
-
-                            }
+                            group.add(primitiveModel);
 
                         }
 
                     } else if (type === 'origin') {
 
-                        xyz = processTuple(n.getAttribute('xyz'));
-                        rpy = processTuple(n.getAttribute('rpy'));
+                        const xyz = processTuple(n.getAttribute('xyz'));
+                        const rpy = processTuple(n.getAttribute('rpy'));
+
+                        group.position.set(xyz[0], xyz[1], xyz[2]);
+                        group.rotation.set(0, 0, 0);
+                        applyRotation(group, rpy);
 
                     }
 
                 });
 
-                // apply the position and rotation to the primitive geometry after
-                // the fact because it's guaranteed to have been scraped from the child
-                // nodes by this point
-                if (primitiveModel) {
-
-                    applyRotation(primitiveModel, rpy, true);
-                    primitiveModel.position.set(xyz[0], xyz[1], xyz[2]);
-
-                }
+                return group;
 
             }
 
