@@ -300,16 +300,6 @@ describe('TriATHLETE Climbing URDF', () => {
 
     });
 
-    it('should mark a joint as needing an update after setting the angle', async() => {
-
-        expect(robot.joints.HY1.matrixWorldNeedsUpdate).toBeFalsy();
-
-        robot.joints.HY1.setJointValue(10);
-
-        expect(robot.joints.HY1.matrixWorldNeedsUpdate).toBeTruthy();
-
-    });
-
     it('should have the correct number of links', async() => {
 
         expect(Object.keys(robot.joints)).toHaveLength(27);
