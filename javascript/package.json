@@ -8,8 +8,7 @@
     "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
     "build": "rollup -c",
     "test": "jest",
-    "lint": "eslint ./src/*.js ./test/*.js && tsc -p tsconfig.json --noEmit",
-    "coverage": "nyc report --reporter=html & opn coverage/index.html"
+    "lint": "eslint ./src/*.js ./test/*.js && tsc -p tsconfig.json --noEmit"
   },
   "files": [
     "src/*",
@@ -54,9 +53,6 @@
     "jsdom": "^16.4.0",
     "node-fetch": "^2.6.1",
     "nyc": "^13.3.0",
-    "opn-cli": "^3.1.0",
-    "puppeteer": "^1.20.0",
-    "puppeteer-to-istanbul": "^1.4.0",
     "rollup": "^2.29.0",
     "static-server": "^3.0.0",
     "three": "^0.119.0",
