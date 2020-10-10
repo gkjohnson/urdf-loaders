@@ -1,76 +1,80 @@
-/* global
-    THREE URDFLoader
-*/
-import puppeteer from 'puppeteer';
-import pti from 'puppeteer-to-istanbul';
-import path from 'path';
-import { loadURDF, testJointAngles } from './puppeteer-utils.js';
+import { JSDOM } from 'jsdom';
+import { Mesh } from 'three';
+import fetch from 'node-fetch';
+import URDFLoader from '../src/URDFLoader.js';
 
-// TODO: Add tests for multipackage loading, other files
-// TODO: Don't load from the web
-// TODO: Test that joint functions rotate the joints properly
-// TODO: Verify joint limits, names, etc
-// TODO: Verify that the workingPath option works
-// TODO: Add r2d2 model test and ensure that the appropriate primitive geometry is loaded
+const jsdom = new JSDOM();
+const window = jsdom.window;
+global.DOMParser = window.DOMParser;
+global.XMLSerializer = window.XMLSerializer;
+global.Document = window.Document;
+global.Element = window.Element;
+global.XMLHttpRequest = window.XMLHttpRequest;
+global.fetch = fetch;
 
-// set the timeout to 30s because we download geometry from the web
-// which could overrun the timer.
-jest.setTimeout(30000);
+function emptyLoadMeshCallback(url, manager, done) {
 
-let browser = null, page = null;
-beforeAll(async() => {
+    done(new Mesh());
 
-    browser = await puppeteer.launch({
-        headless: true,
+}
 
-        // --no-sandbox is required to run puppeteer in Travis.
-        // https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-on-travis-ci
-        args: ['--no-sandbox'],
-    });
-    page = await browser.newPage();
-    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/build/three.min.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/GLTFLoader.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/OBJLoader.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/STLLoader.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../node_modules/three/examples/js/loaders/ColladaLoader.js') });
-    await page.addScriptTag({ path: path.join(__dirname, '../umd/URDFLoader.js') });
-    await page.coverage.startJSCoverage();
+function compareRobots(ra, rb) {
 
-    page.on('error', e => { throw new Error(e); });
-    page.on('pageerror', e => { throw new Error(e); });
+    expect(ra.name).toEqual(rb.name);
+    expect(ra.type).toEqual(rb.type);
+    expect(ra.geometry).toEqual(rb.geometry);
+    expect(ra.material).toEqual(rb.material);
+    expect(ra.urdfNode).toEqual(rb.urdfNode);
 
-});
+    expect(ra.isMesh).toEqual(rb.isMesh);
+    expect(ra.isURDFLink).toEqual(rb.isURDFLink);
+    expect(ra.isURDFRobot).toEqual(rb.isURDFRobot);
+    expect(ra.isURDFJoint).toEqual(rb.isURDFJoint);
+    expect(ra.isURDFCollider).toEqual(rb.isURDFCollider);
+
+    switch (ra.type) {
+
+        case 'URDFRobot':
+            expect(Object.keys(ra.joints)).toEqual(Object.keys(rb.joints));
+            expect(Object.keys(ra.links)).toEqual(Object.keys(rb.links));
+            break;
+        case 'URDFJoint':
+            expect(ra.jointType).toEqual(rb.jointType);
+            expect(ra.axis).toEqual(rb.axis);
+            expect(ra.limit).toEqual(rb.limit);
+            expect(ra.ignoreLimits).toEqual(rb.ignoreLimits);
+            expect(ra.jointValue).toEqual(rb.jointValue);
+            expect(ra.origPosition).toEqual(rb.origPosition);
+            expect(ra.origQuaternion).toEqual(rb.origQuaternion);
+            break;
+
+    }
+
+    for (let i = 0; i < ra.children.length; i++) {
+
+        compareRobots(ra.children[i], rb.children[i]);
+
+    }
+
+}
 
 describe('File Argument', () => {
 
     it('should work if the file is already parsed', async() => {
 
-        const linkCount = await page.evaluate(() => {
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
+        loader.workingPath = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/';
 
-            return new Promise(async resolve => {
+        const req = await fetch('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+        const xmlContent = await req.text();
+        const parsedContent = new DOMParser().parseFromString(xmlContent, 'text/xml');
 
-                const loader = new URDFLoader();
-                loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
-                loader.workingPath = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/';
+        const documentRobot = loader.parse(parsedContent);
+        const rootRobot = loader.parse(parsedContent.children[0]);
 
-                const req = await fetch('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
-                const xmlContent = await req.text();
-                const parsedContent = new DOMParser().parseFromString(xmlContent, 'text/xml');
-
-                const documentRobot = loader.parse(parsedContent);
-                const rootRobot = loader.parse(parsedContent.children[0]);
-
-                resolve({
-                    documentLinkCount: Object.keys(documentRobot.links).length,
-                    rootLinkCount: Object.keys(rootRobot.links).length,
-                });
-
-            });
-
-        });
-
-        expect(linkCount.documentLinkCount).toEqual(28);
-        expect(linkCount.rootLinkCount).toEqual(28);
+        expect(Object.keys(documentRobot.links).length).toEqual(28);
+        expect(Object.keys(rootRobot.links).length).toEqual(28);
 
     });
 
@@ -82,83 +86,65 @@ describe('Options', () => {
 
         it('should exclude the elements if false', async() => {
 
-            await loadURDF(
-                page,
-                'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
-                {
-                    packages: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
-                    parseVisual: false,
-                    parseCollision: false,
-                },
-            );
+            const loader = new URDFLoader();
+            loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+            loader.loadMeshCb = emptyLoadMeshCallback;
+            loader.parseVisual = false;
+            loader.parseCollision = false;
 
-            const counts = await page.evaluate(async() => {
+            let visTotal = 0;
+            let colTotal = 0;
+            const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+            robot.traverse(c => {
 
-                let totalVisual = 0;
-                let totalCollision = 0;
-                window.robot.traverse(c => {
+                if (c.isURDFCollider) {
 
-                    if (c.isURDFLink) {
+                    colTotal++;
 
-                        const children = c.children;
-                        const joints = children.filter(c2 => c2.isURDFJoint).length;
-                        const collision = children.filter(c2 => c2.isURDFCollider).length;
-                        const visual = children.length - joints - collision;
+                }
 
-                        totalVisual += visual;
-                        totalCollision += collision;
+                if (c.isURDFVisual) {
 
-                    }
+                    visTotal++;
 
-                });
+                }
 
-                return { visual: totalVisual, collision: totalCollision };
+            })
 
-            });
-
-            expect(counts.visual).toBe(0);
-            expect(counts.collision).toBe(0);
+            expect(visTotal).toBe(0);
+            expect(colTotal).toBe(0);
 
         });
 
         it('should include the elements if true', async() => {
 
-            await loadURDF(
-                page,
-                'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
-                {
-                    packages: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
-                    parseVisual: true,
-                    parseCollision: true,
-                },
-            );
+            const loader = new URDFLoader();
+            loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+            loader.loadMeshCb = emptyLoadMeshCallback;
+            loader.parseVisual = true;
+            loader.parseCollision = true;
 
-            const counts = await page.evaluate(async() => {
+            let visTotal = 0;
+            let colTotal = 0;
+            const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+            robot.traverse(c => {
 
-                let totalVisual = 0;
-                let totalCollision = 0;
-                window.robot.traverse(c => {
+                if (c.isURDFCollider) {
 
-                    if (c.isURDFLink) {
+                    colTotal++;
 
-                        const children = c.children;
-                        const joints = children.filter(c2 => c2.isURDFJoint).length;
-                        const collision = children.filter(c2 => c2.isURDFCollider).length;
-                        const visual = children.length - joints - collision;
+                }
 
-                        totalVisual += visual;
-                        totalCollision += collision;
+                if (c.isURDFVisual) {
 
-                    }
+                    visTotal++;
 
-                });
+                }
 
-                return { visual: totalVisual, collision: totalCollision };
+            })
 
-            });
-
-            expect(counts.visual).toBe(71);
-            expect(counts.collision).toBe(71);
+            expect(visTotal).toBe(71);
+            expect(colTotal).toBe(71);
 
         });
 
@@ -168,43 +154,29 @@ describe('Options', () => {
 
         it('should get called to load all meshes', async() => {
 
-            const meshesLoaded = await page.evaluate(() => {
+            const loader = new URDFLoader();
+            loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
+            loader.loadMeshCb = (path, manager, done) => {
 
-                return new Promise(resolve => {
+                const mesh = new Mesh();
+                mesh.fromCallback = true;
+                done(mesh);
 
-                    const loader = new URDFLoader();
-                    loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
-                    loader.loadMeshCb = (path, manager, done) => {
+            };
 
-                        const mesh = new THREE.Mesh();
-                        mesh.fromCallback = true;
-                        done(mesh);
+            let fromCallbackCount = 0;
+            const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+            robot.traverse(c => {
 
-                    };
+                if (c.fromCallback) {
 
-                    loader.load(
-                        'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-                        robot => {
-                            let ct = 0;
-                            robot.traverse(c => {
+                    fromCallbackCount++;
 
-                                if (c.fromCallback) {
+                }
 
-                                    ct++;
-
-                                }
-
-                            });
-
-                            resolve(ct);
-
-                        },
-                    );
-
-                });
             });
 
-            expect(meshesLoaded).toEqual(28);
+            expect(fromCallbackCount).toEqual(28);
 
         });
 
@@ -216,69 +188,15 @@ describe('Clone', () => {
 
     it('should clone the robot exactly', async() => {
 
-        await loadURDF(
-            page,
-            'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
-            {
-                packages: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
-                parseCollision: true,
-            },
-        );
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+        loader.loadMeshCb = emptyLoadMeshCallback;
+        loader.parseVisual = true;
+        loader.parseCollision = true;
 
-        const robotsAreEqual = await page.evaluate(async() => {
+        const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
 
-            let areEqual = true;
-            function compareRobots(ra, rb) {
-
-                areEqual = areEqual && ra.name === rb.name;
-                areEqual = areEqual && ra.type === rb.type;
-                areEqual = areEqual && ra.geometry === rb.geometry;
-                areEqual = areEqual && ra.material === rb.material;
-                areEqual = areEqual && ra.urdfNode === rb.urdfNode;
-
-                areEqual = areEqual && ra.isMesh === rb.isMesh;
-                areEqual = areEqual && ra.isURDFLink === rb.isURDFLink;
-                areEqual = areEqual && ra.isURDFRobot === rb.isURDFRobot;
-                areEqual = areEqual && ra.isURDFJoint === rb.isURDFJoint;
-                areEqual = areEqual && ra.isURDFCollider === rb.isURDFCollider;
-
-                switch (ra.type) {
-
-                    case 'URDFRobot':
-                        areEqual = areEqual && Object.keys(ra.joints).join() === Object.keys(rb.joints).join();
-                        areEqual = areEqual && Object.keys(ra.links).join() === Object.keys(rb.links).join();
-                        break;
-                    case 'URDFJoint':
-                        areEqual = areEqual && ra.jointType === rb.jointType;
-                        if (ra.axis) areEqual = areEqual && ra.axis.toArray().join() === rb.axis.toArray().join();
-                        areEqual = areEqual && ra.limit.lower === rb.limit.lower;
-                        areEqual = areEqual && ra.limit.upper === rb.limit.upper;
-                        areEqual = areEqual && ra.ignoreLimits === rb.ignoreLimits;
-                        areEqual = areEqual && JSON.stringify(ra.jointValue) === JSON.stringify(rb.jointValue);
-                        areEqual = areEqual && JSON.stringify(ra.origPosition) === JSON.stringify(rb.origPosition);
-                        areEqual = areEqual && JSON.stringify(ra.origQuaternion) === JSON.stringify(rb.origQuaternion);
-                        break;
-
-                }
-
-                for (let i = 0; i < ra.children.length; i++) {
-
-                    areEqual = areEqual && compareRobots(ra.children[i], rb.children[i]);
-
-                }
-
-                return areEqual;
-
-            }
-
-            const robotA = window.robot;
-            const robotB = robotA.clone();
-
-            return compareRobots(robotA, robotB);
-
-        });
-
-        expect(robotsAreEqual).toBeTruthy();
+        compareRobots(robot, robot.clone());
 
     });
 
@@ -288,27 +206,23 @@ describe('Load', () => {
 
     it(`should call complete even if all meshes can't be loaded`, async() => {
 
-        await page.evaluate(() => {
+        const loader = new URDFLoader();
+        const urdf = `
+            <robot>
+                <link
+                    name="Body">
+                    <visual>
+                        <origin xyz="0 0 0" rpy="0 0 0" />
+                        <geometry>
+                            <mesh filename="../file/does/not/exist.stl" />
+                        </geometry>
+                    </visual>
+                </link>
+            </robot>
+        `;
 
-            const loader = new window.URDFLoader();
-            const urdf = `
-                <robot>
-                    <link
-                        name="Body">
-                        <visual>
-                            <origin xyz="0 0 0" rpy="0 0 0" />
-                            <geometry>
-                                <mesh filename="../file/does/not/exist.stl" />
-                            </geometry>
-                        </visual>
-                    </link>
-                </robot>
-            `;
-
-            loader.loadMeshCb = (path, manager, done) => done(null, new Error());
-            loader.parse(urdf);
-
-        });
+        loader.loadMeshCb = (path, manager, done) => done(null, new Error());
+        loader.parse(urdf);
 
     });
 
@@ -316,48 +230,38 @@ describe('Load', () => {
 
 describe('TriATHLETE Climbing URDF', () => {
 
+    let robot;
     beforeEach(async() => {
 
-        // Model loads STL files and has continuous, prismatic, and revolute joints
-        await loadURDF(
-            page,
-            'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF',
-            {
-                packages: 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing',
-            },
-        );
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing';
+        robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
 
     });
 
     it('should mark a joint as needing an update after setting the angle', async() => {
 
-        const needsUpdateBefore = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
+        expect(robot.joints.HY1.matrixWorldNeedsUpdate).toBeFalsy();
 
-        await page.evaluate(() => window.robot.joints.HY1.setJointValue(10));
+        robot.joints.HY1.setJointValue(10);
 
-        const needsUpdateAfter = await page.evaluate(() => window.robot.joints.HY1.matrixWorldNeedsUpdate);
-
-        expect(needsUpdateBefore).toBe(false);
-        expect(needsUpdateAfter).toBe(true);
+        expect(robot.joints.HY1.matrixWorldNeedsUpdate).toBeTruthy();
 
     });
 
     it('should have the correct number of links', async() => {
 
-        const jointCt = await page.evaluate(() => Object.keys(window.robot.joints).length);
-        const linkCt = await page.evaluate(() => Object.keys(window.robot.links).length);
-
-        expect(jointCt).toEqual(27);
-        expect(linkCt).toEqual(28);
+        expect(Object.keys(robot.joints)).toHaveLength(27);
+        expect(Object.keys(robot.links)).toHaveLength(28);
 
     });
 
     it('should load the correct joint types', async() => {
 
-        const joints = await page.evaluate(() => Object.keys(window.robot.joints));
-        for (var key of joints) {
+        for (const key in robot.joints) {
 
-            const jointType = await page.evaluate(`window.robot.joints['${ key }'].jointType`);
+            const joint = robot.joints[key];
+            const jointType = joint.jointType;
 
             if (/^W/.test(key)) expect(jointType).toEqual('continuous');
             else if (/^TC\d/.test(key)) expect(jointType).toEqual('prismatic');
@@ -367,35 +271,38 @@ describe('TriATHLETE Climbing URDF', () => {
 
     });
 
-    it('should respect joint limits for different joint types', async() => {
+    it.todo('should respect joint limits for different joint types');
 
-        await testJointAngles(page);
+    it('should load the robonaut model successfully.', async () => {
+
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+        loader.loadMeshCb = emptyLoadMeshCallback;
+
+        const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+
+        expect(Object.keys(robot.links)).toHaveLength(128);
+        expect(Object.keys(robot.joints)).toHaveLength(127);
 
     });
 
-    afterEach(async() => {
+    it('should load the valkyrie model successfully.', async () => {
 
-        await page.evaluate(() => window.robot = null);
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+        loader.loadMeshCb = emptyLoadMeshCallback;
+
+        const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf');
+
+        expect(Object.keys(robot.links)).toHaveLength(69);
+        expect(Object.keys(robot.joints)).toHaveLength(68);
 
     });
 
-});
+    it('should load the a multipackage model successfully.', async () => {
 
-[
-    {
-        desc: 'Robonaut',
-        urdf: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf',
-        pkg: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
-    },
-    {
-        desc: 'Valkyrie',
-        urdf: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf',
-        pkg: 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/',
-    },
-    {
-        desc: 'Multipackage',
-        urdf: 'https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf',
-        pkg: {
+        const loader = new URDFLoader();
+        loader.packages = {
             blending_end_effector:
             'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/blending_end_effector',
 
@@ -404,41 +311,15 @@ describe('TriATHLETE Climbing URDF', () => {
 
             godel_irb1200_support:
             'https://raw.githubusercontent.com/ros-industrial-consortium/godel/kinetic-devel/godel_robots/abb/godel_irb1200/godel_irb1200_support',
-        },
-    },
-].forEach(data => {
+        };
+        loader.loadMeshCb = emptyLoadMeshCallback;
 
-    describe(`${ data.desc } URDF`, () => {
+        const robot = await loader.loadAsync('https://raw.githubusercontent.com/ipa-jfh/urdf-loaders/2170f75bacaec933c17aeb2ee59d73643a4bab3a/multipkg_test.urdf');
 
-        beforeEach(async() => {
-
-            // Model loads STL files and has continuous, prismatic, and revolute joints
-            await loadURDF(page, data.urdf, { packages: data.pkg });
-
-        });
-
-        it('should respect joint limits for different joint types', async() => {
-
-            await testJointAngles(page);
-
-        });
-
-        afterEach(async() => {
-
-            await page.evaluate(() => window.robot = null);
-
-        });
+        expect(Object.keys(robot.links)).toHaveLength(30);
+        expect(Object.keys(robot.joints)).toHaveLength(29);
 
     });
 
 });
 
-afterAll(async() => {
-
-    const coverage = await page.coverage.stopJSCoverage();
-    const urdfLoaderCoverage = coverage.filter(o => /URDFLoader\.js$/.test(o.url));
-    pti.write(urdfLoaderCoverage);
-
-    browser.close();
-
-});
