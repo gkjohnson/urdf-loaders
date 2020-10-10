@@ -109,7 +109,7 @@ describe('Options', () => {
 
                 }
 
-            })
+            });
 
             expect(visTotal).toBe(0);
             expect(colTotal).toBe(0);
@@ -141,7 +141,7 @@ describe('Options', () => {
 
                 }
 
-            })
+            });
 
             expect(visTotal).toBe(71);
             expect(colTotal).toBe(71);
@@ -273,7 +273,7 @@ describe('TriATHLETE Climbing URDF', () => {
 
     it.todo('should respect joint limits for different joint types');
 
-    it('should load the robonaut model successfully.', async () => {
+    it('should load the robonaut model successfully.', async() => {
 
         const loader = new URDFLoader();
         loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
@@ -286,7 +286,7 @@ describe('TriATHLETE Climbing URDF', () => {
 
     });
 
-    it('should load the valkyrie model successfully.', async () => {
+    it('should load the valkyrie model successfully.', async() => {
 
         const loader = new URDFLoader();
         loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
@@ -299,7 +299,7 @@ describe('TriATHLETE Climbing URDF', () => {
 
     });
 
-    it('should load the a multipackage model successfully.', async () => {
+    it('should load the a multipackage model successfully.', async() => {
 
         const loader = new URDFLoader();
         loader.packages = {
@@ -322,4 +322,3 @@ describe('TriATHLETE Climbing URDF', () => {
     });
 
 });
-
