@@ -200,6 +200,14 @@ Loads and builds the specified URDF robot in THREE.js.
 
 Takes a path to load the urdf file from, a func to call when the robot has loaded, and a set of options.
 
+### .loadAsync
+
+```js
+loadAsync( urdfpath : string ) : Promise<URDFRobot>
+```
+
+Promise-wrapped version of `load`.
+
 ### .parse
 
 ```js
