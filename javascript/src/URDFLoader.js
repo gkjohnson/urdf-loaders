@@ -64,11 +64,21 @@ class URDFLoader {
         this.parseCollision = false;
         this.packages = '';
         this.workingPath = '';
-        this.fetchOptions = null;
+        this.fetchOptions = {};
 
     }
 
     /* Public API */
+    loadAsync(urdf) {
+
+        return new Promise((resolve, reject) => {
+
+            this.load(urdf, resolve, null, reject);
+
+        });
+
+    }
+
     // urdf:    The path to the URDF within the package OR absolute
     // onComplete:      Callback that is passed the model once loaded
     load(urdf, onComplete, onProgress, onError) {
@@ -80,12 +90,17 @@ class URDFLoader {
         const urdfPath = this.manager.resolveURL(urdf);
 
         manager.itemStart(urdfPath);
+
         fetch(urdfPath, this.fetchOptions)
             .then(res => {
+
                 if (onProgress) {
+
                     onProgress(null);
+
                 }
                 return res.text();
+
             })
             .then(data => {
 
@@ -103,9 +118,13 @@ class URDFLoader {
             .catch(e => {
 
                 if (onError) {
+
                     onError(e);
+
                 } else {
+
                     console.error('URDFLoader: Error loading file.', e);
+
                 }
                 manager.itemError(urdfPath);
                 manager.itemEnd(urdfPath);
