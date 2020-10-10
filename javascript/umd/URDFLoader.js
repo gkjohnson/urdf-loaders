@@ -82,10 +82,13 @@
 
             if (this.jointType === v) return;
             this._jointType = v;
-
+            this.matrixWorldNeedsUpdate = true;
             switch (v) {
 
                 case 'fixed':
+                    this.jointValue = [];
+                    break;
+
                 case 'continuous':
                 case 'revolute':
                 case 'prismatic':
@@ -111,6 +114,7 @@
         }
 
         constructor(...args) {
+
             super(...args);
 
             this.isURDFJoint = true;
@@ -125,6 +129,7 @@
 
             this.origPosition = null;
             this.origQuaternion = null;
+
         }
 
         /* Overrides */
@@ -145,6 +150,7 @@
             this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
 
             return this;
+
         }
 
         /* Public Functions */
@@ -171,7 +177,7 @@
 
                     let angle = values[0];
                     if (angle == null) return false;
-                    if (angle === this.jointValue) return false;
+                    if (angle === this.angle) return false;
 
                     if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -203,7 +209,7 @@
 
                     let pos = values[0];
                     if (pos == null) return false;
-                    if (pos === this.jointValue) return false;
+                    if (pos === this.angle) return false;
 
                     if (!this.ignoreLimits) {
 
@@ -414,11 +420,21 @@
             this.parseCollision = false;
             this.packages = '';
             this.workingPath = '';
-            this.fetchOptions = null;
+            this.fetchOptions = {};
 
         }
 
         /* Public API */
+        loadAsync(urdf) {
+
+            return new Promise((resolve, reject) => {
+
+                this.load(urdf, resolve, null, reject);
+
+            });
+
+        }
+
         // urdf:    The path to the URDF within the package OR absolute
         // onComplete:      Callback that is passed the model once loaded
         load(urdf, onComplete, onProgress, onError) {
@@ -430,12 +446,17 @@
             const urdfPath = this.manager.resolveURL(urdf);
 
             manager.itemStart(urdfPath);
+
             fetch(urdfPath, this.fetchOptions)
                 .then(res => {
+
                     if (onProgress) {
+
                         onProgress(null);
+
                     }
                     return res.text();
+
                 })
                 .then(data => {
 
@@ -453,9 +474,13 @@
                 .catch(e => {
 
                     if (onError) {
+
                         onError(e);
+
                     } else {
+
                         console.error('URDFLoader: Error loading file.', e);
+
                     }
                     manager.itemError(urdfPath);
                     manager.itemEnd(urdfPath);
