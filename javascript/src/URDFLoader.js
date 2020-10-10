@@ -64,7 +64,7 @@ class URDFLoader {
         this.parseCollision = false;
         this.packages = '';
         this.workingPath = '';
-        this.fetchOptions = null;
+        this.fetchOptions = {};
 
     }
 
@@ -91,7 +91,7 @@ class URDFLoader {
 
         manager.itemStart(urdfPath);
 
-        fetch(urdfPath, this.fetchOptions || {})
+        fetch(urdfPath, this.fetchOptions)
             .then(res => {
 
                 if (onProgress) {
