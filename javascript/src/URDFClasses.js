@@ -78,10 +78,13 @@ class URDFJoint extends Object3D {
 
         if (this.jointType === v) return;
         this._jointType = v;
-
+        this.matrixWorldNeedsUpdate = true;
         switch (v) {
 
             case 'fixed':
+                this.jointValue = [];
+                break;
+
             case 'continuous':
             case 'revolute':
             case 'prismatic':
@@ -107,6 +110,7 @@ class URDFJoint extends Object3D {
     }
 
     constructor(...args) {
+
         super(...args);
 
         this.isURDFJoint = true;
@@ -121,6 +125,7 @@ class URDFJoint extends Object3D {
 
         this.origPosition = null;
         this.origQuaternion = null;
+
     }
 
     /* Overrides */
@@ -141,6 +146,7 @@ class URDFJoint extends Object3D {
         this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
 
         return this;
+
     }
 
     /* Public Functions */
@@ -167,7 +173,7 @@ class URDFJoint extends Object3D {
 
                 let angle = values[0];
                 if (angle == null) return false;
-                if (angle === this.jointValue) return false;
+                if (angle === this.angle) return false;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -199,7 +205,7 @@ class URDFJoint extends Object3D {
 
                 let pos = values[0];
                 if (pos == null) return false;
-                if (pos === this.jointValue) return false;
+                if (pos === this.angle) return false;
 
                 if (!this.ignoreLimits) {
 

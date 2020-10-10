@@ -38,6 +38,7 @@ function compareRobots(ra, rb) {
             expect(Object.keys(ra.joints)).toEqual(Object.keys(rb.joints));
             expect(Object.keys(ra.links)).toEqual(Object.keys(rb.links));
             break;
+
         case 'URDFJoint':
             expect(ra.jointType).toEqual(rb.jointType);
             expect(ra.axis).toEqual(rb.axis);
