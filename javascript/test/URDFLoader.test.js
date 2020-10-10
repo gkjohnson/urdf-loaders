@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { Mesh } from 'three';
+import { Mesh, Color } from 'three';
 import fetch from 'node-fetch';
 import URDFLoader from '../src/URDFLoader.js';
 
