@@ -60625,11 +60625,11 @@
 	            const value = values[name];
 	            if (Array.isArray(value)) {
 
-	                didChange = didChange || this.setJointValue(name, ...value);
+	                didChange = this.setJointValue(name, ...value) || didChange;
 
 	            } else {
 
-	                didChange = didChange || this.setJointValue(name, value);
+	                didChange = this.setJointValue(name, value) || didChange;
 
 	            }
 
