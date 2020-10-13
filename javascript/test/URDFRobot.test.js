@@ -6,7 +6,32 @@ const window = jsdom.window;
 global.DOMParser = window.DOMParser;
 global.XMLSerializer = window.XMLSerializer;
 
-describe('URDFLoader', () => {
+describe('URDFRobot', () => {
+    it('should correctly set all joint angles when using setJointValues.', () => {
+        const loader = new URDFLoader();
+        const robot = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <link name="LINK2"/>
+                <link name="LINK3"/>
+                <joint name="JOINT1" type="continuous">
+                    <axis xyz="0 0 -1" />
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <joint name="JOINT2" type="continuous">
+                    <axis xyz="0 0 -1" />
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                </joint>
+            </robot>
+        `);
+
+        expect(robot.setJointValues({ JOINT1: 1, JOINT2: 2 })).toBeTruthy();
+        expect(robot.joints.JOINT1.angle).toEqual(1);
+        expect(robot.joints.JOINT2.angle).toEqual(2);
+    });
+
     it('should parse material colors and name.', () => {
         const loader = new URDFLoader();
         const res = loader.parse(`
