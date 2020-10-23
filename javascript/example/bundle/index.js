@@ -61114,10 +61114,10 @@
 	                        if (filePath !== null) {
 
 	                            const scaleAttr = n.children[0].getAttribute('scale');
-	                            let scale = [1, 1, 1];
 	                            if (scaleAttr) {
 
-	                                scale = processTuple(scaleAttr);
+	                                const scale = processTuple(scaleAttr);
+	                                group.scale.set(scale[0], scale[1], scale[2]);
 
 	                            }
 
@@ -61134,14 +61134,6 @@
 	                                        obj.material = material;
 
 	                                    }
-
-	                                    // multiply the existing scale by the scale components because
-	                                    // the loaded model could have important scale values already applied
-	                                    // to the root. Collada files, for example, can load in with a scale
-	                                    // to convert the model units to meters.
-	                                    obj.scale.x *= scale[0];
-	                                    obj.scale.y *= scale[1];
-	                                    obj.scale.z *= scale[2];
 
 	                                    group.add(obj);
 
@@ -61765,7 +61757,7 @@
 	                .forEach(joint => {
 
 	                    joint.ignoreLimits = ignore;
-	                    joint.setJointValue(...joint.jointValues);
+	                    joint.setJointValue(...joint.jointValue);
 
 	                });
 

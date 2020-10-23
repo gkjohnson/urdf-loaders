@@ -538,7 +538,7 @@
                     .forEach(joint => {
 
                         joint.ignoreLimits = ignore;
-                        joint.setJointValue(...joint.jointValues);
+                        joint.setJointValue(...joint.jointValue);
 
                     });
 
