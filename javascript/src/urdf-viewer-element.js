@@ -102,6 +102,7 @@ class URDFViewer extends HTMLElement {
         dirLight.position.set(4, 10, 1);
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.normalBias = 0.001;
         dirLight.castShadow = true;
         scene.add(dirLight);
         scene.add(dirLight.target);
