@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Apply the mesh node scale to the parent visual node rather than the loaded mesh.
-- URDFViewerElement incorrectly calling setJointValue
+- URDFViewerElement incorrectly calling setJointValue.
+- Incorrectly preserving rotation from loaded meshes.
 
 ## [0.9.1] - 2020-10-13
 ### Fixed
