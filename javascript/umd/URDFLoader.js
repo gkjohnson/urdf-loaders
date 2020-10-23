@@ -854,6 +854,11 @@
 
                                         }
 
+                                        // We don't expect non identity rotations or positions. In the case of
+                                        // COLLADA files the model might come in with a custom scale for unit
+                                        // conversion.
+                                        obj.position.set(0, 0, 0);
+                                        obj.quaternion.identity();
                                         group.add(obj);
 
                                     }
