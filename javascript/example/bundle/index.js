@@ -60458,7 +60458,7 @@
 
 	                let angle = values[0];
 	                if (angle == null) return false;
-	                if (angle === this.angle) return false;
+	                if (angle === this.jointValue[0]) return false;
 
 	                if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -60467,10 +60467,9 @@
 
 	                }
 
-	                // FromAxisAngle seems to rotate the opposite of the
-	                // expected angle for URDF, so negate it here
-	                const delta = new Quaternion().setFromAxisAngle(this.axis, angle);
-	                this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
+	                this.quaternion
+	                    .setFromAxisAngle(this.axis, angle)
+	                    .premultiply(this.origQuaternion);
 
 	                if (this.jointValue[0] !== angle) {
 
@@ -60490,7 +60489,7 @@
 
 	                let pos = values[0];
 	                if (pos == null) return false;
-	                if (pos === this.angle) return false;
+	                if (pos === this.jointValue[0]) return false;
 
 	                if (!this.ignoreLimits) {
 
