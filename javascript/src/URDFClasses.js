@@ -183,10 +183,9 @@ class URDFJoint extends Object3D {
 
                 }
 
-                // FromAxisAngle seems to rotate the opposite of the
-                // expected angle for URDF, so negate it here
-                const delta = _quat.setFromAxisAngle(this.axis, angle);
-                this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
+                this.quaternion
+                    .setFromAxisAngle(this.axis, angle)
+                    .premultiply(this.origQuaternion);
 
                 if (this.jointValue[0] !== angle) {
 
