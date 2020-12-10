@@ -1,4 +1,4 @@
-import { Object3D, Quaternion } from 'three';
+import { Object3D } from 'three';
 
 class URDFCollider extends Object3D {
 
