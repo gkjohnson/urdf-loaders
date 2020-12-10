@@ -1,6 +1,5 @@
 import { Object3D, Quaternion } from 'three';
 
-const _quat = new Quaternion();
 class URDFCollider extends Object3D {
 
     constructor(...args) {
