@@ -34,13 +34,12 @@ const tempVector2 = new Vector3();
 const projectedStartPoint = new Vector3();
 const projectedEndPoint = new Vector3();
 const plane = new Plane();
-export class URDFDragControlsBase {
+export class URDFDragControls {
 
-    constructor(scene, domElement) {
+    constructor(scene) {
 
         this.enabled = true;
         this.scene = scene;
-        this.domElement = domElement;
         this.raycaster = new Raycaster();
         this.initialGrabPoint = new Vector3();
 
@@ -97,6 +96,8 @@ export class URDFDragControlsBase {
     }
 
     updateJoint(joint, angle) {
+
+        joint.setJointValue(angle);
 
     }
 
@@ -222,12 +223,13 @@ export class URDFDragControlsBase {
 
 }
 
-export class PointerURDFDragControls extends URDFDragControlsBase {
+export class PointerURDFDragControls extends URDFDragControls {
 
     constructor(scene, camera, domElement) {
 
-        super(scene, domElement);
+        super(scene);
         this.camera = camera;
+        this.domElement = domElement;
 
         const raycaster = new Raycaster();
         const mouse = new Vector2();
