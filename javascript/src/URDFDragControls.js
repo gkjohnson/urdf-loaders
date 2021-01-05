@@ -12,7 +12,7 @@ function findNearestJoint(child) {
     let curr = child;
     while (curr) {
 
-        if (curr === null || isJoint(curr)) {
+        if (isJoint(curr)) {
 
             return curr;
 
