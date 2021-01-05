@@ -42,13 +42,12 @@
     const projectedStartPoint = new THREE.Vector3();
     const projectedEndPoint = new THREE.Vector3();
     const plane = new THREE.Plane();
-    class URDFDragControlsBase {
+    class URDFDragControls {
 
-        constructor(scene, domElement) {
+        constructor(scene) {
 
             this.enabled = true;
             this.scene = scene;
-            this.domElement = domElement;
             this.raycaster = new THREE.Raycaster();
             this.initialGrabPoint = new THREE.Vector3();
 
@@ -105,6 +104,8 @@
         }
 
         updateJoint(joint, angle) {
+
+            joint.setJointValue(angle);
 
         }
 
@@ -230,12 +231,13 @@
 
     }
 
-    class PointerURDFDragControls extends URDFDragControlsBase {
+    class PointerURDFDragControls extends URDFDragControls {
 
         constructor(scene, camera, domElement) {
 
-            super(scene, domElement);
+            super(scene);
             this.camera = camera;
+            this.domElement = domElement;
 
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();

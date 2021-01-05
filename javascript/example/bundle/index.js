@@ -60730,12 +60730,20 @@
 	        fetch(urdfPath, this.fetchOptions)
 	            .then(res => {
 
-	                if (onProgress) {
+	                if (res.ok) {
 
-	                    onProgress(null);
+	                    if (onProgress) {
+
+	                        onProgress(null);
+
+	                    }
+	                    return res.text();
+
+	                } else {
+
+	                    throw new Error(`URDFLoader: Failed to load url '${ urdfPath }' with error code ${ res.status } : ${ res.statusText }.`);
 
 	                }
-	                return res.text();
 
 	            })
 	            .then(data => {
@@ -61810,13 +61818,12 @@
 	const projectedStartPoint = new Vector3();
 	const projectedEndPoint = new Vector3();
 	const plane = new Plane();
-	class URDFDragControlsBase {
+	class URDFDragControls {
 
-	    constructor(scene, domElement) {
+	    constructor(scene) {
 
 	        this.enabled = true;
 	        this.scene = scene;
-	        this.domElement = domElement;
 	        this.raycaster = new Raycaster();
 	        this.initialGrabPoint = new Vector3();
 
@@ -61873,6 +61880,8 @@
 	    }
 
 	    updateJoint(joint, angle) {
+
+	        joint.setJointValue(angle);
 
 	    }
 
@@ -61998,12 +62007,13 @@
 
 	}
 
-	class PointerURDFDragControls extends URDFDragControlsBase {
+	class PointerURDFDragControls extends URDFDragControls {
 
 	    constructor(scene, camera, domElement) {
 
-	        super(scene, domElement);
+	        super(scene);
 	        this.camera = camera;
+	        this.domElement = domElement;
 
 	        const raycaster = new Raycaster();
 	        const mouse = new Vector2();

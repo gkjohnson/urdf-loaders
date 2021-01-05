@@ -449,12 +449,20 @@
             fetch(urdfPath, this.fetchOptions)
                 .then(res => {
 
-                    if (onProgress) {
+                    if (res.ok) {
 
-                        onProgress(null);
+                        if (onProgress) {
+
+                            onProgress(null);
+
+                        }
+                        return res.text();
+
+                    } else {
+
+                        throw new Error(`URDFLoader: Failed to load url '${ urdfPath }' with error code ${ res.status } : ${ res.statusText }.`);
 
                     }
-                    return res.text();
 
                 })
                 .then(data => {
