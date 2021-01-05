@@ -1,4 +1,4 @@
-import { Object3D, Quaternion } from 'three';
+import { Object3D } from 'three';
 
 class URDFCollider extends Object3D {
 
@@ -173,7 +173,7 @@ class URDFJoint extends Object3D {
 
                 let angle = values[0];
                 if (angle == null) return false;
-                if (angle === this.angle) return false;
+                if (angle === this.jointValue[0]) return false;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -182,10 +182,9 @@ class URDFJoint extends Object3D {
 
                 }
 
-                // FromAxisAngle seems to rotate the opposite of the
-                // expected angle for URDF, so negate it here
-                const delta = new Quaternion().setFromAxisAngle(this.axis, angle);
-                this.quaternion.multiplyQuaternions(this.origQuaternion, delta);
+                this.quaternion
+                    .setFromAxisAngle(this.axis, angle)
+                    .premultiply(this.origQuaternion);
 
                 if (this.jointValue[0] !== angle) {
 
@@ -205,7 +204,7 @@ class URDFJoint extends Object3D {
 
                 let pos = values[0];
                 if (pos == null) return false;
-                if (pos === this.angle) return false;
+                if (pos === this.jointValue[0]) return false;
 
                 if (!this.ignoreLimits) {
 
