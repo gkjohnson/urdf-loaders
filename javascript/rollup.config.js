@@ -60,4 +60,13 @@ export default [
             sourcemap: true,
         },
     },
+    {
+        input: './example/src/simple.js',
+        plugins: [resolve()],
+        output: {
+            file: './example/bundle/simple.js',
+            format: 'iife',
+            sourcemap: true,
+        },
+    },
 ];

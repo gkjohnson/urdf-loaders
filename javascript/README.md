@@ -6,6 +6,8 @@
 
 Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model.
 
+[Basic loader example here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/simple.html)
+
 [VR example here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/vr.html)
 
 [Drag and drop web component tool here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/index.html)
