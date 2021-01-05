@@ -52,10 +52,10 @@ export default [
         },
     },
     {
-        input: './example/src/simple.js',
+        input: './example/src/vr.js',
         plugins: [resolve()],
         output: {
-            file: './example/bundle/simple.js',
+            file: './example/bundle/vr.js',
             format: 'iife',
             sourcemap: true,
         },
