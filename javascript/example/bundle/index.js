@@ -61778,6 +61778,330 @@
 
 	}
 
+	// Find the nearest parent that is a joint
+	function isJoint(j) {
+
+	    return j.isURDFJoint && j.jointType !== 'fixed';
+
+	}
+	function findNearestJoint(child) {
+
+	    let curr = child;
+	    while (curr) {
+
+	        if (curr === null || isJoint(curr)) {
+
+	            return curr;
+
+	        }
+
+	        curr = curr.parent;
+
+	    }
+
+	    return curr;
+
+	}
+	const prevHitPoint = new Vector3();
+	const newHitPoint = new Vector3();
+	const pivotPoint = new Vector3();
+	const tempVector = new Vector3();
+	const tempVector2 = new Vector3();
+	const projectedStartPoint = new Vector3();
+	const projectedEndPoint = new Vector3();
+	const plane = new Plane();
+	class URDFDragControlsBase {
+
+	    constructor(scene, domElement) {
+
+	        this.enabled = true;
+	        this.scene = scene;
+	        this.domElement = domElement;
+	        this.raycaster = new Raycaster();
+	        this.initialGrabPoint = new Vector3();
+
+	        this.hitDistance = -1;
+	        this.hovered = null;
+	        this.manipulating = null;
+
+	    }
+
+	    update() {
+
+	        const {
+	            raycaster,
+	            hovered,
+	            manipulating,
+	            scene,
+	        } = this;
+
+	        if (manipulating) {
+
+	            return;
+
+	        }
+
+	        let hoveredJoint = null;
+	        const intersections = raycaster.intersectObject(scene, true);
+	        if (intersections.length !== 0) {
+
+	            const hit = intersections[0];
+	            this.hitDistance = hit.distance;
+	            hoveredJoint = findNearestJoint(hit.object);
+	            this.initialGrabPoint.copy(hit.point);
+
+	        }
+
+	        if (hoveredJoint !== hovered) {
+
+	            if (hovered) {
+
+	                this.onUnhover(hovered);
+
+	            }
+
+	            this.hovered = hoveredJoint;
+
+	            if (hoveredJoint) {
+
+	                this.onHover(hoveredJoint);
+
+	            }
+
+	        }
+
+	    }
+
+	    updateJoint(joint, angle) {
+
+	    }
+
+	    onDragStart(joint) {
+
+	    }
+
+	    onDragEnd(joint) {
+
+	    }
+
+	    onHover(joint) {
+
+	    }
+
+	    onUnhover(joint) {
+
+	    }
+
+	    getRevoluteDelta(joint, startPoint, endPoint) {
+
+	        // set up the plane
+	        tempVector
+	            .copy(joint.axis)
+	            .transformDirection(joint.matrixWorld)
+	            .normalize();
+	        pivotPoint
+	            .set(0, 0, 0)
+	            .applyMatrix4(joint.matrixWorld);
+	        plane
+	            .setFromNormalAndCoplanarPoint(tempVector, pivotPoint);
+
+	        // project the drag points onto the plane
+	        plane.projectPoint(startPoint, projectedStartPoint);
+	        plane.projectPoint(endPoint, projectedEndPoint);
+
+	        // get the directions relative to the pivot
+	        projectedStartPoint.sub(pivotPoint);
+	        projectedEndPoint.sub(pivotPoint);
+
+	        tempVector.crossVectors(projectedStartPoint, projectedEndPoint);
+
+	        const direction = Math.sign(tempVector.dot(plane.normal));
+	        return direction * projectedEndPoint.angleTo(projectedStartPoint);
+
+	    }
+
+	    getPrismaticDelta(joint, startPoint, endPoint) {
+
+	        tempVector.subVectors(endPoint, startPoint);
+	        plane
+	            .normal
+	            .copy(joint.axis)
+	            .transformDirection(joint.parent.matrixWorld)
+	            .normalize();
+
+	        return tempVector.dot(plane.normal);
+
+	    }
+
+	    moveRay(toRay) {
+
+	        const { raycaster, hitDistance, manipulating } = this;
+	        const { ray } = raycaster;
+
+	        if (manipulating) {
+
+	            ray.at(hitDistance, prevHitPoint);
+	            toRay.at(hitDistance, newHitPoint);
+
+	            let delta = 0;
+	            if (manipulating.jointType === 'revolute' || manipulating.jointType === 'continuous') {
+
+	                delta = this.getRevoluteDelta(manipulating, prevHitPoint, newHitPoint);
+
+	            } else if (manipulating.jointType === 'prismatic') {
+
+	                delta = this.getPrismaticDelta(manipulating, prevHitPoint, newHitPoint);
+
+	            }
+
+	            if (delta) {
+
+	                this.updateJoint(manipulating, manipulating.angle + delta);
+
+	            }
+
+	        }
+
+	        this.raycaster.ray.copy(toRay);
+	        this.update();
+
+	    }
+
+	    setGrabbed(grabbed) {
+
+	        const { hovered, manipulating } = this;
+
+	        if (grabbed) {
+
+	            if (manipulating !== null || hovered === null) {
+
+	                return;
+
+	            }
+
+	            this.manipulating = hovered;
+	            this.onDragStart(hovered);
+
+	        } else {
+
+	            if (this.manipulating === null) {
+	                return;
+	            }
+
+	            this.onDragEnd(this.manipulating);
+	            this.manipulating = null;
+	            this.update();
+
+	        }
+
+	    }
+
+	}
+
+	class PointerURDFDragControls extends URDFDragControlsBase {
+
+	    constructor(scene, camera, domElement) {
+
+	        super(scene, domElement);
+	        this.camera = camera;
+
+	        const raycaster = new Raycaster();
+	        const mouse = new Vector2();
+
+	        function updateMouse(e) {
+
+	            mouse.x = ((e.pageX - domElement.offsetLeft) / domElement.offsetWidth) * 2 - 1;
+	            mouse.y = -((e.pageY - domElement.offsetTop) / domElement.offsetHeight) * 2 + 1;
+
+	        }
+
+	        this._mouseDown = e => {
+
+	            updateMouse(e);
+	            raycaster.setFromCamera(mouse, this.camera);
+	            this.moveRay(raycaster.ray);
+	            this.setGrabbed(true);
+
+	        };
+
+	        this._mouseMove = e => {
+
+	            updateMouse(e);
+	            raycaster.setFromCamera(mouse, this.camera);
+	            this.moveRay(raycaster.ray);
+
+	        };
+
+	        this._mouseUp = e => {
+
+	            updateMouse(e);
+	            raycaster.setFromCamera(mouse, this.camera);
+	            this.moveRay(raycaster.ray);
+	            this.setGrabbed(false);
+
+	        };
+
+	        domElement.addEventListener('mousedown', this._mouseDown);
+	        domElement.addEventListener('mousemove', this._mouseMove);
+	        domElement.addEventListener('mouseup', this._mouseUp);
+
+	    }
+
+	    getRevoluteDelta(joint, startPoint, endPoint) {
+
+	        const { camera, initialGrabPoint } = this;
+
+	        // set up the plane
+	        tempVector
+	            .copy(joint.axis)
+	            .transformDirection(joint.matrixWorld)
+	            .normalize();
+	        pivotPoint
+	            .set(0, 0, 0)
+	            .applyMatrix4(joint.matrixWorld);
+	        plane
+	            .setFromNormalAndCoplanarPoint(tempVector, pivotPoint);
+
+	        tempVector
+	            .copy(camera.position)
+	            .sub(initialGrabPoint)
+	            .normalize();
+
+	        // if looking into the plane of rotation
+	        if (Math.abs(tempVector.dot(plane.normal)) > 0.3) {
+
+	            return super.getRevoluteDelta(joint, startPoint, endPoint);
+
+	        } else {
+
+	            // get the up direction
+	            tempVector.set(0, 1, 0).transformDirection(camera.matrixWorld);
+
+	            // get points projected onto the plane of rotation
+	            plane.projectPoint(startPoint, projectedStartPoint);
+	            plane.projectPoint(endPoint, projectedEndPoint);
+
+	            tempVector.set(0, 0, -1).transformDirection(camera.matrixWorld);
+	            tempVector.cross(plane.normal);
+	            tempVector2.subVectors(endPoint, startPoint);
+
+	            return tempVector.dot(tempVector2);
+
+	        }
+
+	    }
+
+	    dispose() {
+
+	        const { domElement } = this;
+	        domElement.removeEventListener('mousedown', this._mouseDown);
+	        domElement.removeEventListener('mousemove', this._mouseMove);
+	        domElement.removeEventListener('mouseup', this._mouseUp);
+
+	    }
+
+	}
+
 	// urdf-manipulator element
 	// Displays a URDF model that can be manipulated with the mouse
 
@@ -61813,67 +62137,9 @@
 	                emissiveIntensity: 0.25,
 	            });
 
-	        const el = this.renderer.domElement;
-
-	        // Saved mouse data between frames and initial
-	        // click point in space
-	        const mouse = new Vector2();
-	        const lastMouse = new Vector2();
-	        const clickPoint = new Vector3();
-
-	        // Reuseable variables
-	        const raycaster = new Raycaster();
-	        const delta = new Vector2();
-	        const plane = new Plane();
-	        const line = new Line3();
-
-	        // The joint being manipulated
-	        let dragging = null;
-
-	        const toMouseCoord = (e, v) => {
-
-	            v.x = ((e.pageX - el.offsetLeft) / el.offsetWidth) * 2 - 1;
-	            v.y = -((e.pageY - el.offsetTop) / el.offsetHeight) * 2 + 1;
-
-	        };
-
-	        // Get which part of the robot is hit by the mouse click
-	        const getCollisions = m => {
-
-	            if (!this.robot) return [];
-
-	            raycaster.setFromCamera(m, this.camera);
-
-	            const meshes = [];
-	            this.robot.traverse(c => c.type === 'Mesh' && meshes.push(c));
-
-	            return raycaster.intersectObjects(meshes);
-
-	        };
-
 	        const isJoint = j => {
 
 	            return j.isURDFJoint && j.jointType !== 'fixed';
-
-	        };
-
-	        // Find the nearest parent that is a joint
-	        const findNearestJoint = m => {
-
-	            let curr = m;
-	            while (curr) {
-
-	                if (isJoint(curr)) {
-
-	                    break;
-
-	                }
-
-	                curr = curr.parent;
-
-	            }
-
-	            return curr;
 
 	        };
 
@@ -61917,228 +62183,51 @@
 
 	        };
 
-	        const temp = new Vector3();
-	        const intersect1 = new Vector3();
-	        const intersect2 = new Vector3();
+	        const el = this.renderer.domElement;
 
-	        // Get the changed angle between mouse position 1 and 2
-	        // when manipulating target
-	        const getAngle = (tg, m1, m2) => {
+	        const dragControls = new PointerURDFDragControls(this.scene, this.camera, el);
+	        dragControls.onDragStart = joint => {
 
-	            // TODO: Why is the constant negated?
-	            plane.normal.copy(tg.axis).transformDirection(tg.matrixWorld).normalize();
-	            plane.constant = -plane.normal.dot(clickPoint);
+	            this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: joint.name }));
+	            this.controls.enabled = false;
+	            this.redraw();
 
-	            // If the camera is looking at the rotation axis at a skewed angle
-	            temp.copy(this.camera.position).sub(clickPoint).normalize();
-	            if (Math.abs(temp.dot(plane.normal)) < 0.2) {
+	        };
+	        dragControls.onDragEnd = joint => {
 
-	                // distance to the clicked point
-	                const dist = temp.copy(clickPoint).sub(this.camera.position).length() * 0.9;
+	            this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: joint.name }));
+	            this.controls.enabled = true;
+	            this.redraw();
 
-	                // Get the point closest to the original clicked point
-	                // and use that as center of the rotation axis
-	                temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
-	                temp.addScaledVector(plane.normal, -plane.distanceToPoint(temp));
+	        };
+	        dragControls.updateJoint = (joint, angle) => {
 
-	                // Project out from the camera
-	                raycaster.setFromCamera(m1, this.camera);
-	                intersect1.copy(raycaster.ray.origin).add(
-	                    raycaster.ray.direction.normalize().multiplyScalar(dist),
-	                );
-	                intersect1.sub(temp);
+	            this.setJointValue(joint.name, angle);
 
-	                raycaster.setFromCamera(m2, this.camera);
-	                intersect2.copy(raycaster.ray.origin).add(
-	                    raycaster.ray.direction.normalize().multiplyScalar(dist),
-	                );
-	                intersect2.sub(temp);
+	        };
+	        dragControls.onHover = joint => {
 
-	                temp.crossVectors(intersect2, intersect1).normalize();
+	            highlightLinkGeometry(joint, false);
+	            this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: joint.name }));
+	            this.redraw();
 
-	                // Multiply by a magic number to make it feel good
-	                return temp.dot(plane.normal) * intersect2.angleTo(intersect1) * 2;
+	        };
+	        dragControls.onUnhover = joint => {
 
-	            } else {
-
-	                // Get the point closest to the original clicked point
-	                // and use that as center of the rotation axis
-	                temp.set(0, 0, 0).applyMatrix4(tg.matrixWorld);
-	                temp.addScaledVector(plane.normal, -plane.distanceToPoint(temp));
-
-	                // project onto the plane of rotation
-	                raycaster.setFromCamera(m1, this.camera);
-	                line.start.copy(raycaster.ray.origin);
-	                line.end.copy(raycaster.ray.origin).add(raycaster.ray.direction.normalize().multiplyScalar(1e5));
-	                plane.intersectLine(line, intersect1);
-	                intersect1.sub(temp);
-
-	                raycaster.setFromCamera(m2, this.camera);
-	                line.start.copy(raycaster.ray.origin);
-	                line.end.copy(raycaster.ray.origin).add(raycaster.ray.direction.normalize().multiplyScalar(1e5));
-	                plane.intersectLine(line, intersect2);
-	                intersect2.sub(temp);
-
-	                temp.crossVectors(intersect2, intersect1);
-
-	                return Math.sign(temp.dot(plane.normal)) * intersect2.angleTo(intersect1);
-
-	            }
+	            highlightLinkGeometry(joint, true);
+	            this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: joint.name }));
+	            this.redraw();
 
 	        };
 
-	        // Get the amount to move the prismatic joint based on the mouse move
-	        const getMove = (tg, m1, m2) => {
-
-	            const dist = temp.copy(clickPoint).sub(this.camera.position).length();
-
-	            raycaster.setFromCamera(m1, this.camera);
-	            raycaster.ray.direction.normalize().multiplyScalar(dist);
-	            intersect1.copy(raycaster.ray.origin).add(raycaster.ray.direction);
-
-	            raycaster.setFromCamera(m2, this.camera);
-	            raycaster.ray.direction.normalize().multiplyScalar(dist);
-	            intersect2.copy(raycaster.ray.origin).add(raycaster.ray.direction);
-
-	            temp.copy(intersect2).sub(intersect1);
-
-	            plane.normal.copy(tg.axis).transformDirection(tg.parent.matrixWorld).normalize();
-
-	            return temp.length() * -Math.sign(temp.dot(plane.normal));
-
-	        };
-
-	        el.addEventListener('mousedown', e => {
-
-	            if (this.disableDragging) return;
-
-	            toMouseCoord(e, mouse);
-	            lastMouse.copy(mouse);
-
-	            // get the information on the clicked item
-	            // and set the dragged joint
-	            const target = getCollisions(mouse).shift();
-	            if (target) {
-
-	                dragging = findNearestJoint(target.object);
-
-	                if (dragging) {
-
-	                    clickPoint.copy(target.point);
-	                    this.dispatchEvent(new CustomEvent('manipulate-start', { bubbles: true, cancelable: true, detail: dragging.name }));
-	                    this.controls.enabled = false;
-
-	                }
-
-	            }
-
-	        }, true);
-
-	        let hovered = null;
-	        this._mouseMoveFunc = e => {
-
-	            toMouseCoord(e, mouse);
-	            delta.copy(mouse).sub(lastMouse);
-
-	            // Keep track of the hovered item. If an item is being
-	            // dragged, then it is considered hovered
-	            const wasHovered = hovered;
-	            if (hovered) {
-
-	                hovered = null;
-	            }
-
-	            if (dragging == null && this.disableDragging === false) {
-
-	                const collision = getCollisions(mouse).shift() || null;
-	                const joint = collision && findNearestJoint(collision.object);
-	                if (joint) {
-
-	                    hovered = joint;
-
-	                }
-
-	            } else if (dragging) {
-
-	                hovered = dragging;
-
-	            }
-
-	            // Highlight the meshes and broadcast events if the hovered item changed
-	            if (hovered !== wasHovered) {
-
-	                if (wasHovered) {
-
-	                    highlightLinkGeometry(wasHovered, true);
-	                    this.dispatchEvent(new CustomEvent('joint-mouseout', { bubbles: true, cancelable: true, detail: wasHovered.name }));
-
-	                }
-
-	                if (hovered) {
-
-	                    highlightLinkGeometry(hovered, false);
-	                    this.dispatchEvent(new CustomEvent('joint-mouseover', { bubbles: true, cancelable: true, detail: hovered.name }));
-
-	                }
-
-	                this.redraw();
-
-	            }
-
-	            // Apply the manipulation
-	            if (dragging !== null) {
-
-	                let delta = null;
-	                if (dragging.jointType === 'revolute' || dragging.jointType === 'continuous') {
-
-	                    delta = getAngle(dragging, mouse, lastMouse);
-
-	                } else if (dragging.jointType === 'prismatic') {
-
-	                    delta = getMove(dragging, mouse, lastMouse);
-
-	                } else ;
-
-	                if (delta) {
-
-	                    this.setJointValue(dragging.name, dragging.angle + delta);
-
-	                }
-
-	            }
-
-	            lastMouse.copy(mouse);
-
-	        };
-
-	        // Clean up
-	        this._mouseUpFunc = e => {
-
-	            if (dragging) {
-
-	                this.dispatchEvent(new CustomEvent('manipulate-end', { bubbles: true, cancelable: true, detail: dragging.name }));
-	                dragging = null;
-	                this.controls.enabled = true;
-
-	            }
-
-	        };
-
-	    }
-
-	    connectedCallback() {
-
-	        super.connectedCallback();
-	        window.addEventListener('mousemove', this._mouseMoveFunc, true);
-	        window.addEventListener('mouseup', this._mouseUpFunc, true);
+	        this.dragControls = dragControls;
 
 	    }
 
 	    disconnectedCallback() {
 
 	        super.disconnectedCallback();
-	        window.removeEventListener('mousemove', this._mouseMoveFunc, true);
-	        window.removeEventListener('mouseup', this._mouseUpFunc, true);
+	        this.dragControls.dispose();
 
 	    }
 
