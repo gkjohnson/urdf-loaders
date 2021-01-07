@@ -60122,15 +60122,14 @@
 
 	    const directionalLight = new DirectionalLight(0xffffff, 1.0);
 	    directionalLight.castShadow = true;
-	    directionalLight.shadow.mapSize.setScalar(1024);
+	    directionalLight.shadow.mapSize.setScalar(2048);
 	    directionalLight.position.set(5, 30, 5);
 	    scene.add(directionalLight);
 
 	    const ambientLight = new AmbientLight(0xffb74d, 0.5);
 	    scene.add(ambientLight);
 
-	    ground = new Mesh(new PlaneBufferGeometry(), new ShadowMaterial({ opacity: 0.25 }));
-	    ground.material.color.set(0xe65100).convertSRGBToLinear();
+	    ground = new Mesh(new PlaneBufferGeometry(), new ShadowMaterial({ opacity: 0.1 }));
 	    ground.rotation.x = -Math.PI / 2;
 	    ground.scale.setScalar(30);
 	    ground.receiveShadow = true;
@@ -60166,6 +60165,7 @@
 	        robot.rotation.x = Math.PI / 2;
 	        robot.traverse(c => {
 	            c.castShadow = true;
+	            c.receiveShadow = true;
 	        });
 	        for (let i = 1; i <= 6; i++) {
 
@@ -60191,7 +60191,7 @@
 	    intersectRing.visible = false;
 	    scene.add(intersectRing);
 
-	    hitSphere = new Mesh(new SphereBufferGeometry(0.025), whiteMat);
+	    hitSphere = new Mesh(new SphereBufferGeometry(0.01, 50, 50), whiteMat);
 	    scene.add(hitSphere);
 
 	    // vr controllers
@@ -60298,7 +60298,19 @@
 
 	        }
 
+	        if (controller.children[0]) {
+
+	            controller.children[0].scale.setScalar(1);
+
+	        }
+
 	    } else {
+
+	        if (controller.children[0]) {
+
+	            controller.children[0].scale.setScalar(dragControls.hitDistance);
+
+	        }
 
 	        ray.at(dragControls.hitDistance, hitSphere.position);
 	        hitSphere.visible = true;
