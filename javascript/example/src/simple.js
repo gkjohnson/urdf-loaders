@@ -29,7 +29,7 @@ function init() {
 
     camera = new PerspectiveCamera();
     camera.position.set(10, 10, 10);
-    camera.lookAt(0, 0, 0)
+    camera.lookAt(0, 0, 0);
 
     renderer = new WebGLRenderer({ antialias: true });
     renderer.outputEncoding = sRGBEncoding;
