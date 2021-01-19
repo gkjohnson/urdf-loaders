@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Unnecessary creation of a new quaternion when setting a joint angle.
 - Throw a human readable error when fetch fails.
+- The model failing to clone if the object names were changed.
 
 ### Added
 - Ability to set the `packages` option to a function.
