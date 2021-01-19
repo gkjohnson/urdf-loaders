@@ -20,11 +20,21 @@ function emptyLoadMeshCallback(url, manager, done) {
 
 function compareRobots(ra, rb) {
 
+    if (ra.isURDFRobot) {
+
+        expect(Object.keys(ra.links).sort()).toEqual(Object.keys(rb.links).sort());
+        expect(Object.keys(ra.joints).sort()).toEqual(Object.keys(rb.joints).sort());
+        expect(Object.keys(ra.colliders).sort()).toEqual(Object.keys(rb.colliders).sort());
+        expect(Object.keys(ra.visual).sort()).toEqual(Object.keys(rb.visual).sort());
+
+    }
+
     expect(ra.name).toEqual(rb.name);
     expect(ra.type).toEqual(rb.type);
     expect(ra.geometry).toEqual(rb.geometry);
     expect(ra.material).toEqual(rb.material);
     expect(ra.urdfNode).toEqual(rb.urdfNode);
+    expect(ra.urdfName).toEqual(rb.urdfName);
 
     expect(ra.isMesh).toEqual(rb.isMesh);
     expect(ra.isURDFLink).toEqual(rb.isURDFLink);
@@ -196,6 +206,22 @@ describe('Clone', () => {
         loader.parseCollision = true;
 
         const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+
+        compareRobots(robot, robot.clone());
+
+    });
+
+    it.only('should clone the robot exactly even when node names have been changed', async() => {
+
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+        loader.loadMeshCb = emptyLoadMeshCallback;
+        loader.parseVisual = true;
+        loader.parseCollision = true;
+
+        const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+
+        robot.name = 'test 1';
 
         compareRobots(robot, robot.clone());
 

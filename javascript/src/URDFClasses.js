@@ -13,7 +13,11 @@ class URDFBase extends Object3D {
     copy(source, recursive) {
 
         super.copy(source, recursive);
+
         this.urdfNode = source.urdfNode;
+        this.urdfName = source.urdfName;
+
+        return this;
 
     }
 
