@@ -1,72 +1,61 @@
 import { Object3D } from 'three';
 
-class URDFCollider extends Object3D {
+class URDFBase extends Object3D {
+
+    constructor(...args) {
+
+        super(...args);
+        this.urdfNode = null;
+        this.urdfName = '';
+
+    }
+
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+        this.urdfNode = source.urdfNode;
+
+    }
+
+}
+
+class URDFCollider extends URDFBase {
 
     constructor(...args) {
 
         super(...args);
         this.isURDFCollider = true;
         this.type = 'URDFCollider';
-        this.urdfNode = null;
-
-    }
-
-    copy(source, recursive) {
-
-        super.copy(source, recursive);
-        this.urdfNode = source.urdfNode;
-
-        return this;
 
     }
 
 }
 
-class URDFVisual extends Object3D {
+class URDFVisual extends URDFBase {
 
     constructor(...args) {
 
         super(...args);
         this.isURDFVisual = true;
         this.type = 'URDFVisual';
-        this.urdfNode = null;
-
-    }
-
-    copy(source, recursive) {
-
-        super.copy(source, recursive);
-        this.urdfNode = source.urdfNode;
-
-        return this;
 
     }
 
 }
 
-class URDFLink extends Object3D {
+class URDFLink extends URDFBase {
 
     constructor(...args) {
 
         super(...args);
         this.isURDFLink = true;
         this.type = 'URDFLink';
-        this.urdfNode = null;
-
-    }
-
-    copy(source, recursive) {
-
-        super.copy(source, recursive);
-        this.urdfNode = source.urdfNode;
-
-        return this;
 
     }
 
 }
 
-class URDFJoint extends Object3D {
+class URDFJoint extends URDFBase {
 
     get jointType() {
 
@@ -116,7 +105,6 @@ class URDFJoint extends Object3D {
         this.isURDFJoint = true;
         this.type = 'URDFJoint';
 
-        this.urdfNode = null;
         this.jointValue = null;
         this.jointType = 'fixed';
         this.axis = null;
@@ -133,7 +121,6 @@ class URDFJoint extends Object3D {
 
         super.copy(source, recursive);
 
-        this.urdfNode = source.urdfNode;
         this.jointType = source.jointType;
         this.axis = source.axis ? source.axis.clone() : null;
         this.limit.lower = source.limit.lower;
