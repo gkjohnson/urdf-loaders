@@ -211,7 +211,7 @@ describe('Clone', () => {
 
     });
 
-    it.only('should clone the robot exactly even when node names have been changed', async() => {
+    it('should clone the robot exactly even when node names have been changed', async() => {
 
         const loader = new URDFLoader();
         loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';

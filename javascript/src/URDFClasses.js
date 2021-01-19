@@ -267,27 +267,27 @@ class URDFRobot extends URDFLink {
 
         this.traverse(c => {
 
-            if (c.isURDFJoint && c.name in source.joints) {
+            if (c.isURDFJoint && c.urdfName in source.joints) {
 
-                this.joints[c.name] = c;
-
-            }
-
-            if (c.isURDFLink && c.name in source.links) {
-
-                this.links[c.name] = c;
+                this.joints[c.urdfName] = c;
 
             }
 
-            if (c.isURDFCollider && c.name in source.colliders) {
+            if (c.isURDFLink && c.urdfName in source.links) {
 
-                this.colliders[c.name] = c;
+                this.links[c.urdfName] = c;
 
             }
 
-            if (c.isURDFVisual && c.name in source.visual) {
+            if (c.isURDFCollider && c.urdfName in source.colliders) {
 
-                this.visual[c.name] = c;
+                this.colliders[c.urdfName] = c;
+
+            }
+
+            if (c.isURDFVisual && c.urdfName in source.visual) {
+
+                this.visual[c.urdfName] = c;
 
             }
 
