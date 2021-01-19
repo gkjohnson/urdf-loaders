@@ -119,7 +119,7 @@ List of options available on the URDFLoader class.
 ### .packages
 
 ```js
-packages = '' : String | Object
+packages = '' : String | Object | ( pkg : String ) => String
 ```
 
 The path representing the `package://` directory(s) to load `package://` relative files.
@@ -134,6 +134,8 @@ To specify multiple packages an object syntax is used defining the package name 
   ...
 }
 ```
+
+If the setting is set to a function then it takes the package name and is expected to return the package path.
 
 ### .loadMeshCb
 
