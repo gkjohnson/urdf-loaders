@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Unnecessary creation of a new quaternion when setting a joint angle.
 - Throw a human readable error when fetch fails.
 
+### Added
+- Ability to set the `packages` option to a function.
+
 ## [0.9.2] - 2020-10-23
 ### Added
 - Normal bias to shadows in URDFViewerElement.

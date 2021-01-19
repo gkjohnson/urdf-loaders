@@ -42,9 +42,9 @@ loader.load(
 );
 ```
 
-#### Custom Mesh Loader
+#### Custom Mesh Loader & Error Handling
 
-Adding a custom mesh loader.
+Implementing custom error handling and / or adding a custom loader for meshes can be done using the [loadMeshCb](#loadMeshCb) callback.
 
 ```js
 import { GLTFLoader } from 'three/examples/loaders/GLTFLoader.js';
@@ -56,11 +56,22 @@ const loader = new URDFLoader();
 loader.loadMeshCb = function( path, manager, onComplete ) {
 
     const gltfLoader = new GLTFLoader( manager );
-    gltfLoader.load( path, result => {
+    gltfLoader.load(
+        path,
+        result => {
 
-        onComplete( result.scene );
+            onComplete( result.scene );
 
-    } );
+        },
+        undefined,
+        err => {
+        
+            // try to load again, notify user, etc
+        
+            onComplete( null, err );
+        
+        }
+    );
 
 };
 loader.load( 'T12/urdf/T12.URDF', robot => {
@@ -108,7 +119,7 @@ List of options available on the URDFLoader class.
 ### .packages
 
 ```js
-packages = '' : String | Object
+packages = '' : String | Object | ( pkg : String ) => String
 ```
 
 The path representing the `package://` directory(s) to load `package://` relative files.
@@ -123,6 +134,8 @@ To specify multiple packages an object syntax is used defining the package name 
   ...
 }
 ```
+
+If the setting is set to a function then it takes the package name and is expected to return the package path.
 
 ### .loadMeshCb
 

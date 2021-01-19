@@ -180,6 +180,10 @@ class URDFLoader {
 
                 }
 
+            } else if (packages instanceof Function) {
+
+                return packages(targetPkg) + '/' + relPath;
+
             } else if (typeof packages === 'object') {
 
                 // "pkg" is a map of packages
