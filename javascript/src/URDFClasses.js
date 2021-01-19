@@ -321,14 +321,30 @@ class URDFRobot extends URDFLink {
 
     setJointValue(jointName, ...angle) {
 
+        let didChange = false;
         const joint = this.joints[jointName];
         if (joint) {
 
-            return joint.setJointValue(...angle);
+            didChange = joint.setJointValue(...angle);
+            for (const key in this.joints) {
+
+                if (key in this.joints) {
+
+                    const mimic_joint = this.joints[key];
+                    if (mimic_joint.mimic_joint == jointName) {
+
+                        const modified_angle = angle.map(x => x * mimic_joint.mimic_multiplier + mimic_joint.mimic_offset);
+                        didChange = this.joints[key].setJointValue(...modified_angle) || didChange;
+
+                    }
+
+                }
+
+            }
 
         }
 
-        return false;
+        return didChange;
     }
 
     setJointValues(values) {

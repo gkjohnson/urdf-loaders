@@ -315,8 +315,13 @@ class URDFLoader {
                     obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                     obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
 
-                }
+                } else if (type === 'mimic') {
 
+                    obj.mimic_joint = n.getAttribute('joint');
+                    obj.mimic_multiplier = n.getAttribute('multiplier');
+                    obj.mimic_offset = n.getAttribute('offset');
+
+                }
             });
 
             // Join the links
@@ -512,7 +517,6 @@ class URDFLoader {
                                     obj.position.set(0, 0, 0);
                                     obj.quaternion.identity();
                                     group.add(obj);
-
                                 }
 
                             });

@@ -32,6 +32,9 @@ export class URDFJoint extends Object3D {
     jointValue: Number[];
     limit: { lower: Number, upper: Number }; // TODO: add more
     ignoreLimits: Boolean;
+    mimic_joint: String;
+    mimic_multiplier: Number;
+    mimic_offset: Number;
 
     setJointValue(value0: Number, value1?: Number, value2?: Number): void;
 
