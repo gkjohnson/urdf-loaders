@@ -183,6 +183,85 @@ describe('Options', () => {
 
     });
 
+    describe.only('packages', () => {
+
+        const urdf = `
+            <robot>
+                <link name="Body">
+                    <visual>
+                        <origin xyz="0 0 0" rpy="0 0 0" />
+                        <geometry>
+                            <mesh filename="package://package1/path/to/model.stl" />
+                        </geometry>
+                    </visual>
+                </link>
+                <link name="Body">
+                    <visual>
+                        <origin xyz="0 0 0" rpy="0 0 0" />
+                        <geometry>
+                            <mesh filename="package://package2/path/to/model2.stl" />
+                        </geometry>
+                    </visual>
+                </link>
+            </robot>
+        `;
+
+        it('should use the values from an object if set.', () => {
+
+            const loader = new URDFLoader();
+            loader.packages = {
+                'package1': 'path/to/package1',
+                'package2': 'path/to/package2',
+            };
+
+            const loaded = [];
+            loader.loadMeshCb = url => {
+
+                loaded.push(url);
+
+            };
+
+            loader.parse(urdf);
+            expect(loaded).toEqual([
+                'path/to/package1/path/to/model.stl',
+                'path/to/package2/path/to/model2.stl',
+            ]);
+
+        });
+
+        it('should use the values from a function if set.', () => {
+
+            const loader = new URDFLoader();
+            loader.packages = pkg => {
+
+                switch (pkg) {
+
+                    case 'package1':
+                        return 'func/path/1';
+                    case 'package2':
+                        return 'func/path/2';
+
+                }
+
+            };
+
+            const loaded = [];
+            loader.loadMeshCb = url => {
+
+                loaded.push(url);
+
+            };
+
+            loader.parse(urdf);
+            expect(loaded).toEqual([
+                'func/path/1/path/to/model.stl',
+                'func/path/2/path/to/model2.stl',
+            ]);
+
+        });
+
+    });
+
 });
 
 describe('Clone', () => {
