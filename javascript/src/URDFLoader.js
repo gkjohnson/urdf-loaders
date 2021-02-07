@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual } from './URDFClasses.js';
+import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual, URDFMimicJoint } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -151,6 +151,7 @@ class URDFLoader {
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
+        const jointList = [];
         const materialMap = {};
 
         // Resolves the path of mesh files
@@ -258,7 +259,9 @@ class URDFLoader {
             joints.forEach(j => {
 
                 const name = j.getAttribute('name');
-                jointMap[name] = processJoint(j);
+                const processedJoint = processJoint(j);
+                jointMap[name] = processedJoint;
+                jointList.push(processedJoint);
 
             });
 
@@ -266,6 +269,18 @@ class URDFLoader {
             obj.links = linkMap;
             obj.colliders = colliderMap;
             obj.visual = visualMap;
+
+            // Link up mimic joints
+            jointList.forEach(j => {
+                if (j.mimicJoint) {
+                    
+                    if (jointMap.hasOwnProperty(j.mimicJoint)) {
+
+                        jointMap[j.mimicJoint].mimicJoints.push(j);
+
+                    }
+                }
+            });
 
             obj.frames = {
                 ...colliderMap,
@@ -283,7 +298,23 @@ class URDFLoader {
 
             const children = [ ...joint.children ];
             const jointType = joint.getAttribute('type');
-            const obj = new URDFJoint();
+
+            let obj;
+
+            const mimic_tag = children.find(n => n.nodeName.toLowerCase() === "mimic");
+            if (mimic_tag) {
+
+                obj = new URDFMimicJoint();
+                obj.mimicJoint = mimic_tag.getAttribute('joint');
+                obj.multiplier = parseFloat(mimic_tag.getAttribute('multiplier') || 1.0);
+                obj.offset = parseFloat(mimic_tag.getAttribute('offset') || 0.0);
+
+            } else {
+
+                obj = new URDFJoint();
+
+            }
+
             obj.urdfNode = joint;
             obj.name = joint.getAttribute('name');
             obj.jointType = jointType;
@@ -314,12 +345,6 @@ class URDFLoader {
 
                     obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                     obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
-
-                } else if (type === 'mimic') {
-
-                    obj.mimic_joint = n.getAttribute('joint');
-                    obj.mimic_multiplier = n.getAttribute('multiplier');
-                    obj.mimic_offset = n.getAttribute('offset');
 
                 }
             });
@@ -517,6 +542,7 @@ class URDFLoader {
                                     obj.position.set(0, 0, 0);
                                     obj.quaternion.identity();
                                     group.add(obj);
+
                                 }
 
                             });

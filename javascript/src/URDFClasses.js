@@ -126,6 +126,8 @@ class URDFJoint extends Object3D {
         this.origPosition = null;
         this.origQuaternion = null;
 
+        this.mimicJoints = [];
+
     }
 
     /* Overrides */
@@ -160,6 +162,13 @@ class URDFJoint extends Object3D {
             this.origQuaternion = this.quaternion.clone();
 
         }
+        
+        this.mimicJoints.forEach(joint => {
+
+            joint.updateFromMimickedJoint(...values);
+
+        });
+
 
         switch (this.jointType) {
 
@@ -243,6 +252,22 @@ class URDFJoint extends Object3D {
 
 }
 
+class URDFMimicJoint extends URDFJoint {
+
+    constructor(...args) {
+        super(...args);
+        this.offset = 0;
+        this.multiplier = 1;
+    }
+
+    updateFromMimickedJoint(...values) {
+
+        const modified_values = values.map(x => x * this.multiplier + this.offset);
+        return this.setJointValue(...modified_values);
+
+    }
+}
+
 class URDFRobot extends URDFLink {
 
     constructor(...args) {
@@ -321,30 +346,14 @@ class URDFRobot extends URDFLink {
 
     setJointValue(jointName, ...angle) {
 
-        let didChange = false;
         const joint = this.joints[jointName];
         if (joint) {
 
-            didChange = joint.setJointValue(...angle);
-            for (const key in this.joints) {
-
-                if (key in this.joints) {
-
-                    const mimic_joint = this.joints[key];
-                    if (mimic_joint.mimic_joint == jointName) {
-
-                        const modified_angle = angle.map(x => x * mimic_joint.mimic_multiplier + mimic_joint.mimic_offset);
-                        didChange = this.joints[key].setJointValue(...modified_angle) || didChange;
-
-                    }
-
-                }
-
-            }
-
+            return joint.setJointValue(...angle);
+            
         }
 
-        return didChange;
+        return false;
     }
 
     setJointValues(values) {
@@ -371,4 +380,4 @@ class URDFRobot extends URDFLink {
 
 }
 
-export { URDFRobot, URDFLink, URDFJoint, URDFVisual, URDFCollider };
+export { URDFRobot, URDFLink, URDFJoint, URDFMimicJoint, URDFVisual, URDFCollider };

@@ -373,3 +373,35 @@ describe('TriATHLETE Climbing URDF', () => {
     });
 
 });
+
+describe('Mimic Tags', () => {
+
+    it('should parse and link the mimicked joints.', () => {
+
+        const loader = new URDFLoader();
+        const res = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <joint name="A" type="continuous">
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <link name="LINK2"/>
+                <joint name="B" type="continuous">
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                    <mimic joint="A" offset="-5" multiplier="23"/>
+                </joint>
+                <link name="LINK3"/>
+            </robot>
+        `);
+
+        const jointA = res.joints['A'];
+        const jointB = res.joints['B'];
+
+        expect(jointA.mimicJoints).toEqual([jointB]);
+        expect(jointB.multiplier).toEqual(23);
+        expect(jointB.offset).toEqual(-5);
+
+    });
+});

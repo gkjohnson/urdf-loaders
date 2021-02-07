@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import { URDFJoint } from '../src/URDFClasses.js';
+import { URDFJoint, URDFMimicJoint } from '../src/URDFClasses.js';
 
 describe('URDFJoint', () => {
 
@@ -139,6 +139,29 @@ describe('URDFJoint', () => {
             joint.matrixWorldNeedsUpdate = false;
             expect(joint.setJointValue(1.5)).toBeFalsy();
             expect(joint.matrixWorldNeedsUpdate).toBeFalsy();
+
+        });
+
+    });
+
+    describe('setJointValue', () => {
+
+        it('should mimic', () => {
+
+            const joint = new URDFJoint();
+            joint.axis = new Vector3(0, 0, 1);
+            joint.jointType = 'continuous';
+
+            const mimicker = new URDFMimicJoint();
+            mimicker.axis = new Vector3(0, 0, 1);
+            mimicker.jointType = 'continuous';
+            mimicker.multiplier = 2;
+            mimicker.offset = 5;
+
+            joint.mimicJoints = [mimicker];
+
+            joint.setJointValue(10);
+            expect(mimicker.jointValue).toEqual([25]);
 
         });
 
