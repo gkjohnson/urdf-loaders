@@ -146,23 +146,54 @@ describe('URDFJoint', () => {
 
     describe('setJointValue', () => {
 
-        it('should mimic', () => {
+        const joint = new URDFJoint();
+        joint.axis = new Vector3(0, 0, 1);
+        joint.jointType = 'continuous';
 
-            const joint = new URDFJoint();
-            joint.axis = new Vector3(0, 0, 1);
-            joint.jointType = 'continuous';
+        const mimicker = new URDFMimicJoint();
+        mimicker.axis = new Vector3(0, 0, 1);
+        mimicker.jointType = 'continuous';
+        mimicker.multiplier = 2;
+        mimicker.offset = 5;
 
-            const mimicker = new URDFMimicJoint();
-            mimicker.axis = new Vector3(0, 0, 1);
-            mimicker.jointType = 'continuous';
-            mimicker.multiplier = 2;
-            mimicker.offset = 5;
+        joint.mimicJoints = [mimicker];
 
-            joint.mimicJoints = [mimicker];
+        it('should propagage to mimic joints.', () => {
 
             joint.setJointValue(10);
             expect(mimicker.jointValue).toEqual([25]);
 
+        });
+
+        it('should return true when all joints are updated.', () => {
+            
+            joint.setJointValue(0);
+            mimicker.setJointValue(0);
+            expect(joint.setJointValue(10)).toBeTruthy();
+
+        });
+
+        it('should return false when no joints are updated.', () => {
+            
+            joint.setJointValue(10);
+            mimicker.setJointValue(25);
+            expect(joint.setJointValue(10)).toBeFalsy();
+
+        });
+
+        it('should return true when only the master joint is updated.', () => {
+            
+            joint.setJointValue(238429348);
+            mimicker.setJointValue(25);
+            expect(joint.setJointValue(10)).toBeTruthy();
+
+        });
+
+        it('should return true when only the mimic joint is updated.', () => {
+
+            joint.setJointValue(10);
+            mimicker.setJointValue(238429348);
+            expect(joint.setJointValue(10)).toBeTruthy();
         });
 
     });
