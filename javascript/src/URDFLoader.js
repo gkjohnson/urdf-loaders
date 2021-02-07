@@ -265,6 +265,8 @@ class URDFLoader {
                 const name = j.getAttribute('name');
                 const processedJoint = processJoint(j);
                 jointMap[name] = processedJoint;
+
+                // Maintain a list of joints, just to make it easier to iterate through for processing the mimic joints
                 jointList.push(processedJoint);
 
             });
@@ -284,6 +286,30 @@ class URDFLoader {
 
                     }
                 }
+            });
+
+            // Detect infinite loops of mimic joints
+            jointList.forEach(j => {
+
+                let unique_joints = new Set();
+                let iter_function = joint => {
+
+                    if (unique_joints.has(joint)) {
+
+                        throw new Error("Detected an infinite loop of mimic joints");
+
+                    }
+
+                    unique_joints.add(joint);
+                    joint.mimicJoints.forEach(j => {
+
+                        iter_function(j);
+
+                    });
+
+                };
+
+                iter_function(j);
             });
 
             obj.frames = {
