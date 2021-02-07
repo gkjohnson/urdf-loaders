@@ -544,7 +544,7 @@ describe('Parsing Mimic Tags', () => {
 
     });
 
-    it('should detect inifinite loops.', () => {
+    it('should detect infinite loops.', () => {
 
         const loader = new URDFLoader();
         expect(() => {
