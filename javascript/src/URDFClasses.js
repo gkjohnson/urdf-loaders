@@ -153,10 +153,12 @@ class URDFJoint extends URDFBase {
             this.origQuaternion = this.quaternion.clone();
 
         }
+
+        let didUpdate = false;
         
         this.mimicJoints.forEach(joint => {
 
-            joint.updateFromMimickedJoint(...values);
+            didUpdate |= joint.updateFromMimickedJoint(...values);
 
         });
 
@@ -165,15 +167,15 @@ class URDFJoint extends URDFBase {
 
             case 'fixed': {
 
-                return false;
+                return didUpdate;
 
             }
             case 'continuous':
             case 'revolute': {
 
                 let angle = values[0];
-                if (angle == null) return false;
-                if (angle === this.jointValue[0]) return false;
+                if (angle == null) return didUpdate;
+                if (angle === this.jointValue[0]) return didUpdate;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -194,7 +196,7 @@ class URDFJoint extends URDFBase {
 
                 } else {
 
-                    return false;
+                    return didUpdate;
 
                 }
 
@@ -203,8 +205,8 @@ class URDFJoint extends URDFBase {
             case 'prismatic': {
 
                 let pos = values[0];
-                if (pos == null) return false;
-                if (pos === this.jointValue[0]) return false;
+                if (pos == null) return didUpdate;
+                if (pos === this.jointValue[0]) return didUpdate;
 
                 if (!this.ignoreLimits) {
 
@@ -224,7 +226,7 @@ class URDFJoint extends URDFBase {
 
                 } else {
 
-                    return false;
+                    return didUpdate;
 
                 }
 
@@ -237,7 +239,7 @@ class URDFJoint extends URDFBase {
 
         }
 
-        return false;
+        return didUpdate;
 
     }
 
@@ -252,7 +254,6 @@ class URDFMimicJoint extends URDFJoint {
     }
 
     updateFromMimickedJoint(...values) {
-
         const modified_values = values.map(x => x * this.multiplier + this.offset);
         return this.setJointValue(...modified_values);
 
