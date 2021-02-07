@@ -193,7 +193,7 @@ describe('Options', () => {
 
     });
 
-    describe.only('packages', () => {
+    describe('packages', () => {
 
         const urdf = `
             <robot>
