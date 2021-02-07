@@ -60285,73 +60285,66 @@
 	MapControls.prototype = Object.create( EventDispatcher.prototype );
 	MapControls.prototype.constructor = MapControls;
 
-	class URDFCollider extends Object3D {
+	class URDFBase extends Object3D {
+
+	    constructor(...args) {
+
+	        super(...args);
+	        this.urdfNode = null;
+	        this.urdfName = '';
+
+	    }
+
+	    copy(source, recursive) {
+
+	        super.copy(source, recursive);
+
+	        this.urdfNode = source.urdfNode;
+	        this.urdfName = source.urdfName;
+
+	        return this;
+
+	    }
+
+	}
+
+	class URDFCollider extends URDFBase {
 
 	    constructor(...args) {
 
 	        super(...args);
 	        this.isURDFCollider = true;
 	        this.type = 'URDFCollider';
-	        this.urdfNode = null;
-
-	    }
-
-	    copy(source, recursive) {
-
-	        super.copy(source, recursive);
-	        this.urdfNode = source.urdfNode;
-
-	        return this;
 
 	    }
 
 	}
 
-	class URDFVisual extends Object3D {
+	class URDFVisual extends URDFBase {
 
 	    constructor(...args) {
 
 	        super(...args);
 	        this.isURDFVisual = true;
 	        this.type = 'URDFVisual';
-	        this.urdfNode = null;
-
-	    }
-
-	    copy(source, recursive) {
-
-	        super.copy(source, recursive);
-	        this.urdfNode = source.urdfNode;
-
-	        return this;
 
 	    }
 
 	}
 
-	class URDFLink extends Object3D {
+	class URDFLink extends URDFBase {
 
 	    constructor(...args) {
 
 	        super(...args);
 	        this.isURDFLink = true;
 	        this.type = 'URDFLink';
-	        this.urdfNode = null;
-
-	    }
-
-	    copy(source, recursive) {
-
-	        super.copy(source, recursive);
-	        this.urdfNode = source.urdfNode;
-
-	        return this;
 
 	    }
 
 	}
 
-	class URDFJoint extends Object3D {
+	class URDFJoint extends URDFBase {
 
 	    get jointType() {
 
@@ -60401,7 +60394,6 @@
 	        this.isURDFJoint = true;
 	        this.type = 'URDFJoint';
 
-	        this.urdfNode = null;
 	        this.jointValue = null;
 	        this.jointType = 'fixed';
 	        this.axis = null;
@@ -60418,7 +60410,6 @@
 
 	        super.copy(source, recursive);
 
-	        this.urdfNode = source.urdfNode;
 	        this.jointType = source.jointType;
 	        this.axis = source.axis ? source.axis.clone() : null;
 	        this.limit.lower = source.limit.lower;
@@ -60561,27 +60552,27 @@
 
 	        this.traverse(c => {
 
-	            if (c.isURDFJoint && c.name in source.joints) {
+	            if (c.isURDFJoint && c.urdfName in source.joints) {
 
-	                this.joints[c.name] = c;
-
-	            }
-
-	            if (c.isURDFLink && c.name in source.links) {
-
-	                this.links[c.name] = c;
+	                this.joints[c.urdfName] = c;
 
 	            }
 
-	            if (c.isURDFCollider && c.name in source.colliders) {
+	            if (c.isURDFLink && c.urdfName in source.links) {
 
-	                this.colliders[c.name] = c;
+	                this.links[c.urdfName] = c;
 
 	            }
 
-	            if (c.isURDFVisual && c.name in source.visual) {
+	            if (c.isURDFCollider && c.urdfName in source.colliders) {
 
-	                this.visual[c.name] = c;
+	                this.colliders[c.urdfName] = c;
+
+	            }
+
+	            if (c.isURDFVisual && c.urdfName in source.visual) {
+
+	                this.visual[c.urdfName] = c;
 
 	            }
 
@@ -60816,6 +60807,10 @@
 
 	                }
 
+	            } else if (packages instanceof Function) {
+
+	                return packages(targetPkg) + '/' + relPath;
+
 	            } else if (typeof packages === 'object') {
 
 	                // "pkg" is a map of packages
@@ -60922,6 +60917,7 @@
 	            const obj = new URDFJoint();
 	            obj.urdfNode = joint;
 	            obj.name = joint.getAttribute('name');
+	            obj.urdfName = obj.name;
 	            obj.jointType = jointType;
 
 	            let parent = null;
@@ -60987,6 +60983,7 @@
 
 	            const children = [ ...link.children ];
 	            target.name = link.getAttribute('name');
+	            target.urdfName = target.name;
 	            target.urdfNode = link;
 
 	            if (parseVisual) {
@@ -61001,6 +60998,7 @@
 
 	                        const name = vn.getAttribute('name');
 	                        v.name = name;
+	                        v.urdfName = name;
 	                        visualMap[name] = v;
 
 	                    }
@@ -61021,6 +61019,7 @@
 
 	                        const name = cn.getAttribute('name');
 	                        c.name = name;
+	                        c.urdfName = name;
 	                        colliderMap[name] = c;
 
 	                    }
@@ -61797,7 +61796,7 @@
 	    let curr = child;
 	    while (curr) {
 
-	        if (curr === null || isJoint(curr)) {
+	        if (isJoint(curr)) {
 
 	            return curr;
 

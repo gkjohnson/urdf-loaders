@@ -20,11 +20,21 @@ function emptyLoadMeshCallback(url, manager, done) {
 
 function compareRobots(ra, rb) {
 
+    if (ra.isURDFRobot) {
+
+        expect(Object.keys(ra.links).sort()).toEqual(Object.keys(rb.links).sort());
+        expect(Object.keys(ra.joints).sort()).toEqual(Object.keys(rb.joints).sort());
+        expect(Object.keys(ra.colliders).sort()).toEqual(Object.keys(rb.colliders).sort());
+        expect(Object.keys(ra.visual).sort()).toEqual(Object.keys(rb.visual).sort());
+
+    }
+
     expect(ra.name).toEqual(rb.name);
     expect(ra.type).toEqual(rb.type);
     expect(ra.geometry).toEqual(rb.geometry);
     expect(ra.material).toEqual(rb.material);
     expect(ra.urdfNode).toEqual(rb.urdfNode);
+    expect(ra.urdfName).toEqual(rb.urdfName);
 
     expect(ra.isMesh).toEqual(rb.isMesh);
     expect(ra.isURDFLink).toEqual(rb.isURDFLink);
@@ -183,6 +193,85 @@ describe('Options', () => {
 
     });
 
+    describe.only('packages', () => {
+
+        const urdf = `
+            <robot>
+                <link name="Body">
+                    <visual>
+                        <origin xyz="0 0 0" rpy="0 0 0" />
+                        <geometry>
+                            <mesh filename="package://package1/path/to/model.stl" />
+                        </geometry>
+                    </visual>
+                </link>
+                <link name="Body">
+                    <visual>
+                        <origin xyz="0 0 0" rpy="0 0 0" />
+                        <geometry>
+                            <mesh filename="package://package2/path/to/model2.stl" />
+                        </geometry>
+                    </visual>
+                </link>
+            </robot>
+        `;
+
+        it('should use the values from an object if set.', () => {
+
+            const loader = new URDFLoader();
+            loader.packages = {
+                'package1': 'path/to/package1',
+                'package2': 'path/to/package2',
+            };
+
+            const loaded = [];
+            loader.loadMeshCb = url => {
+
+                loaded.push(url);
+
+            };
+
+            loader.parse(urdf);
+            expect(loaded).toEqual([
+                'path/to/package1/path/to/model.stl',
+                'path/to/package2/path/to/model2.stl',
+            ]);
+
+        });
+
+        it('should use the values from a function if set.', () => {
+
+            const loader = new URDFLoader();
+            loader.packages = pkg => {
+
+                switch (pkg) {
+
+                    case 'package1':
+                        return 'func/path/1';
+                    case 'package2':
+                        return 'func/path/2';
+
+                }
+
+            };
+
+            const loaded = [];
+            loader.loadMeshCb = url => {
+
+                loaded.push(url);
+
+            };
+
+            loader.parse(urdf);
+            expect(loaded).toEqual([
+                'func/path/1/path/to/model.stl',
+                'func/path/2/path/to/model2.stl',
+            ]);
+
+        });
+
+    });
+
 });
 
 describe('Clone', () => {
@@ -196,6 +285,22 @@ describe('Clone', () => {
         loader.parseCollision = true;
 
         const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+
+        compareRobots(robot, robot.clone());
+
+    });
+
+    it('should clone the robot exactly even when node names have been changed', async() => {
+
+        const loader = new URDFLoader();
+        loader.packages = 'https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/';
+        loader.loadMeshCb = emptyLoadMeshCallback;
+        loader.parseVisual = true;
+        loader.parseCollision = true;
+
+        const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
+
+        robot.name = 'test 1';
 
         compareRobots(robot, robot.clone());
 

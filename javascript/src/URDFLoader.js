@@ -181,6 +181,10 @@ class URDFLoader {
 
                 }
 
+            } else if (packages instanceof Function) {
+
+                return packages(targetPkg) + '/' + relPath;
+
             } else if (typeof packages === 'object') {
 
                 // "pkg" is a map of packages
@@ -317,6 +321,7 @@ class URDFLoader {
 
             obj.urdfNode = joint;
             obj.name = joint.getAttribute('name');
+            obj.urdfName = obj.name;
             obj.jointType = jointType;
 
             let parent = null;
@@ -381,6 +386,7 @@ class URDFLoader {
 
             const children = [ ...link.children ];
             target.name = link.getAttribute('name');
+            target.urdfName = target.name;
             target.urdfNode = link;
 
             if (parseVisual) {
@@ -395,6 +401,7 @@ class URDFLoader {
 
                         const name = vn.getAttribute('name');
                         v.name = name;
+                        v.urdfName = name;
                         visualMap[name] = v;
 
                     }
@@ -415,6 +422,7 @@ class URDFLoader {
 
                         const name = cn.getAttribute('name');
                         c.name = name;
+                        c.urdfName = name;
                         colliderMap[name] = c;
 
                     }
