@@ -278,38 +278,41 @@ class URDFLoader {
 
             // Link up mimic joints
             jointList.forEach(j => {
+
                 if (j.mimicJoint) {
-                    
+
                     if (jointMap.hasOwnProperty(j.mimicJoint)) {
 
                         jointMap[j.mimicJoint].mimicJoints.push(j);
 
                     }
+
                 }
+
             });
 
             // Detect infinite loops of mimic joints
             jointList.forEach(j => {
 
-                let unique_joints = new Set();
-                let iter_function = joint => {
+                const uniqueJoints = new Set();
+                const iterFunction = joint => {
 
-                    if (unique_joints.has(joint)) {
+                    if (uniqueJoints.has(joint)) {
 
-                        throw new Error("Detected an infinite loop of mimic joints");
+                        throw new Error('Detected an infinite loop of mimic joints');
 
                     }
 
-                    unique_joints.add(joint);
+                    uniqueJoints.add(joint);
                     joint.mimicJoints.forEach(j => {
 
-                        iter_function(j);
+                        iterFunction(j);
 
                     });
 
                 };
 
-                iter_function(j);
+                iterFunction(j);
             });
 
             obj.frames = {
@@ -331,13 +334,13 @@ class URDFLoader {
 
             let obj;
 
-            const mimic_tag = children.find(n => n.nodeName.toLowerCase() === "mimic");
-            if (mimic_tag) {
+            const mimicTag = children.find(n => n.nodeName.toLowerCase() === 'mimic');
+            if (mimicTag) {
 
                 obj = new URDFMimicJoint();
-                obj.mimicJoint = mimic_tag.getAttribute('joint');
-                obj.multiplier = parseFloat(mimic_tag.getAttribute('multiplier') || 1.0);
-                obj.offset = parseFloat(mimic_tag.getAttribute('offset') || 0.0);
+                obj.mimicJoint = mimicTag.getAttribute('joint');
+                obj.multiplier = parseFloat(mimicTag.getAttribute('multiplier') || 1.0);
+                obj.offset = parseFloat(mimicTag.getAttribute('offset') || 0.0);
 
             } else {
 

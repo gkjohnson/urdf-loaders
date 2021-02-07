@@ -166,7 +166,7 @@ describe('URDFJoint', () => {
         });
 
         it('should return true when all joints are updated.', () => {
-            
+
             joint.setJointValue(0);
             mimicker.setJointValue(0);
             expect(joint.setJointValue(10)).toBeTruthy();
@@ -174,7 +174,7 @@ describe('URDFJoint', () => {
         });
 
         it('should return false when no joints are updated.', () => {
-            
+
             joint.setJointValue(10);
             mimicker.setJointValue(25);
             expect(joint.setJointValue(10)).toBeFalsy();
@@ -182,7 +182,7 @@ describe('URDFJoint', () => {
         });
 
         it('should return true when only the master joint is updated.', () => {
-            
+
             joint.setJointValue(238429348);
             mimicker.setJointValue(25);
             expect(joint.setJointValue(10)).toBeTruthy();
@@ -194,6 +194,7 @@ describe('URDFJoint', () => {
             joint.setJointValue(10);
             mimicker.setJointValue(238429348);
             expect(joint.setJointValue(10)).toBeTruthy();
+
         });
 
     });

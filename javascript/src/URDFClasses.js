@@ -155,13 +155,12 @@ class URDFJoint extends URDFBase {
         }
 
         let didUpdate = false;
-        
+
         this.mimicJoints.forEach(joint => {
 
             didUpdate |= joint.updateFromMimickedJoint(...values);
 
         });
-
 
         switch (this.jointType) {
 
@@ -254,10 +253,11 @@ class URDFMimicJoint extends URDFJoint {
     }
 
     updateFromMimickedJoint(...values) {
-        const modified_values = values.map(x => x * this.multiplier + this.offset);
-        return this.setJointValue(...modified_values);
+        const modifiedValues = values.map(x => x * this.multiplier + this.offset);
+        return this.setJointValue(...modifiedValues);
 
     }
+
 }
 
 class URDFRobot extends URDFLink {
@@ -342,7 +342,7 @@ class URDFRobot extends URDFLink {
         if (joint) {
 
             return joint.setJointValue(...angle);
-            
+
         }
 
         return false;
