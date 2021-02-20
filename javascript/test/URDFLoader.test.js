@@ -50,6 +50,7 @@ function compareRobots(ra, rb) {
             break;
 
         case 'URDFJoint':
+        case 'URDFMimicJoint':
             expect(ra.jointType).toEqual(rb.jointType);
             expect(ra.axis).toEqual(rb.axis);
             expect(ra.limit).toEqual(rb.limit);
@@ -57,8 +58,18 @@ function compareRobots(ra, rb) {
             expect(ra.jointValue).toEqual(rb.jointValue);
             expect(ra.origPosition).toEqual(rb.origPosition);
             expect(ra.origQuaternion).toEqual(rb.origQuaternion);
-            break;
 
+            // Just compare the names of the mimic joint list
+            expect(ra.mimicJoints.map(x => x.urdfName)).toEqual(rb.mimicJoints.map(x => x.urdfName));
+
+            if (ra.type == 'URDFMimicJoint')
+            {
+                expect(ra.mimicJoint).toEqual(rb.mimicJoint);
+                expect(ra.offset).toEqual(rb.offset);
+                expect(ra.multiplier).toEqual(rb.multiplier);
+            }
+
+            break;
     }
 
     for (let i = 0; i < ra.children.length; i++) {
@@ -305,6 +316,35 @@ describe('Clone', () => {
         compareRobots(robot, robot.clone());
 
     });
+
+    it('should clone a robot with mimic joints exactly.', async() => {
+
+        const loader = new URDFLoader();
+        const robot = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <joint name="A" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <link name="LINK2"/>
+                <joint name="B" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                    <mimic joint="A" offset="-5" multiplier="23"/>
+                </joint>
+                <link name="LINK3"/>
+            </robot>
+        `);
+
+        compareRobots(robot, robot.clone());
+
+    });
+
 
 });
 

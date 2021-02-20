@@ -158,7 +158,7 @@ describe('URDFJoint', () => {
 
         joint.mimicJoints = [mimicker];
 
-        it('should propagage to mimic joints.', () => {
+        it('should propagate to mimic joints.', () => {
 
             joint.setJointValue(10);
             expect(mimicker.jointValue).toEqual([25]);

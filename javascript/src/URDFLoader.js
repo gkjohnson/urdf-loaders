@@ -151,7 +151,6 @@ class URDFLoader {
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};
-        const jointList = [];
         const materialMap = {};
 
         // Resolves the path of mesh files
@@ -266,9 +265,6 @@ class URDFLoader {
                 const processedJoint = processJoint(j);
                 jointMap[name] = processedJoint;
 
-                // Maintain a list of joints, just to make it easier to iterate through for processing the mimic joints
-                jointList.push(processedJoint);
-
             });
 
             obj.joints = jointMap;
@@ -277,15 +273,12 @@ class URDFLoader {
             obj.visual = visualMap;
 
             // Link up mimic joints
+            const jointList = Object.values(jointMap);
             jointList.forEach(j => {
 
-                if (j.mimicJoint) {
+                if (j instanceof URDFMimicJoint) {
 
-                    if (jointMap.hasOwnProperty(j.mimicJoint)) {
-
-                        jointMap[j.mimicJoint].mimicJoints.push(j);
-
-                    }
+                    jointMap[j.mimicJoint].mimicJoints.push(j);
 
                 }
 
@@ -299,7 +292,7 @@ class URDFLoader {
 
                     if (uniqueJoints.has(joint)) {
 
-                        throw new Error('Detected an infinite loop of mimic joints');
+                        throw new Error('URDFLoader: Detected an infinite loop of mimic joints.');
 
                     }
 

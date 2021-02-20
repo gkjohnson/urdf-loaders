@@ -138,6 +138,8 @@ class URDFJoint extends URDFBase {
         this.origPosition = source.origPosition ? source.origPosition.clone() : null;
         this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
 
+        this.mimicJoints = source.mimicJoints;
+
         return this;
 
     }
@@ -158,7 +160,7 @@ class URDFJoint extends URDFBase {
 
         this.mimicJoints.forEach(joint => {
 
-            didUpdate |= joint.updateFromMimickedJoint(...values);
+            didUpdate = didUpdate || joint.updateFromMimickedJoint(...values);
 
         });
 
@@ -247,14 +249,39 @@ class URDFJoint extends URDFBase {
 class URDFMimicJoint extends URDFJoint {
 
     constructor(...args) {
+
         super(...args);
+        this.type = 'URDFMimicJoint';
+        this.mimicJoint = null;
         this.offset = 0;
         this.multiplier = 1;
+
     }
 
     updateFromMimickedJoint(...values) {
+
         const modifiedValues = values.map(x => x * this.multiplier + this.offset);
-        return this.setJointValue(...modifiedValues);
+        return super.setJointValue(...modifiedValues);
+
+    }
+
+    /* Overrides */
+    setJointValue(...values) {
+
+        console.warn(`URDFMimicJoint: Setting the joint value of mimic joint "${ this.urdfName }" will cause it to be out of sync.`);
+        return super.setJointValue(...values);
+    }
+
+    /* Overrides */
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+
+        this.mimicJoint = source.mimicJoint;
+        this.offset = source.offset;
+        this.multiplier = source.multiplier;
+
+        return this;
 
     }
 
