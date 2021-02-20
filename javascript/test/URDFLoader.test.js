@@ -62,14 +62,16 @@ function compareRobots(ra, rb) {
             // Just compare the names of the mimic joint list
             expect(ra.mimicJoints.map(x => x.urdfName)).toEqual(rb.mimicJoints.map(x => x.urdfName));
 
-            if (ra.type == 'URDFMimicJoint')
-            {
+            if (ra.type === 'URDFMimicJoint') {
+
                 expect(ra.mimicJoint).toEqual(rb.mimicJoint);
                 expect(ra.offset).toEqual(rb.offset);
                 expect(ra.multiplier).toEqual(rb.multiplier);
+
             }
 
             break;
+
     }
 
     for (let i = 0; i < ra.children.length; i++) {
@@ -344,7 +346,6 @@ describe('Clone', () => {
         compareRobots(robot, robot.clone());
 
     });
-
 
 });
 
