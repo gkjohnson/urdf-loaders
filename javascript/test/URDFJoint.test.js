@@ -144,55 +144,75 @@ describe('URDFJoint', () => {
 
     });
 
-    describe('setJointValue', () => {
+    describe('setJointValue with mimic joints', () => {
 
         const joint = new URDFJoint();
         joint.axis = new Vector3(0, 0, 1);
         joint.jointType = 'continuous';
 
-        const mimicker = new URDFMimicJoint();
-        mimicker.axis = new Vector3(0, 0, 1);
-        mimicker.jointType = 'continuous';
-        mimicker.multiplier = 2;
-        mimicker.offset = 5;
+        const mimickerA = new URDFMimicJoint();
+        mimickerA.axis = new Vector3(0, 0, 1);
+        mimickerA.jointType = 'continuous';
+        mimickerA.multiplier = 2;
+        mimickerA.offset = 5;
 
-        joint.mimicJoints = [mimicker];
+        const mimickerB = new URDFMimicJoint();
+        mimickerB.axis = new Vector3(0, 0, 1);
+        mimickerB.jointType = 'continuous';
+        mimickerB.multiplier = -4;
+        mimickerB.offset = -16;
+
+        joint.mimicJoints = [mimickerA, mimickerB];
 
         it('should propagate to mimic joints.', () => {
 
             joint.setJointValue(10);
-            expect(mimicker.jointValue).toEqual([25]);
+            expect(mimickerA.jointValue).toEqual([25]);
+            expect(mimickerB.jointValue).toEqual([-56]);
 
         });
 
         it('should return true when all joints are updated.', () => {
 
-            joint.setJointValue(0);
-            mimicker.setJointValue(0);
+            joint.jointValue = [0];
+            mimickerA.jointValue = [0];
+            mimickerB.jointValue = [0];
             expect(joint.setJointValue(10)).toBeTruthy();
 
         });
 
         it('should return false when no joints are updated.', () => {
 
-            joint.setJointValue(10);
-            mimicker.setJointValue(25);
+            joint.jointValue = [10];
+            mimickerA.jointValue = [25];
+            mimickerB.jointValue = [-56];
             expect(joint.setJointValue(10)).toBeFalsy();
 
         });
 
         it('should return true when only the master joint is updated.', () => {
 
-            joint.setJointValue(238429348);
-            mimicker.setJointValue(25);
+            joint.jointValue = [0];
+            mimickerA.jointValue = [25];
+            mimickerB.jointValue = [-56];
             expect(joint.setJointValue(10)).toBeTruthy();
 
         });
 
-        it('should return true when only the mimic joint is updated.', () => {
+        it('should return true when one mimic joint is updated.', () => {
 
-            joint.setJointValue(10);
-            mimicker.setJointValue(238429348);
+            joint.jointValue = [10];
+            mimickerA.jointValue = [0];
+            mimickerB.jointValue = [-56];
+            expect(joint.setJointValue(10)).toBeTruthy();
+
+        });
+
+        it('should return true when all mimic joints are updated.', () => {
+
+            joint.jointValue = [10];
+            mimickerA.jointValue = [0];
+            mimickerB.jointValue = [0];
             expect(joint.setJointValue(10)).toBeTruthy();
 
         });
