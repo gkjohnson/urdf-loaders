@@ -160,7 +160,7 @@ class URDFJoint extends URDFBase {
 
         this.mimicJoints.forEach(joint => {
 
-            didUpdate = didUpdate || joint.updateFromMimickedJoint(...values);
+            didUpdate = joint.updateFromMimickedJoint(...values) || didUpdate;
 
         });
 
