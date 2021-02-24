@@ -138,7 +138,7 @@ class URDFJoint extends URDFBase {
         this.origPosition = source.origPosition ? source.origPosition.clone() : null;
         this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
 
-        this.mimicJoints = source.mimicJoints;
+        this.mimicJoints = [...source.mimicJoints];
 
         return this;
 

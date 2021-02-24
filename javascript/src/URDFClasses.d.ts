@@ -44,8 +44,6 @@ export class URDFMimicJoint extends URDFJoint {
     offset: Number;
     multiplier: Number;
 
-    updateFromMimickedJoint(value0: Number, value1?: Number, value2?: Number): void;
-
 }
 
 export class URDFRobot extends URDFLink {

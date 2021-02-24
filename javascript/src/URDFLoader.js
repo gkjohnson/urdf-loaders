@@ -262,8 +262,7 @@ class URDFLoader {
             joints.forEach(j => {
 
                 const name = j.getAttribute('name');
-                const processedJoint = processJoint(j);
-                jointMap[name] = processedJoint;
+                jointMap[name] = processJoint(j);
 
             });
 
