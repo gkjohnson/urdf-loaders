@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Support for "mimic" joints.
 
+### Fixed
+- Incorrect mouseover and mouseout event firing with the manipulation element.
+
 ## [0.9.3] - 2021-01-19
 ### Fixed
 - Unnecessary creation of a new quaternion when setting a joint angle.
