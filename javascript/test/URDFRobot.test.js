@@ -116,4 +116,37 @@ describe('URDFRobot', () => {
             'LINK1', 'LINK2', 'JOINT',
         ]);
     });
+
+    it('should clone mimic data.', () => {
+        const loader = new URDFLoader();
+        const res = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <joint name="A" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <link name="LINK2"/>
+                <joint name="B" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                    <mimic joint="A" offset="-5" multiplier="23"/>
+                </joint>
+                <link name="LINK3"/>
+            </robot>
+        `).clone();
+
+        const jointB = res.joints['B'];
+        expect(jointB.mimicJoint).toEqual('A');
+        expect(jointB.multiplier).toEqual(23);
+        expect(jointB.offset).toEqual(-5);
+
+        const jointA = res.joints['A'];
+        expect(jointA.mimicJoints.length).toEqual(1);
+        expect(jointA.mimicJoints[0].name).toEqual('B');
+    });
 });

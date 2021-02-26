@@ -50,6 +50,7 @@ function compareRobots(ra, rb) {
             break;
 
         case 'URDFJoint':
+        case 'URDFMimicJoint':
             expect(ra.jointType).toEqual(rb.jointType);
             expect(ra.axis).toEqual(rb.axis);
             expect(ra.limit).toEqual(rb.limit);
@@ -57,6 +58,18 @@ function compareRobots(ra, rb) {
             expect(ra.jointValue).toEqual(rb.jointValue);
             expect(ra.origPosition).toEqual(rb.origPosition);
             expect(ra.origQuaternion).toEqual(rb.origQuaternion);
+
+            // Just compare the names of the mimic joint list
+            expect(ra.mimicJoints.map(x => x.urdfName)).toEqual(rb.mimicJoints.map(x => x.urdfName));
+
+            if (ra.type === 'URDFMimicJoint') {
+
+                expect(ra.mimicJoint).toEqual(rb.mimicJoint);
+                expect(ra.offset).toEqual(rb.offset);
+                expect(ra.multiplier).toEqual(rb.multiplier);
+
+            }
+
             break;
 
     }
@@ -193,7 +206,7 @@ describe('Options', () => {
 
     });
 
-    describe.only('packages', () => {
+    describe('packages', () => {
 
         const urdf = `
             <robot>
@@ -301,6 +314,34 @@ describe('Clone', () => {
         const robot = await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2b.urdf');
 
         robot.name = 'test 1';
+
+        compareRobots(robot, robot.clone());
+
+    });
+
+    it('should clone a robot with mimic joints exactly.', async() => {
+
+        const loader = new URDFLoader();
+        const robot = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <joint name="A" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <link name="LINK2"/>
+                <joint name="B" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                    <mimic joint="A" offset="-5" multiplier="23"/>
+                </joint>
+                <link name="LINK3"/>
+            </robot>
+        `);
 
         compareRobots(robot, robot.clone());
 
@@ -474,6 +515,102 @@ describe('TriATHLETE Climbing URDF', () => {
 
         expect(Object.keys(robot.links)).toHaveLength(30);
         expect(Object.keys(robot.joints)).toHaveLength(29);
+
+    });
+
+});
+
+describe('Parsing Mimic Tags', () => {
+
+    it('should parse and link the mimicked joints.', () => {
+
+        const loader = new URDFLoader();
+        const res = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <joint name="A" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <link name="LINK2"/>
+                <joint name="B" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                    <mimic joint="A" offset="-5" multiplier="23"/>
+                </joint>
+                <link name="LINK3"/>
+            </robot>
+        `);
+
+        const jointA = res.joints['A'];
+        const jointB = res.joints['B'];
+
+        expect(jointA.mimicJoints).toEqual([jointB]);
+        expect(jointB.multiplier).toEqual(23);
+        expect(jointB.offset).toEqual(-5);
+
+    });
+
+    it('should use defaults for multiplier and offset attributes.', () => {
+
+        const loader = new URDFLoader();
+        const res = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <joint name="A" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <link name="LINK2"/>
+                <joint name="B" type="continuous">
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <axis xyz="1 0 0"/>
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                    <mimic joint="A"/>
+                </joint>
+                <link name="LINK3"/>
+            </robot>
+        `);
+
+        const jointB = res.joints['B'];
+        expect(jointB.multiplier).toEqual(1);
+        expect(jointB.offset).toEqual(0);
+
+    });
+
+    it('should detect infinite loops.', () => {
+
+        const loader = new URDFLoader();
+        expect(() => {
+            loader.parse(`
+                <robot name="TEST">
+                    <link name="LINK1"/>
+                    <joint name="A" type="continuous">
+                        <origin xyz="0 0 0" rpy="0 0 0"/>
+                        <axis xyz="1 0 0"/>
+                        <parent link="LINK1"/>
+                        <child link="LINK2"/>
+                        <mimic joint="B" offset="-5" multiplier="23"/>
+                    </joint>
+                    <link name="LINK2"/>
+                    <joint name="B" type="continuous">
+                        <origin xyz="0 0 0" rpy="0 0 0"/>
+                        <axis xyz="1 0 0"/>
+                        <parent link="LINK2"/>
+                        <child link="LINK3"/>
+                        <mimic joint="A" offset="-5" multiplier="23"/>
+                    </joint>
+                    <link name="LINK3"/>
+                </robot>
+            `);
+        }).toThrow();
 
     });
 

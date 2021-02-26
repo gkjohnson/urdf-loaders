@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual } from './URDFClasses.js';
+import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual, URDFMimicJoint } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -271,6 +271,42 @@ class URDFLoader {
             obj.colliders = colliderMap;
             obj.visual = visualMap;
 
+            // Link up mimic joints
+            const jointList = Object.values(jointMap);
+            jointList.forEach(j => {
+
+                if (j instanceof URDFMimicJoint) {
+
+                    jointMap[j.mimicJoint].mimicJoints.push(j);
+
+                }
+
+            });
+
+            // Detect infinite loops of mimic joints
+            jointList.forEach(j => {
+
+                const uniqueJoints = new Set();
+                const iterFunction = joint => {
+
+                    if (uniqueJoints.has(joint)) {
+
+                        throw new Error('URDFLoader: Detected an infinite loop of mimic joints.');
+
+                    }
+
+                    uniqueJoints.add(joint);
+                    joint.mimicJoints.forEach(j => {
+
+                        iterFunction(j);
+
+                    });
+
+                };
+
+                iterFunction(j);
+            });
+
             obj.frames = {
                 ...colliderMap,
                 ...visualMap,
@@ -287,7 +323,23 @@ class URDFLoader {
 
             const children = [ ...joint.children ];
             const jointType = joint.getAttribute('type');
-            const obj = new URDFJoint();
+
+            let obj;
+
+            const mimicTag = children.find(n => n.nodeName.toLowerCase() === 'mimic');
+            if (mimicTag) {
+
+                obj = new URDFMimicJoint();
+                obj.mimicJoint = mimicTag.getAttribute('joint');
+                obj.multiplier = parseFloat(mimicTag.getAttribute('multiplier') || 1.0);
+                obj.offset = parseFloat(mimicTag.getAttribute('offset') || 0.0);
+
+            } else {
+
+                obj = new URDFJoint();
+
+            }
+
             obj.urdfNode = joint;
             obj.name = joint.getAttribute('name');
             obj.urdfName = obj.name;
@@ -321,7 +373,6 @@ class URDFLoader {
                     obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
 
                 }
-
             });
 
             // Join the links

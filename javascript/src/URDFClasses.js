@@ -118,6 +118,8 @@ class URDFJoint extends URDFBase {
         this.origPosition = null;
         this.origQuaternion = null;
 
+        this.mimicJoints = [];
+
     }
 
     /* Overrides */
@@ -136,6 +138,8 @@ class URDFJoint extends URDFBase {
         this.origPosition = source.origPosition ? source.origPosition.clone() : null;
         this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
 
+        this.mimicJoints = [...source.mimicJoints];
+
         return this;
 
     }
@@ -152,19 +156,27 @@ class URDFJoint extends URDFBase {
 
         }
 
+        let didUpdate = false;
+
+        this.mimicJoints.forEach(joint => {
+
+            didUpdate = joint.updateFromMimickedJoint(...values) || didUpdate;
+
+        });
+
         switch (this.jointType) {
 
             case 'fixed': {
 
-                return false;
+                return didUpdate;
 
             }
             case 'continuous':
             case 'revolute': {
 
                 let angle = values[0];
-                if (angle == null) return false;
-                if (angle === this.jointValue[0]) return false;
+                if (angle == null) return didUpdate;
+                if (angle === this.jointValue[0]) return didUpdate;
 
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -185,7 +197,7 @@ class URDFJoint extends URDFBase {
 
                 } else {
 
-                    return false;
+                    return didUpdate;
 
                 }
 
@@ -194,8 +206,8 @@ class URDFJoint extends URDFBase {
             case 'prismatic': {
 
                 let pos = values[0];
-                if (pos == null) return false;
-                if (pos === this.jointValue[0]) return false;
+                if (pos == null) return didUpdate;
+                if (pos === this.jointValue[0]) return didUpdate;
 
                 if (!this.ignoreLimits) {
 
@@ -215,7 +227,7 @@ class URDFJoint extends URDFBase {
 
                 } else {
 
-                    return false;
+                    return didUpdate;
 
                 }
 
@@ -228,7 +240,48 @@ class URDFJoint extends URDFBase {
 
         }
 
-        return false;
+        return didUpdate;
+
+    }
+
+}
+
+class URDFMimicJoint extends URDFJoint {
+
+    constructor(...args) {
+
+        super(...args);
+        this.type = 'URDFMimicJoint';
+        this.mimicJoint = null;
+        this.offset = 0;
+        this.multiplier = 1;
+
+    }
+
+    updateFromMimickedJoint(...values) {
+
+        const modifiedValues = values.map(x => x * this.multiplier + this.offset);
+        return super.setJointValue(...modifiedValues);
+
+    }
+
+    /* Overrides */
+    setJointValue(...values) {
+
+        console.warn(`URDFMimicJoint: Setting the joint value of mimic joint "${ this.urdfName }" will cause it to be out of sync.`);
+        return super.setJointValue(...values);
+    }
+
+    /* Overrides */
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+
+        this.mimicJoint = source.mimicJoint;
+        this.offset = source.offset;
+        this.multiplier = source.multiplier;
+
+        return this;
 
     }
 
@@ -346,4 +399,4 @@ class URDFRobot extends URDFLink {
 
 }
 
-export { URDFRobot, URDFLink, URDFJoint, URDFVisual, URDFCollider };
+export { URDFRobot, URDFLink, URDFJoint, URDFMimicJoint, URDFVisual, URDFCollider };

@@ -291,6 +291,14 @@ ignoreLimits : boolean
 
 Whether or not to ignore the joint limits when setting a the joint position.
 
+### .mimicJoints
+
+```js
+mimicJoints : URDFMimicJoints[]
+```
+
+A list of joints which mimic this joint. These joints are updated whenever this joint is.
+
 ### .setJointValue
 
 ```js
@@ -299,7 +307,37 @@ setJointValue( jointValue : number ) : Boolean
 
 Sets the joint value for the given joint. The interpretation of the value depends on the joint type. If the joint value specifies an angle it must be in radians.
 
-Returns true if the joint changed.
+Returns true if the joint or any of its mimicking joints changed.
+
+## URDFMimicJoint
+
+_extends URDFJoint_
+
+An object representing a robot joint which mimics another existing joint. The value of this joint can be computed as `value = multiplier * other_joint_value + offset`.
+
+### .mimicJoint
+
+```js
+mimicJoint : String
+```
+
+The name of the joint which this joint mimics.
+
+### .offset
+
+```js
+offset : Number
+```
+
+Specifies the offset to add in the formula above. Defaults to 0 (radians for revolute joints, meters for prismatic joints).
+
+### .multiplier
+
+```js
+multiplier : Number
+```
+
+Specifies the multiplicative factor in the formula above. Defaults to 1.0.
 
 ## URDFLink
 
