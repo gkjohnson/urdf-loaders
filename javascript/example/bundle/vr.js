@@ -58982,6 +58982,8 @@
 	        this.origPosition = null;
 	        this.origQuaternion = null;
 
+	        this.mimicJoints = [];
+
 	    }
 
 	    /* Overrides */
@@ -59000,6 +59002,8 @@
 	        this.origPosition = source.origPosition ? source.origPosition.clone() : null;
 	        this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
 
+	        this.mimicJoints = [...source.mimicJoints];
+
 	        return this;
 
 	    }
@@ -59016,19 +59020,27 @@
 
 	        }
 
+	        let didUpdate = false;
+
+	        this.mimicJoints.forEach(joint => {
+
+	            didUpdate = joint.updateFromMimickedJoint(...values) || didUpdate;
+
+	        });
+
 	        switch (this.jointType) {
 
 	            case 'fixed': {
 
-	                return false;
+	                return didUpdate;
 
 	            }
 	            case 'continuous':
 	            case 'revolute': {
 
 	                let angle = values[0];
-	                if (angle == null) return false;
-	                if (angle === this.jointValue[0]) return false;
+	                if (angle == null) return didUpdate;
+	                if (angle === this.jointValue[0]) return didUpdate;
 
 	                if (!this.ignoreLimits && this.jointType === 'revolute') {
 
@@ -59049,7 +59061,7 @@
 
 	                } else {
 
-	                    return false;
+	                    return didUpdate;
 
 	                }
 
@@ -59058,8 +59070,8 @@
 	            case 'prismatic': {
 
 	                let pos = values[0];
-	                if (pos == null) return false;
-	                if (pos === this.jointValue[0]) return false;
+	                if (pos == null) return didUpdate;
+	                if (pos === this.jointValue[0]) return didUpdate;
 
 	                if (!this.ignoreLimits) {
 
@@ -59079,7 +59091,7 @@
 
 	                } else {
 
-	                    return false;
+	                    return didUpdate;
 
 	                }
 
@@ -59092,7 +59104,48 @@
 
 	        }
 
-	        return false;
+	        return didUpdate;
+
+	    }
+
+	}
+
+	class URDFMimicJoint extends URDFJoint {
+
+	    constructor(...args) {
+
+	        super(...args);
+	        this.type = 'URDFMimicJoint';
+	        this.mimicJoint = null;
+	        this.offset = 0;
+	        this.multiplier = 1;
+
+	    }
+
+	    updateFromMimickedJoint(...values) {
+
+	        const modifiedValues = values.map(x => x * this.multiplier + this.offset);
+	        return super.setJointValue(...modifiedValues);
+
+	    }
+
+	    /* Overrides */
+	    setJointValue(...values) {
+
+	        console.warn(`URDFMimicJoint: Setting the joint value of mimic joint "${ this.urdfName }" will cause it to be out of sync.`);
+	        return super.setJointValue(...values);
+	    }
+
+	    /* Overrides */
+	    copy(source, recursive) {
+
+	        super.copy(source, recursive);
+
+	        this.mimicJoint = source.mimicJoint;
+	        this.offset = source.offset;
+	        this.multiplier = source.multiplier;
+
+	        return this;
 
 	    }
 
@@ -59477,6 +59530,42 @@
 	            obj.colliders = colliderMap;
 	            obj.visual = visualMap;
 
+	            // Link up mimic joints
+	            const jointList = Object.values(jointMap);
+	            jointList.forEach(j => {
+
+	                if (j instanceof URDFMimicJoint) {
+
+	                    jointMap[j.mimicJoint].mimicJoints.push(j);
+
+	                }
+
+	            });
+
+	            // Detect infinite loops of mimic joints
+	            jointList.forEach(j => {
+
+	                const uniqueJoints = new Set();
+	                const iterFunction = joint => {
+
+	                    if (uniqueJoints.has(joint)) {
+
+	                        throw new Error('URDFLoader: Detected an infinite loop of mimic joints.');
+
+	                    }
+
+	                    uniqueJoints.add(joint);
+	                    joint.mimicJoints.forEach(j => {
+
+	                        iterFunction(j);
+
+	                    });
+
+	                };
+
+	                iterFunction(j);
+	            });
+
 	            obj.frames = {
 	                ...colliderMap,
 	                ...visualMap,
@@ -59493,7 +59582,23 @@
 
 	            const children = [ ...joint.children ];
 	            const jointType = joint.getAttribute('type');
-	            const obj = new URDFJoint();
+
+	            let obj;
+
+	            const mimicTag = children.find(n => n.nodeName.toLowerCase() === 'mimic');
+	            if (mimicTag) {
+
+	                obj = new URDFMimicJoint();
+	                obj.mimicJoint = mimicTag.getAttribute('joint');
+	                obj.multiplier = parseFloat(mimicTag.getAttribute('multiplier') || 1.0);
+	                obj.offset = parseFloat(mimicTag.getAttribute('offset') || 0.0);
+
+	            } else {
+
+	                obj = new URDFJoint();
+
+	            }
+
 	            obj.urdfNode = joint;
 	            obj.name = joint.getAttribute('name');
 	            obj.urdfName = obj.name;
@@ -59527,7 +59632,6 @@
 	                    obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
 
 	                }
-
 	            });
 
 	            // Join the links
