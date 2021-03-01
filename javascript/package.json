@@ -55,7 +55,7 @@
     "nyc": "^13.3.0",
     "rollup": "^2.29.0",
     "static-server": "^3.0.0",
-    "three": "^0.119.0",
+    "three": "^0.125.0",
     "typescript": "^3.9.7"
   },
   "dependencies": {}
