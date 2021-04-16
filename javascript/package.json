@@ -2,8 +2,8 @@
   "name": "urdf-loader",
   "version": "0.9.5",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
-  "main": "umd/URDFLoader.js",
-  "module": "src/URDFLoader.js",
+  "main": "src/URDFLoader.js",
+  "type": "module",
   "scripts": {
     "start": "concurrently --kill-others \"rollup -c -w\" \"cd .. && static-server\"",
     "build": "rollup -c",
