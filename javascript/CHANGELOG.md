@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Added `"type": "module"` to the package.json and made the main entry file point to the es6 module.
 - Export URDF Class types as `interafaces` rather than `classes`.
-
+- Changed URDF Class type definitions to be exported as `interface` rather than `class`.
+ 
 ## [0.9.5] - 2021-01-26
 ### Added
 - Support for "mimic" joints.
