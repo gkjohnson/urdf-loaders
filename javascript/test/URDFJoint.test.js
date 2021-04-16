@@ -5,8 +5,14 @@ describe('URDFJoint', () => {
 
     it('should have default value for joint axis', () => {
 
-        const joint = new URDFJoint();
-        expect(joint.axis.equals(new Vector3(1, 0, 0))).toBeTruthy();
+        const joint1 = new URDFJoint();
+        expect(joint1.axis.equals(new Vector3(1, 0, 0))).toBeTruthy();
+
+        joint1.axis.x = 2;
+        const joint2 = new URDFJoint().copy(joint1);
+        joint1.axis.x = 3;
+        expect(joint1.axis.equals(new Vector3(3, 0, 0))).toBeTruthy();
+        expect(joint2.axis.equals(new Vector3(2, 0, 0))).toBeTruthy();
 
     });
 

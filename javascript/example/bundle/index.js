@@ -60413,7 +60413,7 @@
 	        super.copy(source, recursive);
 
 	        this.jointType = source.jointType;
-	        this.axis = source.axis ? source.axis.clone() : new Vector3(1, 0, 0);
+	        this.axis = source.axis.clone();
 	        this.limit.lower = source.limit.lower;
 	        this.limit.upper = source.limit.upper;
 	        this.ignoreLimits = false;
