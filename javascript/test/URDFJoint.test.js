@@ -3,6 +3,13 @@ import { URDFJoint, URDFMimicJoint } from '../src/URDFClasses.js';
 
 describe('URDFJoint', () => {
 
+    it('should have default value for joint axis', () => {
+
+        const joint = new URDFJoint();
+        expect(joint.axis.equals(new Vector3(1, 0, 0))).toBeTruthy();
+
+    });
+
     it('should set the jointValues array based on the joint type.', () => {
 
         const joint = new URDFJoint();

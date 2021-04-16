@@ -1,4 +1,4 @@
-import { Object3D } from 'three';
+import { Object3D, Vector3 } from 'three';
 
 class URDFBase extends Object3D {
 
@@ -111,7 +111,7 @@ class URDFJoint extends URDFBase {
 
         this.jointValue = null;
         this.jointType = 'fixed';
-        this.axis = null;
+        this.axis = new Vector3(1, 0, 0);
         this.limit = { lower: 0, upper: 0 };
         this.ignoreLimits = false;
 
@@ -128,7 +128,7 @@ class URDFJoint extends URDFBase {
         super.copy(source, recursive);
 
         this.jointType = source.jointType;
-        this.axis = source.axis ? source.axis.clone() : null;
+        this.axis = source.axis ? source.axis.clone() : new Vector3(1, 0, 0);
         this.limit.lower = source.limit.lower;
         this.limit.upper = source.limit.upper;
         this.ignoreLimits = false;
