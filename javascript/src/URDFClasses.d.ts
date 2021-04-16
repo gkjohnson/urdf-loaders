@@ -1,27 +1,27 @@
 import { Object3D, Vector3 } from 'three';
 
-export class URDFCollider extends Object3D {
+export interface URDFCollider extends Object3D {
 
     isURDFCollider: true;
     urdfNode: Element | null;
 
 }
 
-export class URDFVisual extends Object3D {
+export interface URDFVisual extends Object3D {
 
     isURDFVisual: true;
     urdfNode: Element | null;
 
 }
 
-export class URDFLink extends Object3D {
+export interface URDFLink extends Object3D {
 
     isURDFLink: true;
     urdfNode: Element | null;
 
 }
 
-export class URDFJoint extends Object3D {
+export interface URDFJoint extends Object3D {
 
     isURDFJoint: true;
 
@@ -38,7 +38,7 @@ export class URDFJoint extends Object3D {
 
 }
 
-export class URDFMimicJoint extends URDFJoint {
+export interface URDFMimicJoint extends URDFJoint {
 
     mimicJoint : String;
     offset: Number;
@@ -46,7 +46,7 @@ export class URDFMimicJoint extends URDFJoint {
 
 }
 
-export class URDFRobot extends URDFLink {
+export interface URDFRobot extends URDFLink {
 
     isURDFRobot: true;
 
