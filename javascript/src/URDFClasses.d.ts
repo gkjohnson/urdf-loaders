@@ -26,7 +26,7 @@ export class URDFJoint extends Object3D {
     isURDFJoint: true;
 
     urdfNode: Element | null;
-    axis: Vector3 | null;
+    axis: Vector3;
     jointType: 'fixed' | 'continuous' | 'revolute' | 'planar' | 'prismatic' | 'floating';
     angle: Number;
     jointValue: Number[];
