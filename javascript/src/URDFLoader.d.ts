@@ -32,3 +32,5 @@ export default class URDFLoader {
     parse(content: string | Element | Document): URDFRobot;
 
 }
+
+export * from './URDFClasses';
