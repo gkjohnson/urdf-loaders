@@ -19,7 +19,7 @@ export default class URDFLoader {
     workingPath: string;
     parseVisual: boolean;
     parseCollision: boolean;
-    packages: string | { [key: string]: string };
+    packages: string | { [key: string]: string } | ((targetPkg: string) => string);
     loadMeshCb: MeshLoadFunc;
 
     constructor(manager?: LoadingManager);
