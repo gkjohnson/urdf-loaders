@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.10.2] - 2021-04-22
 ### Fixed
 - Typescript definition for "packages" field to include function.
-- 
+
 ## [0.10.1] - 2021-04-16
 ### Added
 - Reexport URDF Class types from the root file.
