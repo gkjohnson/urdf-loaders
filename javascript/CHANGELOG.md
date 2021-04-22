@@ -4,10 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.10.2] - 2021-04-22
 ### Fixed
-- Typescript defintions for "packages" field.
-
+- Typescript definition for "packages" field to include function.
+- 
 ## [0.10.1] - 2021-04-16
 ### Added
 - Reexport URDF Class types from the root file.
