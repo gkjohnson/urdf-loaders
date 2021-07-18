@@ -30,9 +30,10 @@ export default [
 
                 name,
                 extend: true,
-                format: 'umd',
+                format: 'es',
                 file: outputPath,
                 sourcemap: true,
+                inlineDynamicImports: true,
 
                 globals: path => /^three/.test(path) ? 'THREE' : null,
 
@@ -47,7 +48,8 @@ export default [
         plugins: [resolve()],
         output: {
             file: './example/bundle/index.js',
-            format: 'iife',
+            format: 'es',
+            inlineDynamicImports: true,
             sourcemap: true,
         },
     },
@@ -56,7 +58,8 @@ export default [
         plugins: [resolve()],
         output: {
             file: './example/bundle/vr.js',
-            format: 'iife',
+            format: 'es',
+            inlineDynamicImports: true,
             sourcemap: true,
         },
     },
@@ -65,7 +68,8 @@ export default [
         plugins: [resolve()],
         output: {
             file: './example/bundle/simple.js',
-            format: 'iife',
+            format: 'es',
+            inlineDynamicImports: true,
             sourcemap: true,
         },
     },
