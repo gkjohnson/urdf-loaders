@@ -3,6 +3,17 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
 import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual, URDFMimicJoint } from './URDFClasses.js';
 
+if (typeof window === 'undefined') {
+    const jsdom = new (await import('jsdom')).JSDOM();
+    const window = jsdom.window;
+    global.DOMParser = window.DOMParser;
+    global.XMLSerializer = window.XMLSerializer;
+    global.Document = window.Document;
+    global.Element = window.Element;
+    global.XMLHttpRequest = window.XMLHttpRequest;
+    global.fetch = (await import('node-fetch')).default;
+}
+
 /*
 Reference coordinate frames for THREE.js and ROS.
 Both coordinate systems are right handed so the URDF is instantiated without

@@ -50,13 +50,14 @@
     "eslint-plugin-jest": "^24.1.0",
     "jest": "^25.4.0",
     "jest-cli": "^25.4.0",
-    "jsdom": "^16.4.0",
-    "node-fetch": "^2.6.1",
     "nyc": "^13.3.0",
-    "rollup": "^2.29.0",
+    "rollup": "^2.53.2",
     "static-server": "^3.0.0",
-    "three": "^0.119.0",
+    "three": "^0.130.1",
     "typescript": "^3.9.7"
   },
-  "dependencies": {}
+  "dependencies": {
+    "jsdom": "^16.6.0",
+    "node-fetch": "^2.6.1"
+  }
 }
