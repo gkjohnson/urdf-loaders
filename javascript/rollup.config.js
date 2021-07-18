@@ -1,5 +1,6 @@
 import path from 'path';
 import resolve from '@rollup/plugin-node-resolve';
+import nodePolyfills from 'rollup-plugin-node-polyfills';
 
 const files = {
     URDFLoader: 'URDFLoader.js',
@@ -45,7 +46,7 @@ export default [
     // examples
     {
         input: './example/src/index.js',
-        plugins: [resolve()],
+        plugins: [resolve(), nodePolyfills()],
         output: {
             file: './example/bundle/index.js',
             format: 'es',
@@ -55,7 +56,7 @@ export default [
     },
     {
         input: './example/src/vr.js',
-        plugins: [resolve()],
+        plugins: [resolve(), nodePolyfills()],
         output: {
             file: './example/bundle/vr.js',
             format: 'es',
@@ -65,7 +66,7 @@ export default [
     },
     {
         input: './example/src/simple.js',
-        plugins: [resolve()],
+        plugins: [resolve(), nodePolyfills()],
         output: {
             file: './example/bundle/simple.js',
             format: 'es',

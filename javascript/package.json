@@ -52,6 +52,7 @@
     "jest-cli": "^25.4.0",
     "nyc": "^13.3.0",
     "rollup": "^2.53.2",
+    "rollup-plugin-node-polyfills": "^0.2.1",
     "static-server": "^3.0.0",
     "three": "^0.130.1",
     "typescript": "^3.9.7"
