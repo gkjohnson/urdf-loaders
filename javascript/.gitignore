@@ -36,3 +36,7 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# Build output
+example/bundle/
+umd/
