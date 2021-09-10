@@ -5,6 +5,9 @@ const jsdom = new JSDOM();
 const window = jsdom.window;
 global.DOMParser = window.DOMParser;
 global.XMLSerializer = window.XMLSerializer;
+global.Document = window.Document;
+global.Element = window.Element;
+global.XMLHttpRequest = window.XMLHttpRequest;
 
 describe('URDFRobot', () => {
     it('should correctly set all joint angles when using setJointValues.', () => {

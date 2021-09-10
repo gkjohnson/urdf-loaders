@@ -368,7 +368,7 @@ describe('Load', () => {
             </robot>
         `;
 
-        loader.loadMeshCb = (path, manager, done) => done(null, new Error());
+        loader.loadMeshCb = (path, manager, done) => done(null, new Error('Deliberate Test Error'));
         loader.parse(urdf);
 
     });
