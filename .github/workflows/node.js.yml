@@ -32,5 +32,6 @@ jobs:
         cache-dependency-path: javascript/package-lock.json
     - run: npm install
     - run: npm run lint
+    - run: npm run build
     - run: npm run build-examples
     - run: npm test
