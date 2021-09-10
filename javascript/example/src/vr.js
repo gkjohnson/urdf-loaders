@@ -150,7 +150,7 @@ function init() {
         }
 
     };
-    loader.load('../../urdf/T12/urdf/T12_flipped.URDF', result => {
+    loader.load('../../../urdf/T12/urdf/T12_flipped.URDF', result => {
         robot = result;
     });
 

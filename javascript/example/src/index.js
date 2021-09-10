@@ -217,7 +217,7 @@ document.addEventListener('WebComponentsReady', () => {
                     path,
                     result => done(result.scene),
                     null,
-                    err => done(null, err)
+                    err => done(null, err),
                 );
                 break;
             case 'obj':
@@ -225,7 +225,7 @@ document.addEventListener('WebComponentsReady', () => {
                     path,
                     result => done(result),
                     null,
-                    err => done(null, err)
+                    err => done(null, err),
                 );
                 break;
             case 'dae':
@@ -233,7 +233,7 @@ document.addEventListener('WebComponentsReady', () => {
                     path,
                     result => done(result.scene),
                     null,
-                    err => done(null, err)
+                    err => done(null, err),
                 );
                 break;
             case 'stl':
@@ -245,7 +245,7 @@ document.addEventListener('WebComponentsReady', () => {
                         done(mesh);
                     },
                     null,
-                    err => done(null, err)
+                    err => done(null, err),
                 );
                 break;
 
@@ -255,7 +255,7 @@ document.addEventListener('WebComponentsReady', () => {
 
     document.querySelector('li[urdf]').dispatchEvent(new Event('click'));
 
-    if (/javascript\/example\/build/i.test(window.location)) {
+    if (/javascript\/example\/bundle/i.test(window.location)) {
         viewer.package = '../../../urdf';
     }
 

@@ -60,7 +60,7 @@ function init() {
     // Load robot
     const manager = new LoadingManager();
     const loader = new URDFLoader(manager);
-    loader.load('../../urdf/T12/urdf/T12_flipped.URDF', result => {
+    loader.load('../../../urdf/T12/urdf/T12_flipped.URDF', result => {
 
         robot = result;
 
