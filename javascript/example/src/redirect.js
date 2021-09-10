@@ -6,5 +6,5 @@ const filename = tokens.pop();
 const parentDirectory = tokens[ tokens.length - 1 ];
 if (parentDirectory !== 'bundle') {
     url.pathname = tokens.join('/') + '/';
-    window.location.href = new URL('bundle/' + filename, url.toString());
+    window.location.replace(new URL('bundle/' + filename, url.toString()));
 }
