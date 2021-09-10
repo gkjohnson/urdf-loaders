@@ -12,10 +12,7 @@
   },
   "files": [
     "src/*",
-    "umd/*",
-    "example/index.js",
-    "example/dragAndDrop.js",
-    "example/styles.css"
+    "umd/*"
   ],
   "license": "Apache-2.0",
   "repository": {
