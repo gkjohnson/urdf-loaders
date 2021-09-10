@@ -38,4 +38,4 @@ jspm_packages
 .node_repl_history
 
 # dev builds
-example-dev
+example/dev-bundle

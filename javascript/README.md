@@ -565,7 +565,7 @@ Run `npm install`.
 
 Run `npm start`.
 
-Visit `localhost:9080/javascript/example-dev/` to view the page.
+Visit `localhost:9080/javascript/example/dev-bundle/` to view the page.
 
 # LICENSE
 
