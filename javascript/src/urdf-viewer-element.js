@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from './lib/OrbitControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from './URDFLoader.js';
 
 const tempVec2 = new THREE.Vector2();
