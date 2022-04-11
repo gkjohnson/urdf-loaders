@@ -157,14 +157,26 @@ export function registerDragEvents(viewer, callback) {
                 viewer.up = '+Z';
                 document.getElementById('up-select').value = viewer.up;
 
+                const availableModels = fileNames.filter(n => /urdf$/i.test(n));
+                const urdfOptions = document.querySelector('#urdf-options');
+                while( urdfOptions.firstChild ){
+                    urdfOptions.removeChild( urdfOptions.firstChild );
+                }
+                availableModels.forEach(model => {
+                    const li = document.createElement('li');
+                    li.setAttribute('urdf', model);
+                    li.setAttribute('color', '#263238');
+                    li.textContent = model.split(/[\\\/]/).pop();
+                    urdfOptions.appendChild(li);
+                })
+
                 viewer.urdf =
                     filesNames
                         .filter(n => /urdf$/i.test(n))
                         .shift();
 
-            });
+            }).then(() => callback());
 
-        callback();
     });
 
 }
