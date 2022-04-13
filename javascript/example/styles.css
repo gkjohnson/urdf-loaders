@@ -133,6 +133,12 @@ input:focus {
     margin: 20px;
 }
 
+#urdf-options {
+    max-height: 25vh;
+    text-overflow: ellipsis;
+    overflow: auto;
+}
+
 #urdf-options li {
     cursor: pointer;
     opacity: 0.5;
