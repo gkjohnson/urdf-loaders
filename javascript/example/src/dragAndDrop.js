@@ -159,7 +159,7 @@ export function registerDragEvents(viewer, callback) {
 
                 // filter all files ending in urdf
                 const availableModels = fileNames.filter(n => /urdf$/i.test(n));
-                // remove existing entires from #urdf-options
+                // remove existing entries from #urdf-options
                 const urdfOptionsContainer = document.querySelector('#urdf-options');
                 while (urdfOptionsContainer.firstChild){
                     urdfOptionsContainer.removeChild(urdfOptionsContainer.firstChild);
