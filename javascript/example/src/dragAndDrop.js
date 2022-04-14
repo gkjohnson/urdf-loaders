@@ -157,14 +157,30 @@ export function registerDragEvents(viewer, callback) {
                 viewer.up = '+Z';
                 document.getElementById('up-select').value = viewer.up;
 
+                // filter all files ending in urdf
+                const availableModels = fileNames.filter(n => /urdf$/i.test(n));
+                // remove existing entries from #urdf-options
+                const urdfOptionsContainer = document.querySelector('#urdf-options');
+                while (urdfOptionsContainer.firstChild){
+                    urdfOptionsContainer.removeChild(urdfOptionsContainer.firstChild);
+                }
+                // create new entries in #urdf-options
+                availableModels.forEach(model => {
+                    const li = document.createElement('li');
+                    li.setAttribute('urdf', model);
+                    li.setAttribute('color', '#263238');
+                    // extract filename from full path
+                    li.textContent = model.split(/[\\\/]/).pop();
+                    urdfOptionsContainer.appendChild(li);
+                });
+
                 viewer.urdf =
                     filesNames
                         .filter(n => /urdf$/i.test(n))
                         .shift();
 
-            });
+            }).then(() => callback());
 
-        callback();
     });
 
 }

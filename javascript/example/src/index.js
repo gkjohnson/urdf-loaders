@@ -262,6 +262,7 @@ document.addEventListener('WebComponentsReady', () => {
     registerDragEvents(viewer, () => {
         setColor('#263238');
         animToggle.classList.remove('checked');
+        updateList();
     });
 
 });
@@ -306,22 +307,27 @@ const updateLoop = () => {
 
 };
 
-document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
+const updateList = () => {
+    document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
 
-    el.addEventListener('click', e => {
+        el.addEventListener('click', e => {
+    
+            const urdf = e.target.getAttribute('urdf');
+            const color = e.target.getAttribute('color');
 
-        const urdf = e.target.getAttribute('urdf');
-        const color = e.target.getAttribute('color');
-
-        viewer.up = '-Z';
-        document.getElementById('up-select').value = viewer.up;
-        viewer.urdf = urdf;
-        animToggle.classList.add('checked');
-        setColor(color);
-
+            viewer.up = '-Z';
+            document.getElementById('up-select').value = viewer.up;
+            viewer.urdf = urdf;
+            animToggle.classList.add('checked');
+            setColor(color);
+    
+        });
+    
     });
 
-});
+};
+
+updateList();
 
 document.addEventListener('WebComponentsReady', () => {
 
