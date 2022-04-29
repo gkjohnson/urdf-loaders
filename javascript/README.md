@@ -144,7 +144,7 @@ loadMeshCb = null :
     (
         pathToModel : string,
         manager : LoadingManager,
-        onComplete : ( obj : Object3D ) => void
+        onComplete : ( obj : Object3D, err ?: Error ) => void
     ) => void
 ```
 

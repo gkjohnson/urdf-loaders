@@ -2,7 +2,7 @@ import { LoadingManager, Object3D } from 'three';
 import { URDFRobot } from './URDFClasses';
 
 interface MeshLoadDoneFunc {
-    (mesh: Object3D): void;
+    (mesh: Object3D, err?: Error): void;
 }
 
 interface MeshLoadFunc{
