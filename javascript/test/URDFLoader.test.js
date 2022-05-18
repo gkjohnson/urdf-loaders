@@ -398,7 +398,7 @@ describe('Material Tags', () => {
 
         const material = res.children[0].children[0].material;
         expect(material.name).toEqual('Cyan');
-        expect(material.color).toEqual(new Color(0, 1, 1));
+        expect(material.color).toEqual(new Color(0, 1, 1).convertSRGBToLinear());
         expect(material.transparent).toEqual(false);
         expect(material.depthWrite).toEqual(true);
         expect(material.opacity).toEqual(1.0);
@@ -426,7 +426,7 @@ describe('Material Tags', () => {
 
         const material = res.children[0].children[0].material;
         expect(material.name).toEqual('Cyan');
-        expect(material.color).toEqual(new Color(0, 1, 1));
+        expect(material.color).toEqual(new Color(0, 1, 1).convertSRGBToLinear());
         expect(material.transparent).toEqual(true);
         expect(material.depthWrite).toEqual(false);
         expect(material.opacity).toEqual(0.5);
