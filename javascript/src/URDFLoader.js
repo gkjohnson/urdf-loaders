@@ -473,7 +473,7 @@ class URDFLoader {
                             .split(/\s/g)
                             .map(v => parseFloat(v));
 
-                    material.color.setRGB(rgba[0], rgba[1], rgba[2]);
+                    material.color.setRGB(rgba[0], rgba[1], rgba[2]).convertSRGBToLinear();
                     material.opacity = rgba[3];
                     material.transparent = rgba[3] < 1;
                     material.depthWrite = !material.transparent;
@@ -488,6 +488,7 @@ class URDFLoader {
                         const loader = new THREE.TextureLoader(manager);
                         const filePath = resolvePath(filename);
                         material.map = loader.load(filePath);
+                        material.map.encoding = THREE.sRGBEncoding;
 
                     }
 
