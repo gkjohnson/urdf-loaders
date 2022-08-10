@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from './URDFLoader.js';
 
 const tempVec2 = new THREE.Vector2();
+const emptyRaycast = () => {};
 
 // urdf-viewer element
 // Loads and displays a 3D view of a URDF-formatted robot
@@ -559,6 +560,7 @@ class URDFViewer extends HTMLElement {
 
                 if (c.isMesh) {
 
+                    c.raycast = emptyRaycast;
                     c.material = collisionMaterial;
 
                 }

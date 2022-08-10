@@ -72,7 +72,12 @@ class URDFManipulator extends URDFViewer {
 
                     for (let i = 0; i < c.children.length; i++) {
 
-                        traverse(c.children[i]);
+                        const child = c.children[i];
+                        if (!child.isURDFCollider) {
+
+                            traverse(c.children[i]);
+
+                        }
 
                     }
 
