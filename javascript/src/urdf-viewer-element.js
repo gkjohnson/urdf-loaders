@@ -546,6 +546,7 @@ class URDFViewer extends HTMLElement {
             if (c.isURDFCollider) {
 
                 c.visible = showCollision;
+                c.castShadow = false;
                 colliders.push(c);
 
             }
