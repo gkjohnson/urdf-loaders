@@ -240,8 +240,10 @@ class URDFViewer extends HTMLElement {
 
     attributeChangedCallback(attr, oldval, newval) {
 
-        this.recenter();
         this._updateCollisionVisibility();
+        if (!this.noAutoRecenter) {
+            this.recenter();
+        }
 
         switch (attr) {
 
@@ -341,12 +343,18 @@ class URDFViewer extends HTMLElement {
     // camera on the center of the scene
     _updateEnvironment() {
 
-        if (!this.robot) return;
+        const robot = this.robot;
+        if (!robot) return;
 
         this.world.updateMatrixWorld();
 
         const bbox = new THREE.Box3();
-        bbox.setFromObject(this.robot);
+        bbox.makeEmpty();
+        robot.traverse(c => {
+            if (c.isURDFVisual) {
+                bbox.expandByObject(c);
+            }
+        });
 
         const center = bbox.getCenter(new THREE.Vector3());
         this.controls.target.y = center.y;
