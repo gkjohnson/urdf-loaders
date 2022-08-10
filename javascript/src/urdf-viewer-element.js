@@ -162,6 +162,7 @@ class URDFViewer extends HTMLElement {
         this._collisionMaterial = new MeshPhongMaterial({
             transparent: true,
             opacity: 0.35,
+            shininess: 2.5,
             premultipliedAlpha: true,
             color: 0xffbe38,
             polygonOffset: true,
