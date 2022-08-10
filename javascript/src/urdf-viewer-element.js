@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { MeshPhongMaterial } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from './URDFLoader.js';
 
@@ -18,7 +19,7 @@ class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
 
-        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits'];
+        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits', 'show-collision'];
 
     }
 
@@ -45,6 +46,9 @@ class URDFViewer extends HTMLElement {
 
     get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
     set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
+
+    get showCollision() { return this.hasAttribute('show-collision') || false; }
+    set showCollision(val) { val ? this.setAttribute('show-collision', true) : this.removeAttribute('show-collision'); }
 
     get jointValues() {
 
@@ -155,6 +159,16 @@ class URDFViewer extends HTMLElement {
 
         this._setUp(this.up);
 
+        this._collisionMaterial = new MeshPhongMaterial({
+            transparent: true,
+            opacity: 0.35,
+            premultipliedAlpha: true,
+            color: 0xffbe38,
+            polygonOffset: true,
+            polygonOffsetFactor: -1,
+            polygonOffsetUnits: -1,
+        });
+
         const _renderLoop = () => {
 
             if (this.parentNode) {
@@ -226,6 +240,7 @@ class URDFViewer extends HTMLElement {
     attributeChangedCallback(attr, oldval, newval) {
 
         this.recenter();
+        this._updateCollisionVisibility();
 
         switch (attr) {
 
@@ -269,9 +284,9 @@ class URDFViewer extends HTMLElement {
         const r = this.renderer;
         const w = this.clientWidth;
         const h = this.clientHeight;
-        const currsize = r.getSize(tempVec2);
+        const currSize = r.getSize(tempVec2);
 
-        if (currsize.width !== w || currsize.height !== h) {
+        if (currSize.width !== w || currSize.height !== h) {
 
             this.recenter();
 
@@ -482,6 +497,7 @@ class URDFViewer extends HTMLElement {
                 updateMaterials(robot);
 
                 this._setIgnoreLimits(this.ignoreLimits);
+                this._updateCollisionVisibility();
 
                 this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
                 this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
@@ -500,9 +516,46 @@ class URDFViewer extends HTMLElement {
             loader.packages = pkg;
             loader.loadMeshCb = this.loadMeshFunc;
             loader.fetchOptions = { mode: 'cors', credentials: 'same-origin' };
+            loader.parseCollision = true;
             loader.load(urdf, model => robot = model);
 
         }
+
+    }
+
+    _updateCollisionVisibility() {
+
+        const showCollision = this.showCollision;
+        const collisionMaterial = this._collisionMaterial;
+        const robot = this.robot;
+
+        if (robot === null) return;
+
+        const colliders = [];
+        robot.traverse(c => {
+
+            if (c.isURDFCollider) {
+
+                c.visible = showCollision;
+                colliders.push(c);
+
+            }
+
+        });
+
+        colliders.forEach(coll => {
+
+            coll.traverse(c => {
+
+                if (c.isMesh) {
+
+                    c.material = collisionMaterial;
+
+                }
+
+            });
+
+        });
 
     }
 

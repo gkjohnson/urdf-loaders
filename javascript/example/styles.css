@@ -134,9 +134,7 @@ input:focus {
 }
 
 #urdf-options {
-    max-height: 25vh;
     text-overflow: ellipsis;
-    overflow: auto;
 }
 
 #urdf-options li {

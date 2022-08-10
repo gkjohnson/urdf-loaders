@@ -15,6 +15,8 @@ customElements.define('urdf-viewer', URDFManipulator);
 const viewer = document.querySelector('urdf-viewer');
 
 const limitsToggle = document.getElementById('ignore-joint-limits');
+const collisionToggle = document.getElementById('collision-toggle');
+const autocenterToggle = document.getElementById('autocenter-toggle');
 const upSelect = document.getElementById('up-select');
 const sliderList = document.querySelector('#controls ul');
 const controlsel = document.getElementById('controls');
@@ -37,6 +39,16 @@ const setColor = color => {
 limitsToggle.addEventListener('click', () => {
     limitsToggle.classList.toggle('checked');
     viewer.ignoreLimits = limitsToggle.classList.contains('checked');
+});
+
+collisionToggle.addEventListener('click', () => {
+    collisionToggle.classList.toggle('checked');
+    viewer.showCollision = collisionToggle.classList.contains('checked');
+});
+
+autocenterToggle.addEventListener('click', () => {
+    autocenterToggle.classList.toggle('checked');
+    viewer.noAutoRecenter = !autocenterToggle.classList.contains('checked');
 });
 
 upSelect.addEventListener('change', () => viewer.up = upSelect.value);
@@ -311,7 +323,7 @@ const updateList = () => {
     document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
 
         el.addEventListener('click', e => {
-    
+
             const urdf = e.target.getAttribute('urdf');
             const color = e.target.getAttribute('color');
 
@@ -320,9 +332,9 @@ const updateList = () => {
             viewer.urdf = urdf;
             animToggle.classList.add('checked');
             setColor(color);
-    
+
         });
-    
+
     });
 
 };
