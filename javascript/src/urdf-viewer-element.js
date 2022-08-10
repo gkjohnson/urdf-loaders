@@ -547,7 +547,6 @@ class URDFViewer extends HTMLElement {
             if (c.isURDFCollider) {
 
                 c.visible = showCollision;
-                c.castShadow = false;
                 colliders.push(c);
 
             }
@@ -562,6 +561,7 @@ class URDFViewer extends HTMLElement {
 
                     c.raycast = emptyRaycast;
                     c.material = collisionMaterial;
+                    c.castShadow = false;
 
                 }
 
