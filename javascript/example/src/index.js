@@ -16,6 +16,7 @@ const viewer = document.querySelector('urdf-viewer');
 
 const limitsToggle = document.getElementById('ignore-joint-limits');
 const collisionToggle = document.getElementById('collision-toggle');
+const radiansToggle = document.getElementById('radians-toggle');
 const autocenterToggle = document.getElementById('autocenter-toggle');
 const upSelect = document.getElementById('up-select');
 const sliderList = document.querySelector('#controls ul');
@@ -39,6 +40,13 @@ const setColor = color => {
 limitsToggle.addEventListener('click', () => {
     limitsToggle.classList.toggle('checked');
     viewer.ignoreLimits = limitsToggle.classList.contains('checked');
+});
+
+radiansToggle.addEventListener('click', () => {
+    radiansToggle.classList.toggle('checked');
+    Object
+        .values(sliders)
+        .forEach(sl => sl.update());
 });
 
 collisionToggle.addEventListener('click', () => {
@@ -153,19 +161,20 @@ viewer.addEventListener('urdf-processed', () => {
             const slider = li.querySelector('input[type="range"]');
             const input = li.querySelector('input[type="number"]');
             li.update = () => {
-                let degVal = joint.angle;
+                const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : RAD2DEG;
+                let angle = joint.angle;
 
                 if (joint.jointType === 'revolute' || joint.jointType === 'continuous') {
-                    degVal *= RAD2DEG;
+                    angle *= degMultiplier;
                 }
 
-                if (Math.abs(degVal) > 1) {
-                    degVal = degVal.toFixed(1);
+                if (Math.abs(angle) > 1) {
+                    angle = angle.toFixed(1);
                 } else {
-                    degVal = degVal.toPrecision(2);
+                    angle = angle.toPrecision(2);
                 }
 
-                input.value = parseFloat(degVal);
+                input.value = parseFloat(angle);
 
                 // directly input the value
                 slider.value = joint.angle;
@@ -174,14 +183,14 @@ viewer.addEventListener('urdf-processed', () => {
                     slider.min = -6.28;
                     slider.max = 6.28;
 
-                    input.min = -6.28 * RAD2DEG;
-                    input.max = 6.28 * RAD2DEG;
+                    input.min = -6.28 * degMultiplier;
+                    input.max = 6.28 * degMultiplier;
                 } else {
                     slider.min = joint.limit.lower;
                     slider.max = joint.limit.upper;
 
-                    input.min = joint.limit.lower * RAD2DEG;
-                    input.max = joint.limit.upper * RAD2DEG;
+                    input.min = joint.limit.lower * degMultiplier;
+                    input.max = joint.limit.upper * degMultiplier;
                 }
             };
 
@@ -204,7 +213,8 @@ viewer.addEventListener('urdf-processed', () => {
             });
 
             input.addEventListener('change', () => {
-                viewer.setJointValue(joint.name, input.value * DEG2RAD);
+                const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : RAD2DEG;
+                viewer.setJointValue(joint.name, input.value * degMultiplier);
                 li.update();
             });
 
@@ -320,6 +330,7 @@ const updateLoop = () => {
 };
 
 const updateList = () => {
+
     document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
 
         el.addEventListener('click', e => {
