@@ -34,7 +34,7 @@ export interface URDFJoint extends Object3D {
     ignoreLimits: Boolean;
     mimicJoints: URDFMimicJoint[];
 
-    setJointValue(value0: Number, value1?: Number, value2?: Number): void;
+    setJointValue(value0: Number, value1?: Number, value2?: Number): boolean;
 
 }
 
@@ -59,8 +59,8 @@ export interface URDFRobot extends URDFLink {
     visual: { [ key: string ]: URDFVisual };
     frames: { [ key: string ]: Object3D };
 
-    setJointValue(jointName: String, value0: Number, value1?: Number, value2?: Number): void;
-    setJointValues(values: { [ key: string ]: Number | Number[] }): void;
+    setJointValue(jointName: String, value0: Number, value1?: Number, value2?: Number): boolean;
+    setJointValues(values: { [ key: string ]: Number | Number[] }): boolean;
     getFrame(name: String): Object3D;
 
 }
