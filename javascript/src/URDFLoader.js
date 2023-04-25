@@ -582,7 +582,7 @@ class URDFLoader {
                     } else if (geoType === 'box') {
 
                         const primitiveModel = new THREE.Mesh();
-                        primitiveModel.geometry = new THREE.BoxBufferGeometry(1, 1, 1);
+                        primitiveModel.geometry = new THREE.BoxGeometry(1, 1, 1);
                         primitiveModel.material = material;
 
                         const size = processTuple(n.children[0].getAttribute('size'));
