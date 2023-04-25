@@ -593,7 +593,7 @@ class URDFLoader {
                     } else if (geoType === 'sphere') {
 
                         const primitiveModel = new THREE.Mesh();
-                        primitiveModel.geometry = new THREE.SphereBufferGeometry(1, 30, 30);
+                        primitiveModel.geometry = new THREE.SphereGeometry(1, 30, 30);
                         primitiveModel.material = material;
 
                         const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
@@ -604,7 +604,7 @@ class URDFLoader {
                     } else if (geoType === 'cylinder') {
 
                         const primitiveModel = new THREE.Mesh();
-                        primitiveModel.geometry = new THREE.CylinderBufferGeometry(1, 1, 1, 30);
+                        primitiveModel.geometry = new THREE.CylinderGeometry(1, 1, 1, 30);
                         primitiveModel.material = material;
 
                         const radius = parseFloat(n.children[0].getAttribute('radius')) || 0;
