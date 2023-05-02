@@ -1,14 +1,36 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/controls/OrbitControls.js'), require('./URDFLoader.js')) :
-    typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/controls/OrbitControls.js', './URDFLoader.js'], factory) :
+    typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/controls/OrbitControls.js', './URDFLoader'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFViewer = factory(global.THREE, global.THREE, global.URDFLoader));
 }(this, (function (THREE, OrbitControls_js, URDFLoader) { 'use strict';
 
     function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
+    function _interopNamespace(e) {
+        if (e && e.__esModule) return e;
+        var n = Object.create(null);
+        if (e) {
+            Object.keys(e).forEach(function (k) {
+                if (k !== 'default') {
+                    var d = Object.getOwnPropertyDescriptor(e, k);
+                    Object.defineProperty(n, k, d.get ? d : {
+                        enumerable: true,
+                        get: function () {
+                            return e[k];
+                        }
+                    });
+                }
+            });
+        }
+        n['default'] = e;
+        return Object.freeze(n);
+    }
+
+    var THREE__namespace = /*#__PURE__*/_interopNamespace(THREE);
     var URDFLoader__default = /*#__PURE__*/_interopDefaultLegacy(URDFLoader);
 
-    const tempVec2 = new THREE.Vector2();
+    const tempVec2 = new THREE__namespace.Vector2();
+    const emptyRaycast = () => {};
 
     // urdf-viewer element
     // Loads and displays a 3D view of a URDF-formatted robot
@@ -23,7 +45,7 @@
 
         static get observedAttributes() {
 
-            return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits'];
+            return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits', 'show-collision'];
 
         }
 
@@ -50,6 +72,9 @@
 
         get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
         set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
+
+        get showCollision() { return this.hasAttribute('show-collision') || false; }
+        set showCollision(val) { val ? this.setAttribute('show-collision', true) : this.removeAttribute('show-collision'); }
 
         get jointValues() {
 
@@ -94,16 +119,16 @@
             this.urlModifierFunc = null;
 
             // Scene setup
-            const scene = new THREE.Scene();
+            const scene = new THREE__namespace.Scene();
 
-            const ambientLight = new THREE.HemisphereLight(this.ambientColor, '#000');
+            const ambientLight = new THREE__namespace.HemisphereLight(this.ambientColor, '#000');
             ambientLight.groundColor.lerp(ambientLight.color, 0.5);
             ambientLight.intensity = 0.5;
             ambientLight.position.set(0, 1, 0);
             scene.add(ambientLight);
 
             // Light setup
-            const dirLight = new THREE.DirectionalLight(0xffffff);
+            const dirLight = new THREE__namespace.DirectionalLight(0xffffff);
             dirLight.position.set(4, 10, 1);
             dirLight.shadow.mapSize.width = 2048;
             dirLight.shadow.mapSize.height = 2048;
@@ -113,24 +138,24 @@
             scene.add(dirLight.target);
 
             // Renderer setup
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            const renderer = new THREE__namespace.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setClearColor(0xffffff);
             renderer.setClearAlpha(0);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.shadowMap.type = THREE__namespace.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE__namespace.sRGBEncoding;
 
             // Camera setup
-            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const camera = new THREE__namespace.PerspectiveCamera(75, 1, 0.1, 1000);
             camera.position.z = -10;
 
             // World setup
-            const world = new THREE.Object3D();
+            const world = new THREE__namespace.Object3D();
             scene.add(world);
 
-            const plane = new THREE.Mesh(
-                new THREE.PlaneBufferGeometry(40, 40),
-                new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 }),
+            const plane = new THREE__namespace.Mesh(
+                new THREE__namespace.PlaneBufferGeometry(40, 40),
+                new THREE__namespace.ShadowMaterial({ side: THREE__namespace.DoubleSide, transparent: true, opacity: 0.5 }),
             );
             plane.rotation.x = -Math.PI / 2;
             plane.position.y = -0.5;
@@ -159,6 +184,17 @@
             this.ambientLight = ambientLight;
 
             this._setUp(this.up);
+
+            this._collisionMaterial = new THREE.MeshPhongMaterial({
+                transparent: true,
+                opacity: 0.35,
+                shininess: 2.5,
+                premultipliedAlpha: true,
+                color: 0xffbe38,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
+                polygonOffsetUnits: -1,
+            });
 
             const _renderLoop = () => {
 
@@ -230,7 +266,10 @@
 
         attributeChangedCallback(attr, oldval, newval) {
 
-            this.recenter();
+            this._updateCollisionVisibility();
+            if (!this.noAutoRecenter) {
+                this.recenter();
+            }
 
             switch (attr) {
 
@@ -274,9 +313,9 @@
             const r = this.renderer;
             const w = this.clientWidth;
             const h = this.clientHeight;
-            const currsize = r.getSize(tempVec2);
+            const currSize = r.getSize(tempVec2);
 
-            if (currsize.width !== w || currsize.height !== h) {
+            if (currSize.width !== w || currSize.height !== h) {
 
                 this.recenter();
 
@@ -330,14 +369,20 @@
         // camera on the center of the scene
         _updateEnvironment() {
 
-            if (!this.robot) return;
+            const robot = this.robot;
+            if (!robot) return;
 
             this.world.updateMatrixWorld();
 
-            const bbox = new THREE.Box3();
-            bbox.setFromObject(this.robot);
+            const bbox = new THREE__namespace.Box3();
+            bbox.makeEmpty();
+            robot.traverse(c => {
+                if (c.isURDFVisual) {
+                    bbox.expandByObject(c);
+                }
+            });
 
-            const center = bbox.getCenter(new THREE.Vector3());
+            const center = bbox.getCenter(new THREE__namespace.Vector3());
             this.controls.target.y = center.y;
             this.plane.position.y = bbox.min.y - 1e-3;
 
@@ -349,7 +394,7 @@
                 // Update the shadow camera rendering bounds to encapsulate the
                 // model. We use the bounding sphere of the bounding box for
                 // simplicity -- this could be a tighter fit.
-                const sphere = bbox.getBoundingSphere(new THREE.Sphere());
+                const sphere = bbox.getBoundingSphere(new THREE__namespace.Sphere());
                 const minmax = sphere.radius;
                 const cam = dirLight.shadow.camera;
                 cam.left = cam.bottom = -minmax;
@@ -425,15 +470,15 @@
                                     (Array.isArray(c.material) ? c.material : [c.material])
                                         .map(m => {
 
-                                            if (m instanceof THREE.MeshBasicMaterial) {
+                                            if (m instanceof THREE__namespace.MeshBasicMaterial) {
 
-                                                m = new THREE.MeshPhongMaterial();
+                                                m = new THREE__namespace.MeshPhongMaterial();
 
                                             }
 
                                             if (m.map) {
 
-                                                m.map.encoding = THREE.GammaEncoding;
+                                                m.map.encoding = THREE__namespace.GammaEncoding;
 
                                             }
 
@@ -470,7 +515,7 @@
                 }
 
                 let robot = null;
-                const manager = new THREE.LoadingManager();
+                const manager = new THREE__namespace.LoadingManager();
                 manager.onLoad = () => {
 
                     // If another request has come in to load a new
@@ -487,6 +532,7 @@
                     updateMaterials(robot);
 
                     this._setIgnoreLimits(this.ignoreLimits);
+                    this._updateCollisionVisibility();
 
                     this.dispatchEvent(new CustomEvent('urdf-processed', { bubbles: true, cancelable: true, composed: true }));
                     this.dispatchEvent(new CustomEvent('geometry-loaded', { bubbles: true, cancelable: true, composed: true }));
@@ -505,9 +551,48 @@
                 loader.packages = pkg;
                 loader.loadMeshCb = this.loadMeshFunc;
                 loader.fetchOptions = { mode: 'cors', credentials: 'same-origin' };
+                loader.parseCollision = true;
                 loader.load(urdf, model => robot = model);
 
             }
+
+        }
+
+        _updateCollisionVisibility() {
+
+            const showCollision = this.showCollision;
+            const collisionMaterial = this._collisionMaterial;
+            const robot = this.robot;
+
+            if (robot === null) return;
+
+            const colliders = [];
+            robot.traverse(c => {
+
+                if (c.isURDFCollider) {
+
+                    c.visible = showCollision;
+                    colliders.push(c);
+
+                }
+
+            });
+
+            colliders.forEach(coll => {
+
+                coll.traverse(c => {
+
+                    if (c.isMesh) {
+
+                        c.raycast = emptyRaycast;
+                        c.material = collisionMaterial;
+                        c.castShadow = false;
+
+                    }
+
+                });
+
+            });
 
         }
 
