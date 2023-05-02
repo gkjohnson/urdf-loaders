@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Add correct return type definitions for some functions.
 
+### Changed
+- Change use of \*BufferGeometry classes to be \*Geometry variants.
+- Bumped three.js peer dependency version requirement.
+
 ## [0.10.5] - 2023-03-28
 ### Changed
 - Removed log when modifying "mimic" joints.
