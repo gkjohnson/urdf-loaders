@@ -39,7 +39,7 @@ class URDFViewer extends HTMLElement {
     get displayShadow() { return this.hasAttribute('display-shadow') || false; }
     set displayShadow(val) { val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow'); }
 
-    get ambientColor() { return this.getAttribute('ambient-color') || '#455A64'; }
+    get ambientColor() { return this.getAttribute('ambient-color') || '#8ea0a8'; }
     set ambientColor(val) { val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color'); }
 
     get autoRedraw() { return this.hasAttribute('auto-redraw') || false; }
