@@ -118,7 +118,7 @@ class URDFViewer extends HTMLElement {
         renderer.setClearAlpha(0);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         // Camera setup
         const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -453,7 +453,7 @@ class URDFViewer extends HTMLElement {
 
                                         if (m.map) {
 
-                                            m.map.encoding = THREE.GammaEncoding;
+                                            m.map.colorSpace = THREE.SRGBColorSpace;
 
                                         }
 
