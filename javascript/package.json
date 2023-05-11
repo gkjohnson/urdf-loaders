@@ -36,7 +36,7 @@
     "webcomponents"
   ],
   "peerDependencies": {
-    "three": ">=0.144.0"
+    "three": ">=0.152.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
@@ -53,7 +53,7 @@
     "nyc": "^15.1.0",
     "parcel-bundler": "^1.12.5",
     "static-server": "^3.0.0",
-    "three": "^0.135.0",
+    "three": "^0.152.2",
     "typescript": "^3.9.7",
     "rollup": "^2.29.0"
   },
