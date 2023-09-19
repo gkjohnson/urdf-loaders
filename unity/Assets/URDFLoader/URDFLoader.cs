@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using System.IO;
+using System.Globalization;
 
 using URDFJoint = URDFRobot.URDFJoint;
 using URDFLink = URDFRobot.URDFLink;
@@ -309,7 +310,7 @@ public class URDFLoader : MonoBehaviour {
                                 primitiveGameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                                 primitiveTransform = primitiveGameObject.transform;
 
-                                float sphereRadius = float.Parse(primitiveNode.Attributes["radius"].Value);
+                                float sphereRadius = float.Parse(primitiveNode.Attributes["radius"].Value, CultureInfo.InvariantCulture);
                                 primitiveTransform.localScale = Vector3.one * sphereRadius * 2;
                                 break;
 
@@ -323,8 +324,8 @@ public class URDFLoader : MonoBehaviour {
                                 GameObject cylinderPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                                 cylinderPrimitive.transform.parent = primitiveTransform;
 
-                                float length = float.Parse(primitiveNode.Attributes["length"].Value);
-                                float radius = float.Parse(primitiveNode.Attributes["radius"].Value);
+                                float length = float.Parse(primitiveNode.Attributes["length"].Value, CultureInfo.InvariantCulture);
+                                float radius = float.Parse(primitiveNode.Attributes["radius"].Value, CultureInfo.InvariantCulture);
                                 primitiveTransform.localScale = new Vector3(radius * 2, length / 2, radius * 2);
                                 break;
 
@@ -640,9 +641,9 @@ public class URDFLoader : MonoBehaviour {
 
             try {
 
-                result.x = float.Parse(numbers[0]);
-                result.y = float.Parse(numbers[1]);
-                result.z = float.Parse(numbers[2]);
+                result.x = float.Parse(numbers[0], CultureInfo.InvariantCulture);
+                result.y = float.Parse(numbers[1], CultureInfo.InvariantCulture);
+                result.z = float.Parse(numbers[2], CultureInfo.InvariantCulture);
 
             } catch (Exception e) {
 
@@ -667,10 +668,10 @@ public class URDFLoader : MonoBehaviour {
         if (numbers.Length == 4) {
 
             try {
-                result.r = float.Parse(numbers[0]);
-                result.g = float.Parse(numbers[1]);
-                result.b = float.Parse(numbers[2]);
-                result.a = float.Parse(numbers[3]);
+                result.r = float.Parse(numbers[0], CultureInfo.InvariantCulture);
+                result.g = float.Parse(numbers[1], CultureInfo.InvariantCulture);
+                result.b = float.Parse(numbers[2], CultureInfo.InvariantCulture);
+                result.a = float.Parse(numbers[3], CultureInfo.InvariantCulture);
 
             } catch (Exception e) {
 
