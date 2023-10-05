@@ -219,7 +219,6 @@ class URDFJoint extends URDFBase {
                 this.position.copy(this.origPosition);
                 const tempAxis = this.axis.clone().applyEuler(this.rotation);
                 this.position.addScaledVector(tempAxis, pos);
-                this.position.addScaledVector(this.axis, pos);
 
                 if (this.jointValue[0] !== pos) {
 
