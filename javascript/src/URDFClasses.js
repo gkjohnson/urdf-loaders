@@ -1,5 +1,7 @@
 import { Object3D, Vector3 } from 'three';
 
+const _tempAxis = new Vector3();
+
 class URDFBase extends Object3D {
 
     constructor(...args) {
@@ -217,8 +219,8 @@ class URDFJoint extends URDFBase {
                 }
 
                 this.position.copy(this.origPosition);
-                const tempAxis = this.axis.clone().applyEuler(this.rotation);
-                this.position.addScaledVector(tempAxis, pos);
+                _tempAxis.copy(this.axis).applyEuler(this.rotation);
+                this.position.addScaledVector(_tempAxis, pos);
 
                 if (this.jointValue[0] !== pos) {
 
