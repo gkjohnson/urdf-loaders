@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual, URDFMimicJoint } from './URDFClasses.js';
 
 /*
@@ -641,24 +642,20 @@ class URDFLoader {
     defaultMeshLoader(path, manager, done) {
 
         if (/\.stl$/i.test(path)) {
-
             const loader = new STLLoader(manager);
             loader.load(path, geom => {
                 const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                 done(mesh);
             });
-
         } else if (/\.dae$/i.test(path)) {
-
             const loader = new ColladaLoader(manager);
             loader.load(path, dae => done(dae.scene));
-
+        } else if (/\.obj$/i.test(path)) {
+            const loader = new OBJLoader(manager);
+            loader.load(path, obj => done(obj));
         } else {
-
             console.warn(`URDFLoader: Could not load model at ${ path }.\nNo loader available`);
-
         }
-
     }
 
 };
