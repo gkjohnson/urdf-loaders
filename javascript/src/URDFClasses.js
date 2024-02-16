@@ -1,6 +1,7 @@
-import { Object3D, Vector3 } from 'three';
+import { Euler, Object3D, Vector3 } from 'three';
 
 const _tempAxis = new Vector3();
+const _tempEuler = new Euler();
 
 class URDFBase extends Object3D {
 
@@ -87,7 +88,9 @@ class URDFJoint extends URDFBase {
                 break;
 
             case 'planar':
-                this.jointValue = new Array(2).fill(0);
+                // Planar joints are, 3dof: position XY and rotation Z.
+                this.jointValue = new Array(3).fill(0);
+                this.axis = new Vector3(0, 0, 1);
                 break;
 
             case 'floating':
@@ -241,10 +244,62 @@ class URDFJoint extends URDFBase {
 
             }
 
-            case 'floating':
-            case 'planar':
-                // TODO: Support these joint types
-                console.warn(`'${ this.jointType }' joint not yet supported`);
+            case 'floating': {
+
+                // no-op if all values are identical to existing value or are null
+                if (this.jointValue.every((value, index) => values[index] === value || values[index] === null)) return didUpdate;
+                // Floating joints have six degrees of freedom: X, Y, Z, R, P, Y.
+                this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
+                this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
+                this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
+                this.position.copy(this.origPosition);
+                // Respect origin RPY when setting position
+                _tempAxis.set(1, 0, 0).applyEuler(this.rotation);
+                this.position.addScaledVector(_tempAxis, this.jointValue[0]);
+                _tempAxis.set(0, 1, 0).applyEuler(this.rotation);
+                this.position.addScaledVector(_tempAxis, this.jointValue[1]);
+                _tempAxis.set(0, 0, 1).applyEuler(this.rotation);
+                this.position.addScaledVector(_tempAxis, this.jointValue[2]);
+
+                this.jointValue[3] = values[3] !== null ? values[3] : this.jointValue[3];
+                this.jointValue[4] = values[4] !== null ? values[4] : this.jointValue[4];
+                this.jointValue[5] = values[5] !== null ? values[5] : this.jointValue[5];
+                this.quaternion.setFromEuler(
+                    _tempEuler.set(
+                        this.jointValue[3],
+                        this.jointValue[4],
+                        this.jointValue[5],
+                        'XYZ',
+                    ),
+                ).premultiply(this.origQuaternion);
+
+                this.matrixWorldNeedsUpdate = true;
+                return true;
+            }
+
+            case 'planar': {
+
+                // no-op if all values are identical to existing value or are null
+                if (this.jointValue.every((value, index) => values[index] === value || values[index] === null)) return didUpdate;
+
+                this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
+                this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
+                this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
+
+                // Respect existing RPY when modifying the position of the X,Y axes
+                this.position.copy(this.origPosition);
+
+                _tempAxis.set(1, 0, 0).applyEuler(this.rotation);
+                this.position.addScaledVector(_tempAxis, this.jointValue[0]);
+                _tempAxis.set(0, 1, 0).applyEuler(this.rotation);
+                this.position.addScaledVector(_tempAxis, this.jointValue[1]);
+                this.quaternion
+                    .setFromAxisAngle(this.axis, this.jointValue[2])
+                    .premultiply(this.origQuaternion);
+
+                this.matrixWorldNeedsUpdate = true;
+                return true;
+            }
 
         }
 
