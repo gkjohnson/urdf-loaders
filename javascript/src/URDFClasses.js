@@ -342,6 +342,11 @@ class URDFRobot extends URDFLink {
 
         });
 
+        // Repair mimic joint references once we've re-accumulated all our joint data
+        for (const joint in this.joints) {
+            this.joints[joint].mimicJoints = this.joints[joint].mimicJoints.map((mimicJoint) => this.joints[mimicJoint.name]);
+        }
+
         this.frames = {
             ...this.colliders,
             ...this.visual,
