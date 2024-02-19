@@ -147,9 +147,14 @@ class URDFJoint extends URDFBase {
     }
 
     /* Public Functions */
+    /**
+     * @param {...number|null} values The joint value components to set, optionally null for no-op
+     * @returns {boolean} Whether the invocation of this function resulted in an actual change to the joint value
+     */
     setJointValue(...values) {
 
-        values = values.map(v => parseFloat(v));
+        // Parse all incoming values into numbers except null, which we treat as a no-op for that value component.
+        values = values.map(v => v === null ? null : parseFloat(v));
 
         if (!this.origPosition || !this.origQuaternion) {
 
