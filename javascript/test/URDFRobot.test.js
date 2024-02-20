@@ -141,15 +141,20 @@ describe('URDFRobot', () => {
                 </joint>
                 <link name="LINK3"/>
             </robot>
-        `).clone();
+        `);
 
-        const jointB = res.joints['B'];
+        const cloned = res.clone();
+
+        const jointB = cloned.joints['B'];
         expect(jointB.mimicJoint).toEqual('A');
         expect(jointB.multiplier).toEqual(23);
         expect(jointB.offset).toEqual(-5);
 
-        const jointA = res.joints['A'];
+        const jointA = cloned.joints['A'];
         expect(jointA.mimicJoints.length).toEqual(1);
         expect(jointA.mimicJoints[0].name).toEqual('B');
+
+        // Expect the cloned joint not to be a reference to the joint on the robot that was cloned
+        expect(jointA.mimicJoints[0]).not.toBe(res.joints['A'].mimicJoints[0]);
     });
 });
