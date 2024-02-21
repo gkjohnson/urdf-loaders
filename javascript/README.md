@@ -301,10 +301,10 @@ A list of joints which mimic this joint. These joints are updated whenever this 
 ### .setJointValue
 
 ```js
-setJointValue( jointValue : number ) : Boolean
+setJointValue( ...jointValues : (number | null)[] ) : Boolean
 ```
 
-Sets the joint value for the given joint. The interpretation of the value depends on the joint type. If the joint value specifies an angle it must be in radians.
+Sets the joint value(s) for the given joint. The interpretation of the value depends on the joint type. If the joint value specifies an angle it must be in radians. If the value specifies a distance, it must be in meters. Passing null for any component of the value will skip updating that particular component.
 
 Returns true if the joint or any of its mimicking joints changed.
 
@@ -509,10 +509,10 @@ Sets or gets the jointValues of the robot as a dictionary of `joint-name` to `ra
 #### .setJointValue
 
 ```js
-setJointValue( jointName : String, jointValue : Number ) : void
+setJointValue( jointName : String, ...jointValues : (number | null)[] ) : void
 ```
 
-Sets the given joint to the provided angle in radians.
+Sets the given joint to the provided value(s). See URDFJoint.setJointValue.
 
 #### .setJointValues
 

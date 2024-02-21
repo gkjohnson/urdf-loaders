@@ -34,7 +34,7 @@ export interface URDFJoint extends Object3D {
     ignoreLimits: Boolean;
     mimicJoints: URDFMimicJoint[];
 
-    setJointValue(value0: Number, value1?: Number, value2?: Number): boolean;
+    setJointValue(...values: (number | null)[]): boolean;
 
 }
 
