@@ -106,6 +106,16 @@ xacroLoader.load( url, xml => {
 } );
 ```
 
+### Adjusting Joint Angles
+
+```js
+robot.setJointValue( jointName, jointAngle );
+
+// or
+
+robot.joints[ jointName ].setJointValue( jointAngle );
+```
+
 ## Limitations
 - Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
 
