@@ -30,7 +30,7 @@ describe('URDFJoint', () => {
         expect(joint.jointValue).toHaveLength(1);
 
         joint.jointType = 'planar';
-        expect(joint.jointValue).toHaveLength(2);
+        expect(joint.jointValue).toHaveLength(3);
 
         joint.jointType = 'floating';
         expect(joint.jointValue).toHaveLength(6);
