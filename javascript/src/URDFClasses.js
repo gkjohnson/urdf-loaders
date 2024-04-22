@@ -1,7 +1,12 @@
-import { Euler, Object3D, Vector3 } from 'three';
+import { Euler, Object3D, Vector3, Quaternion, Matrix4 } from 'three';
 
 const _tempAxis = new Vector3();
 const _tempEuler = new Euler();
+const _tempTransform = new Matrix4();
+const _tempOrigTransform = new Matrix4();
+const _tempQuat = new Quaternion();
+const _tempScale = new Vector3(1.0, 1.0, 1.0);
+const _tempPosition = new Vector3();
 
 class URDFBase extends Object3D {
 
@@ -252,26 +257,27 @@ class URDFJoint extends URDFBase {
                 this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
                 this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
                 this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
-                this.position.copy(this.origPosition);
-                // Respect origin RPY when setting position
-                _tempAxis.set(1, 0, 0).applyEuler(this.rotation);
-                this.position.addScaledVector(_tempAxis, this.jointValue[0]);
-                _tempAxis.set(0, 1, 0).applyEuler(this.rotation);
-                this.position.addScaledVector(_tempAxis, this.jointValue[1]);
-                _tempAxis.set(0, 0, 1).applyEuler(this.rotation);
-                this.position.addScaledVector(_tempAxis, this.jointValue[2]);
-
                 this.jointValue[3] = values[3] !== null ? values[3] : this.jointValue[3];
                 this.jointValue[4] = values[4] !== null ? values[4] : this.jointValue[4];
                 this.jointValue[5] = values[5] !== null ? values[5] : this.jointValue[5];
-                this.quaternion.setFromEuler(
+
+                // Compose transform of joint origin and transform due to joint values
+                _tempOrigTransform.compose(this.origPosition, this.origQuaternion, _tempScale);
+                _tempQuat.setFromEuler(
                     _tempEuler.set(
                         this.jointValue[3],
                         this.jointValue[4],
                         this.jointValue[5],
                         'XYZ',
                     ),
-                ).premultiply(this.origQuaternion);
+                );
+                _tempPosition.set(this.jointValue[0], this.jointValue[1], this.jointValue[2]);
+                _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
+
+                // Calcualte new transform
+                _tempOrigTransform.premultiply(_tempTransform);
+                this.position.setFromMatrixPosition(_tempOrigTransform);
+                this.rotation.setFromRotationMatrix(_tempOrigTransform);
 
                 this.matrixWorldNeedsUpdate = true;
                 return true;
@@ -286,16 +292,16 @@ class URDFJoint extends URDFBase {
                 this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
                 this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
 
-                // Respect existing RPY when modifying the position of the X,Y axes
-                this.position.copy(this.origPosition);
+                // Compose transform of joint origin and transform due to joint values
+                _tempOrigTransform.compose(this.origPosition, this.origQuaternion, _tempScale);
+                _tempQuat.setFromAxisAngle(this.axis, this.jointValue[2]);
+                _tempPosition.set(this.jointValue[0], this.jointValue[1], 0.0);
+                _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
 
-                _tempAxis.set(1, 0, 0).applyEuler(this.rotation);
-                this.position.addScaledVector(_tempAxis, this.jointValue[0]);
-                _tempAxis.set(0, 1, 0).applyEuler(this.rotation);
-                this.position.addScaledVector(_tempAxis, this.jointValue[1]);
-                this.quaternion
-                    .setFromAxisAngle(this.axis, this.jointValue[2])
-                    .premultiply(this.origQuaternion);
+                // Calcualte new transform
+                _tempOrigTransform.premultiply(_tempTransform);
+                this.position.setFromMatrixPosition(_tempOrigTransform);
+                this.rotation.setFromRotationMatrix(_tempOrigTransform);
 
                 this.matrixWorldNeedsUpdate = true;
                 return true;
