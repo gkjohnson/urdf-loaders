@@ -34,6 +34,7 @@ input[type="number"] {
     font-weight: 300;
     background: rgba(255,255,255,0.25);
     padding: 1px 2px;
+    border-radius: 2px;
 }
 
 ul {
@@ -220,7 +221,7 @@ input:focus {
 #controls li span {
 
     padding: 0 5px;
-    max-width: 125px;
+    max-width: 175px;
     text-overflow: ellipsis;
     overflow: hidden;
 
