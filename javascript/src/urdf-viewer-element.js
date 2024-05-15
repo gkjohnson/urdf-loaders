@@ -97,13 +97,13 @@ class URDFViewer extends HTMLElement {
         const scene = new THREE.Scene();
 
         const ambientLight = new THREE.HemisphereLight(this.ambientColor, '#000');
-        ambientLight.groundColor.lerp(ambientLight.color, 0.5);
+        ambientLight.groundColor.lerp(ambientLight.color, 0.5 * Math.PI);
         ambientLight.intensity = 0.5;
         ambientLight.position.set(0, 1, 0);
         scene.add(ambientLight);
 
         // Light setup
-        const dirLight = new THREE.DirectionalLight(0xffffff);
+        const dirLight = new THREE.DirectionalLight(0xffffff, Math.PI);
         dirLight.position.set(4, 10, 1);
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
@@ -129,8 +129,8 @@ class URDFViewer extends HTMLElement {
         scene.add(world);
 
         const plane = new THREE.Mesh(
-            new THREE.PlaneBufferGeometry(40, 40),
-            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.5 }),
+            new THREE.PlaneGeometry(40, 40),
+            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.25 }),
         );
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -0.5;

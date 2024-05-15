@@ -3,7 +3,7 @@ import {
     PerspectiveCamera,
     Scene,
     Mesh,
-    PlaneBufferGeometry,
+    PlaneGeometry,
     ShadowMaterial,
     DirectionalLight,
     PCFSoftShadowMap,
@@ -17,13 +17,13 @@ import {
     BufferGeometry,
     Float32BufferAttribute,
     AdditiveBlending,
-    RingBufferGeometry,
+    RingGeometry,
     MeshBasicMaterial,
     LineBasicMaterial,
     Line,
     Ray,
-    TorusBufferGeometry,
-    SphereBufferGeometry,
+    TorusGeometry,
+    SphereGeometry,
     MeshPhongMaterial,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -123,7 +123,7 @@ function init() {
     const ambientLight = new AmbientLight(0xffb74d, 0.5);
     scene.add(ambientLight);
 
-    ground = new Mesh(new PlaneBufferGeometry(), new ShadowMaterial({ opacity: 0.1 }));
+    ground = new Mesh(new PlaneGeometry(), new ShadowMaterial({ opacity: 0.1 }));
     ground.rotation.x = -Math.PI / 2;
     ground.scale.setScalar(30);
     ground.receiveShadow = true;
@@ -180,12 +180,12 @@ function init() {
     };
 
     const whiteMat = new MeshBasicMaterial({ color: 0xffffff });
-    intersectRing = new Mesh(new TorusBufferGeometry(0.25, 0.02, 16, 100), whiteMat);
+    intersectRing = new Mesh(new TorusGeometry(0.25, 0.02, 16, 100), whiteMat);
     intersectRing.rotation.x = Math.PI / 2;
     intersectRing.visible = false;
     scene.add(intersectRing);
 
-    hitSphere = new Mesh(new SphereBufferGeometry(0.01, 50, 50), whiteMat);
+    hitSphere = new Mesh(new SphereGeometry(0.01, 50, 50), whiteMat);
     scene.add(hitSphere);
 
     // vr controllers
@@ -253,7 +253,7 @@ function buildController(data) {
 
         case 'gaze':
 
-            geometry = new RingBufferGeometry(0.02, 0.04, 32).translate(0, 0, -1);
+            geometry = new RingGeometry(0.02, 0.04, 32).translate(0, 0, -1);
             material = new MeshBasicMaterial({ opacity: 0.5, transparent: true });
             return new Mesh(geometry, material);
 

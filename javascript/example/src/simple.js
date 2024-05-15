@@ -3,7 +3,7 @@ import {
     PerspectiveCamera,
     Scene,
     Mesh,
-    PlaneBufferGeometry,
+    PlaneGeometry,
     ShadowMaterial,
     DirectionalLight,
     PCFSoftShadowMap,
@@ -46,7 +46,7 @@ function init() {
     const ambientLight = new AmbientLight(0xffffff, 0.2);
     scene.add(ambientLight);
 
-    const ground = new Mesh(new PlaneBufferGeometry(), new ShadowMaterial({ opacity: 0.25 }));
+    const ground = new Mesh(new PlaneGeometry(), new ShadowMaterial({ opacity: 0.25 }));
     ground.rotation.x = -Math.PI / 2;
     ground.scale.setScalar(30);
     ground.receiveShadow = true;
