@@ -203,6 +203,12 @@ input:focus {
     overflow-y: auto;
 }
 
+#controls.hide-fixed li[joint-type="fixed"]{
+
+    display: none;
+
+}
+
 #controls li {
     font-size: 16px;
     display: flex;
@@ -225,6 +231,7 @@ input:focus {
     max-width: 175px;
     text-overflow: ellipsis;
     overflow: hidden;
+    user-select: none;
 
 }
 

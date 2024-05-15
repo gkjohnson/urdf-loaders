@@ -23,6 +23,7 @@ const sliderList = document.querySelector('#controls ul');
 const controlsel = document.getElementById('controls');
 const controlsToggle = document.getElementById('toggle-controls');
 const animToggle = document.getElementById('do-animate');
+const hideFixedToggle = document.getElementById('hide-fixed');
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 1 / DEG2RAD;
 let sliders = {};
@@ -57,6 +58,15 @@ collisionToggle.addEventListener('click', () => {
 autocenterToggle.addEventListener('click', () => {
     autocenterToggle.classList.toggle('checked');
     viewer.noAutoRecenter = !autocenterToggle.classList.contains('checked');
+});
+
+hideFixedToggle.addEventListener('click', () => {
+    hideFixedToggle.classList.toggle('checked');
+
+    const hideFixed = hideFixedToggle.classList.contains('checked');
+    if (hideFixed) controlsel.classList.add('hide-fixed');
+    else controlsel.classList.remove('hide-fixed');
+
 });
 
 upSelect.addEventListener('change', () => viewer.up = upSelect.value);
