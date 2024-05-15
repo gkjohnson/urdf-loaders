@@ -213,7 +213,7 @@ viewer.addEventListener('urdf-processed', () => {
             });
 
             input.addEventListener('change', () => {
-                const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : RAD2DEG;
+                const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : DEG2RAD;
                 viewer.setJointValue(joint.name, input.value * degMultiplier);
                 li.update();
             });
