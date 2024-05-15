@@ -5,9 +5,17 @@
             "es2015"
         ],
         "moduleResolution": "node",
-        "types": []
+        "types": [],
+        "baseUrl": ".",
+        "noEmit": true,
+        "strict": true,
+        "noUnusedParameters": true,
+        "strictNullChecks":true
     },
     "files": [
         "src/URDFLoader.d.ts"
+    ],
+    "exclude": [
+      "node_modules"
     ]
 }
