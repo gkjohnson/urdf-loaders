@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta charset="utf-8" />
+
+    <title>URDF Modifier</title>
+
+    <script src="https://unpkg.com/stats.js/build/stats.min.js"></script>
+    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.4.3/webcomponents-bundle.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" />
+    <link href="./dev.css" type="text/css" rel="stylesheet" />
+    <script src="./src/redirect.js"></script>
+
+</head>
+
+<body tabindex="0">
+
+    <div id="menu">
+        <ul id="urdf-options" style="display: none;">
+
+            <li urdf="../../../urdf/Dropbear/urdf/dropbear.urdf" up="+Y" color="#3F4738">DROPBEAR</li>
+        </ul>
+
+        <div id="dragHandle">
+            <div id="controls" class="hidden">
+
+                <div class="main-stack" id="main-stack">
+
+                    <div id="joint-controls">
+
+                        <div class="inputrow" onclick="toggleWrap(event, 'jointPropToggle')">
+                            <input type="text" id="joint-selection-save" placeholder="Joint Props">
+                        </div>
+                        <div class="inputwrap" id="jointPropToggle">
+                            <div class="inputrow">
+                                <label for="joint-selector">Joint:</label>
+                                <select id="joint-selector">
+                                </select>
+                            </div>
+                            <div class="inputrow">
+                                <label for="joint-position-xyz">Position (XYZ):</label>
+                                <input type="text" id="joint-position-xyz" placeholder="x° y° z°"
+                                    oninput="syncInputs('position')">
+                            </div>
+                            <div class="linkbutton">
+                                <input type="checkbox" id="link-toggle" style="display: none;" checked />
+                                <img src="./linked.svg" alt="Linked" id="link-img" onclick="toggleLink()"
+                                    style="cursor: pointer;">
+                            </div>
+                            <div class="inputrow">
+                                <label for="joint-origin-xyz">Origin (XYZ):</label>
+                                <input type="text" id="joint-origin-xyz" placeholder="x° y° z°"
+                                    oninput="syncInputs('origin')">
+                            </div>
+                            <div class="inputrow">
+                                <label for="joint-origin-rpy">Rotation (RPY):</label>
+                                <input type="text" id="joint-origin-rpy" placeholder="roll° pitch° yaw°">
+                            </div>
+                            <div class="inputrow">
+                                <label for="joint-axis-xyz">Axis (XYZ):</label>
+                                <input type="text" id="joint-axis-xyz" placeholder="x° y° z°">
+                            </div>
+                            <div class="inputrow">
+                                <label for="joint-lower-limit">Lower Limit:</label>
+                                <input type="number" id="joint-lower-limit" placeholder="Lower Limit°" step="0.01">
+                            </div>
+                            <div class="inputrow">
+                                <label for="joint-upper-limit">Upper Limit:</label>
+                                <input type="number" id="joint-upper-limit" placeholder="Upper Limit°" step="0.01">
+                            </div>
+                            <div class="buttonrow">
+                                <button id="update-joint-props-btn">Update Joint</button>
+                                <button id="update-urdf-joint-btn" onclick="updateURDF('joint')">Joint To URDF</button>
+                            </div>
+                        </div>
+
+                        <div class="inputrow" onclick="toggleWrap(event, 'linkPropToggle')">
+                            <input type="text" id="link-selection-save" placeholder="Link Props">
+                        </div>
+
+                        <div class="inputwrap" id="linkPropToggle">
+                            <div class="inputrow">
+                                <label for="link-selector">Link:</label>
+                                <select id="link-selector"></select>
+                            </div>
+                            <div class="inputrow">
+                                <label for="visual-origin-xyz">Visual Origin (XYZ):</label>
+                                <input type="text" id="visual-origin-xyz" placeholder="x° y° z°">
+                            </div>
+                            <div class="inputrow">
+                                <label for="visual-origin-rpy">Visual Rotation (RPY):</label>
+                                <input type="text" id="visual-origin-rpy" placeholder="roll° pitch° yaw°">
+                            </div>
+                            <div class="buttonrow">
+                                <button id="update-link-props-btn">Update Link</button>
+                                <button id="update-urdf-link-btn" onclick="updateURDF('link')">Link To URDF</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="urdf-editor">
+                        <textarea id="urdf-editor"></textarea>
+                        <div class="smallbuttons">
+                            <button class="smallbutton" id="apply-urdf-btn" onclick="applyURDF()"><img
+                                    src="./upload.svg" alt=""></button>
+                            <button class="smallbutton" id="save-urdf-btn" onclick="saveURDF()"><img
+                                    src="./download.svg" alt=""></button>
+                        </div>
+                    </div>
+                    <!--   <div class="inputwrap active editrow">
+        
+                        <div class="buttonrow">
+                          <button id="edit-urdf-btn" onclick="editURDF()">Edit URDF</button>
+                            <button id="apply-urdf-btn" onclick="applyURDF()">Apply URDF</button>
+                            <button id="save-urdf-btn" onclick="saveURDF()">Save URDF</button>
+        
+                        </div>
+                    </div>
+                    -->
+                    <div class="inputrow" onclick="toggleWrap(event, 'sliderSection')">
+                        <input type="text" id="generic-selection" placeholder="Sliders">
+                    </div>
+
+                    <div class="inputwrap" id="sliderSection">
+
+                        <div style="display:none;">Drag and drop a set of URDF files! <br /> (Chrome Only)</div>
+
+                        
+                        <label>
+                            Up Axis
+                            <select id="up-select">
+                                <option value="+X">+X</option>
+                                <option value="-X">-X</option>
+                                <option value="+Y" selected>+Y</option>
+                                <option value="-Y">-Y</option>
+                                <option value="+Z">+Z</option>
+                                <option value="-Z">-Z</option>
+                            </select>
+                        </label>
+                        <ul></ul>
+                    </div>
+
+
+                </div>
+                <div id="buttoncol">
+                    <div id="toggle-controls"></div>
+                    <button id="toggle-debug" onclick="toggleWrap2('debugtoggle')"></button>
+
+                    <div class="debug-stack" id="debugtoggle">
+
+                        <div class="row">
+                            <div class="debug-buttons">
+
+                                <button onClick="console.log(viewer.robot);">Log Bot</button>
+                                <button onClick="console.log(viewer);">Log Viewer</button>
+                                <button onClick="populateJointNames(), populateLinkNames()">Cycle List</button>
+                                <button id="reload-btn">Reload</button>
+                                <button>Phys</button>
+                                <button for="colorPicker" class="color-select">
+                                    <div class="color-wrapper"><input type="color" id="colorPicker" name="color"
+                                            value="#3e4952"></div>
+                                </button>
+                            </div>
+                            <div class="debug-graph"></div>
+                            <div id="statsWindow"></div>
+                        </div>
+                        <div id="console-wrapper">
+                            <div id="console"></div>
+                        </div>
+                        <div class="togglewrap">
+                            <div>Drag and drop URDF files or folders! <br /> (Chrome Only)</div>
+                            <div id="ignore-joint-limits" class="toggle">Ignore Joint Limits</div>
+                            <div id="hide-fixed" class="toggle">Hide Fixed Joints</div>
+                            <div id="radians-toggle" class="toggle">Use Radians</div>
+                            <div id="autocenter-toggle" class="toggle checked">Autocenter</div>
+                            <div id="collision-toggle" class="toggle">Show Collision</div>
+                            <div id="do-animate" class="toggle checked">Animate Joints</div>
+                        </div>
+                    </div>
+                    <div id="window-scale">
+                        <div id="windowplus">+</div>
+                        <div id="windowminus">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <urdf-viewer up="+Y" display-shadow tabindex="0"></urdf-viewer>
+
+    <script src="./src/index.js"></script>
+
+
+    <script>
+        /* eslint-disable */
+        /* globals viewer */
+        /* eslint-disable */
+        /* globals viewer */
+        viewer = document.querySelector('urdf-viewer');
+
+        // Declaring urdfDoc globally
+        let urdfDoc;
+        // Global counter for tracking URDF changes
+        let urdfChangeCounter = 0;
+
+        viewer.addEventListener('urdf-change', () => {
+            // Remove existing sliders
+            sliders = {};
+
+            // Repopulate joint and link names
+            populateJointNames();
+            populateLinkNames();
+            editURDF();
+
+            // Increment the URDF change counter
+            urdfChangeCounter++;
+            console.log('URDF LOADS:', urdfChangeCounter);
+        });
+
+        // Function to edit the current URDF
+        function editURDF(urdfContent) {
+            populateJointNames();
+            populateLinkNames();
+
+            // Check if content is provided, if not, fetch using viewer's current URDF setting
+            if (!urdfContent && viewer.urdf) {
+                fetch(viewer.urdf)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('urdf-editor').value = data;
+                        urdfDoc = new DOMParser().parseFromString(data, "text/xml");
+                    })
+                    .catch(error => console.error('Error loading URDF:', error));
+            } else if (urdfContent) {
+                document.getElementById('urdf-editor').value = urdfContent;
+                urdfDoc = new DOMParser().parseFromString(urdfContent, "text/xml");
+            }
+        }
+
+        // Ensure this function is available globally if needed elsewhere
+        window.editURDF = editURDF;
+
+        async function fileExists(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch {
+                return false;
+            }
+        }
+
+        function applyURDF() {
+            const updatedURDFText = document.getElementById('urdf-editor').value; // Get URDF string from textarea
+            if (viewer && updatedURDFText) {
+                // Parse the new URDF text to a DOM object
+                const parser = new DOMParser();
+                const urdfDOM = parser.parseFromString(updatedURDFText, "text/xml");
+
+                // Adjust mesh URLs in the URDF DOM
+                const meshElements = urdfDOM.querySelectorAll('[filename]');
+                meshElements.forEach(async element => {
+                    let originalPath = element.getAttribute('filename');
+                    let correctedPath = originalPath;
+                    console.log('Original: ', originalPath);
+
+                    const urltest = viewer.urdf; // Assuming 'viewer.urdf' is a property that can be set to change the URDF
+                    console.log(urltest);
+
+                    if (originalPath.startsWith('../meshes/')) {
+                        // Adjust the path to point to the correct location
+                        correctedPath = `${viewer.urdf.substring(5)}/urdf/meshes/${originalPath.substring(10)}`;
+                        console.log('Corrected: ', correctedPath);
+
+                        // Check if the corrected path exists
+                        const exists = await fileExists(`/${correctedPath}`);
+
+                        // If the file does not exist at the corrected path, revert to original path
+                        if (!exists) {
+                            correctedPath = originalPath;
+                        }
+                    }
+                    element.setAttribute('filename', correctedPath);
+                });
+
+                // Serialize the DOM back to a string
+                const serializer = new XMLSerializer();
+                const modifiedURDFString = serializer.serializeToString(urdfDOM);
+
+                console.log(urdfDOM);
+
+                // Convert modified URDF string to a Blob and set it as the new URDF on the viewer
+                const blob = new Blob([modifiedURDFString], { type: 'text/xml' });
+                const url = URL.createObjectURL(blob);
+
+                viewer.urdf = url; // Assuming 'viewer.urdf' is a property that can be set to change the URDF
+
+                // Increment the URDF change counter
+                //urdfChangeCounter++;
+                //console.log('URDF has been changed', urdfChangeCounter, 'times');
+            }
+        }
+
+        // Function to save the modified URDF content as a local file
+        function saveURDF(event) {
+            event.preventDefault();
+
+            const updatedURDFText = document.getElementById('urdf-editor').value; // Get URDF string from textarea
+            if (viewer && updatedURDFText) {
+                // Parse the new URDF text to a DOM object
+                const parser = new DOMParser();
+                const urdfDOM = parser.parseFromString(updatedURDFText, "text/xml");
+
+                // Adjust mesh URLs in the URDF DOM
+                const meshElements = urdfDOM.querySelectorAll('[filename]');
+                meshElements.forEach(async element => {
+                    let originalPath = element.getAttribute('filename');
+                    let correctedPath = originalPath;
+                    console.log('Original: ', originalPath);
+
+                    if (originalPath.startsWith('../meshes/')) {
+                        // Adjust the path to point to the correct location
+                        correctedPath = `../urdf/dropbear/meshes/${originalPath.substring(10)}`;
+                        console.log('Corrected: ', correctedPath);
+
+                        // Check if the corrected path exists
+                        const exists = await fileExists(`/${correctedPath}`);
+
+                        // If the file does not exist at the corrected path, revert to original path
+                        if (!exists) {
+                            correctedPath = originalPath;
+                        }
+                    }
+                    element.setAttribute('filename', correctedPath);
+                });
+
+                // Serialize the DOM back to a string
+                const serializer = new XMLSerializer();
+                const modifiedURDFString = serializer.serializeToString(urdfDOM);
+
+                // Convert modified URDF string to a Blob and set it as the new URDF on the viewer
+                const blob = new Blob([modifiedURDFString], { type: 'text/xml' });
+                const url = URL.createObjectURL(blob);
+
+                // Create a download link and trigger the download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'updated-urdf.urdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Add event listener to the save button
+        document.getElementById('save-urdf-btn').addEventListener('click', saveURDF);
+
+
+        function toggleLink() {
+            const checkbox = document.getElementById('link-toggle');
+            const linkImage = document.getElementById('link-img');
+
+            checkbox.checked = !checkbox.checked; // Toggle the checkbox state
+
+            // Change the image source based on whether the box is checked
+            if (checkbox.checked) {
+                linkImage.src = './linked.svg'; // Path to the linked image
+                linkImage.alt = '🔗';
+            } else {
+                linkImage.src = './unlinked.svg'; // Path to the unlinked image
+                linkImage.alt = '!🔗';
+            }
+        }
+
+        function syncInputs(source) {
+            const linkToggle = document.getElementById('link-toggle');
+            if (!linkToggle.checked) {
+                return;
+            }
+
+            const positionInput = document.getElementById('joint-position-xyz');
+            const originInput = document.getElementById('joint-origin-xyz');
+            const sourceInput = source === 'position' ? positionInput : originInput;
+            const targetInput = source === 'position' ? originInput : positionInput;
+
+            targetInput.value = sourceInput.value;
+        }
+
+        function updateURDF(type) {
+            if (type === 'joint') {
+                const jointName = document.getElementById('joint-selection-save').value;
+                const originXYZ = document.getElementById('joint-origin-xyz').value;
+                const originRPYElement = document.getElementById('joint-origin-rpy');
+
+                const originRPY = originRPYElement.value.split(' ').map(v => parseFloat(v) * Math.PI / 180);
+                const axisXYZ = document.getElementById('joint-axis-xyz').value;
+                const lowerLimit = parseFloat(document.getElementById('joint-lower-limit').value) * Math.PI / 180;
+                const upperLimit = parseFloat(document.getElementById('joint-upper-limit').value) * Math.PI / 180;
+
+                const joint = urdfDoc.querySelector(`joint[name="${jointName}"]`);
+
+                if (!joint) {
+                    console.error("Joint not found in the URDF:", jointName);
+                    return;
+                }
+
+                let origin = joint.querySelector('origin');
+                if (!origin) {
+                    origin = urdfDoc.createElement('origin');
+                    joint.appendChild(origin);
+                }
+
+                let axis = joint.querySelector('axis');
+                if (!axis) {
+                    axis = urdfDoc.createElement('axis');
+                    joint.appendChild(axis);
+                }
+
+                let limit = joint.querySelector('limit');
+                if (!limit) {
+                    limit = urdfDoc.createElement('limit');
+                    joint.appendChild(limit);
+                }
+
+                origin.setAttribute('xyz', originXYZ);
+                origin.setAttribute('rpy', originRPY.join(' '));
+                axis.setAttribute('xyz', axisXYZ);
+                limit.setAttribute('lower', lowerLimit);
+                limit.setAttribute('upper', upperLimit);
+
+                const serializer = new XMLSerializer();
+                const updatedURDF = serializer.serializeToString(urdfDoc);
+                document.getElementById('urdf-editor').value = updatedURDF;
+            }
+
+            if (type === 'link') {
+                const linkName = document.getElementById('link-selection-save').value;
+                const visualOriginXYZ = document.getElementById('visual-origin-xyz').value;
+                const visualOriginRPYElement = document.getElementById('visual-origin-rpy');
+                const visualOriginRPY = visualOriginRPYElement.value.split(' ').map(v => parseFloat(v) * Math.PI / 180);
+                const linkUrdf = urdfDoc.querySelector(`link[name="${linkName}"]`);
+
+                if (!linkUrdf) {
+                    console.error("Link not found in the URDF:", linkName);
+                    return;
+                }
+
+                let visual = linkUrdf.querySelector('visual');
+                let origin = visual.querySelector('origin');
+
+                if (!origin) {
+                    origin = urdfDoc.createElement('origin');
+                    linkUrdf.appendChild(origin);
+                }
+
+                origin.setAttribute('xyz', visualOriginXYZ);
+                origin.setAttribute('rpy', visualOriginRPY.join(' '));
+                console.log(visualOriginRPY);
+
+                const serializer = new XMLSerializer();
+                const updatedURDF = serializer.serializeToString(urdfDoc);
+                document.getElementById('urdf-editor').value = updatedURDF;
+            }
+        }
+
+        function toggleUnit(inputId, buttonId) {
+            const rpyInput = document.getElementById(inputId);
+            const unitToggleBtn = document.getElementById(buttonId);
+            let currentUnit = rpyInput.getAttribute('data-unit') === '°' ? 'degrees' : 'radians';
+
+            if (currentUnit === 'degrees') {
+                const rpyValues = rpyInput.value.split(' ').map(deg => (parseFloat(deg) * Math.PI / 180).toFixed(4));
+                rpyInput.value = rpyValues.join(' ');
+                rpyInput.setAttribute('data-unit', 'rad');
+                unitToggleBtn.textContent = 'Switch to Degrees';
+                unitToggleBtn.classList.remove('degrees');
+                unitToggleBtn.classList.add('radians');
+            } else {
+                const rpyValues = rpyInput.value.split(' ').map(rad => (parseFloat(rad) * 180 / Math.PI).toFixed(2));
+                rpyInput.value = rpyValues.join(' ');
+                rpyInput.setAttribute('data-unit', '°');
+                unitToggleBtn.textContent = 'Switch to Radians';
+                unitToggleBtn.classList.remove('radians');
+                unitToggleBtn.classList.add('degrees');
+            }
+        }
+
+        function updateURDFContent(newURDF) {
+            if (!newURDF || viewer.getAttribute('urdf') === newURDF) return;
+
+            // Set new URDF and force reload of the model
+            viewer.setAttribute('urdf', newURDF);
+            viewer._loadUrdf(viewer.package, newURDF);
+        }
+        var DEG2RAD = Math.PI / 180;
+        window.animToggle = document.getElementById('do-animate');
+
+        const lerp = (from, to, ratio) => from + (to - from) * ratio;
+
+        const updateAngles = () => {
+            if (!viewer.setAngle) return;
+
+            // reset everything to 0 first
+            const resetangles = viewer.angles;
+            for (const name in resetangles) resetangles[name] = 0;
+            viewer.setAngles(resetangles);
+
+            // animate the legs
+            const time = Date.now() / 3e2;
+            for (let i = 1; i <= 6; i++) {
+                const offset = i * Math.PI / 3;
+                const ratio = Math.max(0, Math.sin(time + offset));
+
+                viewer.setAngle(`HP${i}`, lerp(30, 0, ratio) * DEG2RAD);
+                viewer.setAngle(`KP${i}`, lerp(90, 150, ratio) * DEG2RAD);
+                viewer.setAngle(`AP${i}`, lerp(-30, -60, ratio) * DEG2RAD);
+
+                viewer.setAngle(`TC${i}A`, lerp(0, 0.065, ratio));
+                viewer.setAngle(`TC${i}B`, lerp(0, 0.065, ratio));
+
+                viewer.setAngle(`W${i}`, window.performance.now() * 0.001);
+            }
+        };
+
+        const updateLoop = () => {
+            if (animToggle.classList.contains('checked')) {
+                updateAngles();
+            }
+            requestAnimationFrame(updateLoop);
+        };
+
+        document.querySelectorAll('#urdf-options li[urdf]').forEach(el => {
+            el.addEventListener('click', e => {
+                const urdf = e.target.getAttribute('urdf');
+                console.log(urdf);
+                viewer.up = '+Y'; // Assuming 'viewer' is your URDF viewer object
+                document.getElementById('up-select').value = viewer.up;
+                viewer.urdf = urdf;
+                animToggle.classList.add('checked'); // Assuming 'animToggle' is a control element
+
+                // Use the color from the color picker
+                const color = document.getElementById('colorPicker').value;
+                setColor(color); // Apply the color
+            });
+        });
+
+
+        document.addEventListener('WebComponentsReady', () => {
+            animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
+
+            // stop the animation if user tried to manipulate the model
+            viewer.addEventListener('manipulate-start', e => animToggle.classList.remove('checked'));
+            viewer.addEventListener('urdf-processed', e => updateAngles());
+            updateLoop();
+            viewer.camera.position.set(-5.5, 3.5, 5.5);
+        });
+
+        function refreshScene() {
+            if (viewer && typeof viewer.updateScene === 'function') {
+                viewer.updateScene();
+            } else {
+                viewer.scene.updateMatrixWorld(true);
+                if (viewer.controls) {
+                    viewer.controls.update();
+                }
+                if (typeof render === 'function') {
+                    render();
+                }
+            }
+        }
+
+        function dynamicPrecision(value) {
+            if (value === 0) return 0;
+            const absValue = Math.abs(value);
+            if (absValue < 0.0001) return 4;
+            if (absValue < 0.001) return 3;
+            if (absValue < 0.01) return 2;
+            if (absValue < 0.1) return 2;
+            return 1;
+        }
+        function populateJointNames() {
+            const jointSelector = document.getElementById('joint-selector');
+            if (viewer && viewer.robot) {
+                // Clear existing options
+                jointSelector.innerHTML = '';
+
+                Object.keys(viewer.robot.joints).forEach(jointName => {
+                    const option = document.createElement('option');
+                    option.value = jointName;
+                    option.textContent = jointName;
+                    jointSelector.appendChild(option);
+                });
+            }
+        }
+
+        function populateLinkNames() {
+            const linkSelector = document.getElementById('link-selector');
+            if (viewer && viewer.robot) {
+                // Clear existing options
+                linkSelector.innerHTML = '';
+
+                Object.keys(viewer.robot.links).forEach(linkName => {
+                    const option = document.createElement('option');
+                    option.value = linkName;
+                    option.textContent = linkName;
+                    linkSelector.appendChild(option);
+                });
+            }
+        }
+
+        function toggleWrap(event, id) {
+            var divId = document.getElementById(id);
+            divId.classList.toggle("active");
+            event.target.firstElementChild.classList.toggle("active2");
+        }
+
+        function toggleWrap2(id) {
+            var divId = document.getElementById(id);
+            divId.classList.toggle("active");
+        }
+
+        const consoleDiv = document.getElementById('console');
+        const consoleWrapper = document.getElementById('console-wrapper');
+        const maxLines = 100; // Maximum lines to display in the console
+        const logLines = []; // Array to store the lines of logs
+
+        // Save the original console.log function
+        const originalConsoleLog = console.log;
+
+        // Override console.log
+        console.log = function (...messages) {
+            // Call the original console.log function
+            originalConsoleLog.apply(console, messages);
+
+            // Create a new log entry
+            const message = messages.join(' '); // Combine all arguments into a single string
+            const newLine = document.createElement('div');
+            newLine.textContent = message;
+
+            // Add the new line to the logLines array
+            logLines.push(newLine);
+            if (logLines.length > maxLines) {
+                const oldLine = logLines.shift(); // Remove the oldest line if exceeding max lines
+                consoleDiv.removeChild(oldLine); // Remove old line from the DOM
+            }
+
+            // Append the new line to the console div
+            consoleDiv.appendChild(newLine);
+
+            // Ensure the latest message is visible by scrolling the wrapper
+            consoleWrapper.scrollTop = consoleWrapper.scrollHeight;
+        };
+
+        // Optionally, listen for changes on the color picker to update colors in real time
+        document.getElementById('colorPicker').addEventListener('change', (e) => {
+            setColor(e.target.value);
+        });
+
+        var stats = new Stats();
+        stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+
+        // Find the statsWindow element and append stats.dom to it
+        var statsWindow = document.getElementById('statsWindow');
+        statsWindow.appendChild(stats.dom);
+
+        // Style the stats.dom for specific positioning within statsWindow
+        stats.dom.style.position = 'relative';
+        stats.dom.style.top = '0';
+        stats.dom.style.left = '0';
+        stats.dom.style.width = '128px';
+        stats.dom.style.height = '128px';
+
+        function animate() {
+            stats.begin();
+            // monitored code goes here
+            stats.end();
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+
+</html>

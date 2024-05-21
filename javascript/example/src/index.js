@@ -27,6 +27,7 @@ const hideFixedToggle = document.getElementById('hide-fixed');
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 1 / DEG2RAD;
 let sliders = {};
+let lastSelectedJoint = null;
 
 // Global Functions
 const setColor = color => {
@@ -35,7 +36,10 @@ const setColor = color => {
     viewer.highlightColor = '#' + (new THREE.Color(0xffffff)).lerp(new THREE.Color(color), 0.35).getHexString();
 
 };
-
+window.setColor = color => {
+    document.body.style.backgroundColor = color;
+    viewer.highlightColor = '#' + (new THREE.Color(0xffffff)).lerp(new THREE.Color(color), 0.35).getHexString();
+};
 // Events
 // toggle checkbox
 limitsToggle.addEventListener('click', () => {
@@ -98,31 +102,64 @@ viewer.addEventListener('angle-change', e => {
 });
 
 viewer.addEventListener('joint-mouseover', e => {
+    const jointName = e.detail; // Assuming `e.detail` contains the name of the hovered joint
+    const jointSelector = document.getElementById('joint-selector');
+    const linkSelector = document.getElementById('link-selector');
+    const jointOption = document.querySelector(`#joint-selector option[value="${jointName}"]`);
+    const j = document.querySelector(`li[joint-name="${jointName}"]`);
+    const linkChild = viewer.robot.joints[jointName].children[0];
+    const visualIndex = linkChild.children.findIndex(child => child.name === 'URDFVisual');
+    const linkValues = linkChild.children[visualIndex];
+    const linkName = linkChild.name;
+    // console.log(linkChild.name);
+    if (j) {
+        j.setAttribute('robot-hovered', true);
+    }
 
-    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
-    if (j) j.setAttribute('robot-hovered', true);
+    if (lastSelectedJoint && lastSelectedJoint !== jointName) {
+        setTransparency(lastSelectedJoint, false); // Revert the last selected joint to opaque
+    }
+
+    setTransparency(jointName, true); // Make the current joint transparent
+    lastSelectedJoint = jointName; // Update the last selected joint
+
+    // Check if the option exists in the select dropdown, if not, create and append it
+    if (!jointOption) {
+        let newOption = document.createElement("option");
+        newOption.value = jointName;
+        newOption.textContent = jointName;
+        jointSelector.appendChild(newOption);
+    }
+
+    // Set the select element's value to the hovered joint name
+    jointSelector.value = jointName;
+    linkSelector.value = linkName;
 
 });
 
 viewer.addEventListener('joint-mouseout', e => {
 
-    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    const j = document.querySelector(`li[joint-name="${e.detail}"]`);
     if (j) j.removeAttribute('robot-hovered');
 
 });
 
 let originalNoAutoRecenter;
 viewer.addEventListener('manipulate-start', e => {
+    const jointName = e.detail; // e.detail should contain the name of the joint being manipulated
+    if (lastSelectedJoint && lastSelectedJoint !== jointName) {
+        setTransparency(lastSelectedJoint, false); // Revert the last selected joint to opaque
+    }
+    setTransparency(jointName, true); // Make the current joint transparent
+    lastSelectedJoint = jointName; // Update the last selected joint
 
-    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    const j = document.querySelector(`li[joint-name="${jointName}"]`);
     if (j) {
         j.scrollIntoView({ block: 'nearest' });
         window.scrollTo(0, 0);
     }
-
     originalNoAutoRecenter = viewer.noAutoRecenter;
     viewer.noAutoRecenter = true;
-
 });
 
 viewer.addEventListener('manipulate-end', e => {
@@ -157,11 +194,11 @@ viewer.addEventListener('urdf-processed', () => {
 
             const li = document.createElement('li');
             li.innerHTML =
-            `
-            <span title="${ joint.name }">${ joint.name }</span>
+                `
+            <span title="${joint.name}">${joint.name}</span>
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.0001" />
-            <input type="text" placeholder="${ joint.mimicJoint }" />
+            <input type="text" placeholder="${joint.mimicJoint}" />
             `;
 
             li.setAttribute('joint-type', joint.jointType);
@@ -183,13 +220,13 @@ viewer.addEventListener('urdf-processed', () => {
                 if (joint.jointType === 'mimic') {
                     listener.ariaPlaceholder = joint.mimicJoint;
                 }
-
+/*
                 if (Math.abs(angle) > 1) {
-                    angle = angle.toFixed(1);
+                    angle.value.toFixed(1);
                 } else {
-                    angle = angle.toPrecision(2);
+                    angle.value.toFixed(2);
                 }
-
+*/
                 input.value = parseFloat(angle);
 
                 // directly input the value
@@ -219,7 +256,7 @@ viewer.addEventListener('urdf-processed', () => {
                     slider.remove();
                     break;
                 case 'mimic':
-                    li.update = () => {};
+                    li.update = () => { };
                     input.remove();
                     slider.remove();
                     break;
@@ -228,7 +265,7 @@ viewer.addEventListener('urdf-processed', () => {
                     listener.remove();
                     break;
                 default:
-                    li.update = () => {};
+                    li.update = () => { };
                     input.remove();
                     slider.remove();
 
@@ -252,7 +289,6 @@ viewer.addEventListener('urdf-processed', () => {
         });
 
 });
-
 
 document.addEventListener('WebComponentsReady', () => {
     const urdfOptions = document.getElementById('urdf-options');
@@ -351,14 +387,14 @@ const updateAngles = () => {
         const offset = i * Math.PI / 3;
         const ratio = Math.max(0, Math.sin(time + offset));
 
-        viewer.setJointValue(`HP${ i }`, THREE.MathUtils.lerp(30, 0, ratio) * DEG2RAD);
-        viewer.setJointValue(`KP${ i }`, THREE.MathUtils.lerp(90, 150, ratio) * DEG2RAD);
-        viewer.setJointValue(`AP${ i }`, THREE.MathUtils.lerp(-30, -60, ratio) * DEG2RAD);
+        viewer.setJointValue(`HP${i}`, THREE.MathUtils.lerp(30, 0, ratio) * DEG2RAD);
+        viewer.setJointValue(`KP${i}`, THREE.MathUtils.lerp(90, 150, ratio) * DEG2RAD);
+        viewer.setJointValue(`AP${i}`, THREE.MathUtils.lerp(-30, -60, ratio) * DEG2RAD);
 
-        viewer.setJointValue(`TC${ i }A`, THREE.MathUtils.lerp(0, 0.065, ratio));
-        viewer.setJointValue(`TC${ i }B`, THREE.MathUtils.lerp(0, 0.065, ratio));
+        viewer.setJointValue(`TC${i}A`, THREE.MathUtils.lerp(0, 0.065, ratio));
+        viewer.setJointValue(`TC${i}B`, THREE.MathUtils.lerp(0, 0.065, ratio));
 
-        viewer.setJointValue(`W${ i }`, window.performance.now() * 0.001);
+        viewer.setJointValue(`W${i}`, window.performance.now() * 0.001);
 
     }
 
@@ -383,8 +419,7 @@ const updateList = () => {
             const urdf = e.target.getAttribute('urdf');
             const color = e.target.getAttribute('color');
 
-            viewer.up = '-Z';
-            document.getElementById('up-select').value = viewer.up;
+            viewer.up = document.getElementById('up-select').value;
             viewer.urdf = urdf;
             animToggle.classList.add('checked');
             setColor(color);
@@ -394,6 +429,18 @@ const updateList = () => {
     });
 
 };
+function setTransparency(jointName, isTransparent) {
+    const joint = viewer.robot.joints[jointName];
+    if (joint) {
+        joint.traverse(child => {
+            if (child instanceof THREE.Mesh) {
+                child.material.transparent = true;
+                child.material.opacity = isTransparent ? 0.5 : 1.0; // Set to 50% transparency or fully opaque
+            }
+        });
+    }
+}
+
 
 updateList();
 
@@ -407,4 +454,369 @@ document.addEventListener('WebComponentsReady', () => {
     updateLoop();
     viewer.camera.position.set(-5.5, 3.5, 5.5);
 
+});
+
+function updateJointProperties() {
+    const originDeg2Rad = Math.PI / 180;
+
+    const jointName = document.getElementById('joint-selection-save').value;
+    const originXYZ = document.getElementById('joint-origin-xyz').value.split(' ').map(Number);
+    const originRPYElement = document.getElementById('joint-origin-rpy');
+
+    // console.log(originRPYElement);
+
+    const originRPY = originRPYElement.getAttribute('data-unit') === '°' ?
+        originRPYElement.value.split(' ').map(v => parseFloat(v)) :
+        originRPYElement.value.split(' ').map(Number);
+
+    const convertedRPY = originRPY.map(value => value * (Math.PI / 180));
+
+    // console.log('Converted J : ', convertedRPY)
+
+    const positionXYZ = document.getElementById('joint-position-xyz').value.split(' ').map(Number);
+    const axisXYZ = document.getElementById('joint-axis-xyz').value.split(' ').map(Number);
+    const lowerLimit = parseFloat(document.getElementById('joint-lower-limit').value) * Math.PI / 180;
+    const upperLimit = parseFloat(document.getElementById('joint-upper-limit').value) * Math.PI / 180;
+
+    if (viewer && viewer.robot && viewer.robot.joints[jointName]) {
+        const joint = viewer.robot.joints[jointName];
+
+        const quaternion = new THREE.Quaternion();
+        const euler = new THREE.Euler(...convertedRPY, 'XYZ');
+        quaternion.setFromEuler(euler);
+
+
+
+        joint.origPosition.set(originXYZ[0], originXYZ[1], originXYZ[2]);
+        joint.origQuaternion = quaternion;
+        joint.axis = new THREE.Vector3(...axisXYZ);
+        joint.limit = { lower: lowerLimit, upper: upperLimit };
+        joint.position.set(positionXYZ[0], positionXYZ[1], positionXYZ[2]);
+
+        // console.log('Joint Quat: ', joint.origQuaternion);
+
+        refreshScene();
+    } else {
+        console.error("Joint not found or viewer not initialized properly.");
+    }
+}
+
+function updateLinkVisualProperties() {
+    const linkName = document.getElementById('link-selection-save').value;
+
+    const link = viewer.robot.links[linkName];
+    const visualIndex = link.children.findIndex(child => child.name === 'URDFVisual');
+    const linkValues = link.children[visualIndex];
+    // console.log(visualIndex);
+    const visualOriginXYZ = document.getElementById('visual-origin-xyz').value.split(' ').map(Number);
+
+    const visualOriginRPYElement = document.getElementById('visual-origin-rpy');
+
+    const visualOriginRPY = visualOriginRPYElement.getAttribute('data-unit') === '°' ?
+        visualOriginRPYElement.value.split(' ').map(v => parseFloat(v)) :
+        visualOriginRPYElement.value.split(' ').map(Number);
+
+    const visualConvertedRPY = visualOriginRPY.map(value => value * (Math.PI / 180));
+    console.log(visualConvertedRPY);
+
+    console.log('Converted L : ', visualConvertedRPY)
+
+    if (viewer && viewer.robot && viewer.robot.links[linkName].children[visualIndex]) {
+        const linkWrite = viewer.robot.links[linkName].children[visualIndex];
+        console.log('Link Pre Write : ', linkWrite)
+
+        const linkQuaternion = new THREE.Quaternion();
+        const linkEuler = new THREE.Euler(...visualConvertedRPY, 'XYZ');
+
+        linkQuaternion.setFromEuler(linkEuler);
+
+        console.log('Quaternion To X : ', linkQuaternion._x);
+        console.log('Quaternion To Y : ', linkQuaternion._y);
+        console.log('Quaternion To Z : ', linkQuaternion._z);
+        console.log('Quaternion To W : ', linkQuaternion._w);
+
+
+        linkWrite.position.set(visualOriginXYZ[0], visualOriginXYZ[1], visualOriginXYZ[2]);
+        linkWrite.quaternion._x = linkQuaternion._x;
+        linkWrite.quaternion._y = linkQuaternion._y;
+        linkWrite.quaternion._z = linkQuaternion._z;
+        linkWrite.quaternion._w = linkQuaternion._w;
+
+
+        console.log('Link Quaternion X : ', linkWrite.quaternion._x);
+        console.log('Link Quaternion Y : ', linkWrite.quaternion._y);
+        console.log('Link Quaternion Z : ', linkWrite.quaternion._z);
+        console.log('Link Quaternion W : ', linkWrite.quaternion._w);
+
+        refreshScene();
+    } else {
+        console.error("Link not found in the URDF:", linkName);
+    }
+}
+
+function refreshScene() {
+    if (viewer && typeof viewer.updateScene === 'function') {
+        viewer.updateScene();
+    } else {
+        viewer.scene.updateMatrixWorld(true);
+        if (viewer.controls) {
+            viewer.controls.update();
+        }
+        if (typeof render === 'function') {
+            render();
+        }
+    }
+}
+
+function dynamicPrecision(value) {
+    if (value === 0) return 0;
+    const absValue = Math.abs(value);
+    if (absValue < 0.0001) return 4;
+    if (absValue < 0.001) return 3;
+    if (absValue < 0.01) return 2;
+    if (absValue < 0.1) return 2;
+    return 1;
+}
+
+function loadLinkDetails() {
+    const linkSelector = document.getElementById('link-selector');
+    const linkName = linkSelector.value;
+    const link = viewer.robot.links[linkName];
+    // console.log(link.children);
+    const visualIndex = link.children.findIndex(child => child.name === 'URDFVisual');
+    const linkValues = link.children[0];
+
+    if (viewer && viewer.robot && viewer.robot.links[linkName]) {
+        document.getElementById('link-selection-save').value = linkName;
+    }
+
+    // console.log(link);
+
+    if (linkValues.quaternion) {
+        const euler = new THREE.Euler().setFromQuaternion(linkValues.quaternion, 'XYZ');
+
+        const rpy = [euler.x, euler.y, euler.z].map(r => {
+            let degrees = r * 180 / Math.PI;
+            return degrees.toFixed(dynamicPrecision(degrees));
+        });
+
+        document.getElementById('visual-origin-rpy').value = rpy.join(' ');
+    }
+    if (linkValues.position) {
+        document.getElementById('visual-origin-xyz').value = linkValues.position.toArray().join(' ');
+    } else {
+        console.error("Quaternion is undefined for the link:", linkName);
+    }
+}
+
+function loadJointDetails() {
+    const jointSelector = document.getElementById('joint-selector');
+    const jointName = jointSelector.value;
+
+    if (viewer && viewer.robot && viewer.robot.joints[jointName]) {
+        const joint = viewer.robot.joints[jointName];
+
+        if (joint.origQuaternion) {
+            // console.log(joint.origQuaternion);
+
+            if (joint.origQuaternion) {
+
+                const euler = new THREE.Euler().setFromQuaternion(joint.origQuaternion, 'XYZ');
+                // console.log(joint.origQuaternion);
+
+                const rpy = [euler.x, euler.y, euler.z].map(r => {
+                    let degrees = r * 180 / Math.PI;
+                    return degrees.toFixed(dynamicPrecision(degrees));
+                });
+                // console.log(rpy);
+
+                document.getElementById('joint-selection-save').value = jointName;
+                document.getElementById('joint-origin-xyz').value = joint.origPosition.toArray().join(' ');
+                document.getElementById('joint-origin-rpy').value = rpy.join(' ');
+                document.getElementById('joint-position-xyz').value = joint.position.toArray().join(' ');
+                document.getElementById('joint-axis-xyz').value = [joint.axis.x, joint.axis.y, joint.axis.z].map(x => x.toFixed(dynamicPrecision(x))).join(' ');
+                document.getElementById('joint-lower-limit').value = (joint.limit.lower * 180 / Math.PI).toFixed(dynamicPrecision(joint.limit.lower * 180 / Math.PI));
+                document.getElementById('joint-upper-limit').value = (joint.limit.upper * 180 / Math.PI).toFixed(dynamicPrecision(joint.limit.upper * 180 / Math.PI));
+            } else {
+                console.error("Invalid Quaternion object for the joint:", jointName);
+            }
+        } else {
+            console.error("Quaternion is undefined for the joint:", jointName);
+        }
+    } else {
+        console.error("Joint not found or viewer not initialized properly.");
+    }
+}
+function populateJointNames() {
+    const jointSelector = document.getElementById('joint-selector');
+    if (viewer && viewer.robot) {
+        // Clear existing options
+        jointSelector.innerHTML = '';
+
+        Object.keys(viewer.robot.joints).forEach(jointName => {
+            const option = document.createElement('option');
+            option.value = jointName;
+            option.textContent = jointName;
+            jointSelector.appendChild(option);
+        });
+    }
+}
+
+function populateLinkNames() {
+    const linkSelector = document.getElementById('link-selector');
+    if (viewer && viewer.robot) {
+        // Clear existing options
+        linkSelector.innerHTML = '';
+
+        Object.keys(viewer.robot.links).forEach(linkName => {
+            const option = document.createElement('option');
+            option.value = linkName;
+            option.textContent = linkName;
+            linkSelector.appendChild(option);
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        populateJointNames();
+        populateLinkNames();
+        document.getElementById('link-selector').addEventListener('change', function () {
+            loadLinkDetails();
+        });
+        document.getElementById('joint-selector').addEventListener('change', function () {
+            loadJointDetails();
+        });
+        if (viewer) {
+            viewer.addEventListener('manipulate-start', function (e) {
+                const jointName = e.detail;
+                const jointSelector = document.getElementById('joint-selector');
+                jointSelector.value = jointName;
+                loadJointDetails();
+                loadLinkDetails();
+            });
+        }
+    }, 2000);
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        populateJointNames();
+        populateLinkNames();
+        document.getElementById('link-selector').addEventListener('change', function () {
+            loadLinkDetails();
+        });
+        document.getElementById('joint-selector').addEventListener('change', function () {
+            loadJointDetails();
+        });
+        if (viewer) {
+            viewer.addEventListener('manipulate-start', function (e) {
+                const jointName = e.detail;
+                const jointSelector = document.getElementById('joint-selector');
+                jointSelector.value = jointName;
+                loadJointDetails();
+                loadLinkDetails();
+            });
+        }
+    }, 2000);
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    var controls = document.getElementById('controls');
+    var dragHandle = document.getElementById('dragHandle');
+    var sliderSection = document.getElementById('main-stack');
+
+    var drag = false;
+    var sliding = false;
+    var offsetX, offsetY;
+
+    sliderSection.addEventListener('mousedown', function (e) {
+        sliding = true;
+
+    });
+
+    sliderSection.addEventListener('mouseup', function (e) {
+        sliding = false;
+
+    });
+
+    dragHandle.addEventListener('mousedown', function (e) {
+
+        drag = true;
+        offsetX = dragHandle.offsetLeft - e.clientX;
+        offsetY = dragHandle.offsetTop - e.clientY;
+        this.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mouseup', function () {
+        drag = false;
+        dragHandle.style.cursor = 'grab';
+    });
+
+    document.addEventListener('mousemove', function (e) {
+        if (drag && !sliding) {
+            dragHandle.style.left = e.clientX + offsetX + 'px';
+            dragHandle.style.top = e.clientY + offsetY + 'px';
+        }
+    });
+});
+document.addEventListener('DOMContentLoaded', function () {
+    var consoleElement = document.getElementById('dragHandle');
+    var scaleIndicator = document.getElementById('window-scale');
+    var currentScale = 1; // Start with no scale
+
+    document.getElementById('windowplus').addEventListener('mousedown', function () {
+        currentScale *= 1.02; // Increase scale by 2%
+        applyScale();
+        triggerAnimation();
+    });
+
+
+    document.getElementById('windowminus').addEventListener('mousedown', function () {
+        currentScale *= 0.98; // Decrease scale by 2%
+        applyScale();
+        triggerAnimation();
+    });
+
+    function applyScale() {
+        consoleElement.style.transform = `scale(${currentScale})`;
+        scaleIndicator.setAttribute('data-scale', `${(currentScale * 100).toFixed(2)}%`);
+    }
+
+    function triggerAnimation() {
+        scaleIndicator.classList.add('animate-scale');
+        // Remove the class after the animation completes
+        setTimeout(() => {
+            scaleIndicator.classList.remove('animate-scale');
+        }, 500); // Match the animation duration
+    }
+});
+
+// Function to initialize event listeners once the document is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // document.getElementById('edit-urdf-btn').addEventListener('click', editURDF);
+    document.getElementById('save-urdf-btn').addEventListener('click', saveURDF);
+    document.getElementById('update-link-props-btn').addEventListener('click', updateLinkVisualProperties);
+    document.getElementById('update-joint-props-btn').addEventListener('click', updateJointProperties);
+    document.getElementById('update-urdf-joint-btn').addEventListener('click', updateURDF);
+    document.getElementById('apply-urdf-btn').addEventListener('click', applyURDF);
+    document.getElementById('reload-btn').addEventListener('click', applyURDF);
+    setTimeout(() => {
+        populateJointNames();
+        populateLinkNames();
+
+        document.getElementById('link-selector').addEventListener('change', loadLinkDetails);
+        document.getElementById('joint-selector').addEventListener('change', loadJointDetails);
+
+        if (viewer) {
+            viewer.addEventListener('manipulate-start', function (e) {
+                const jointName = e.detail; // Assuming the event detail contains the joint name
+                const jointSelector = document.getElementById('joint-selector');
+                jointSelector.value = jointName;
+                loadJointDetails(); // Load the details of the clicked joint into the input fields
+            });
+        }
+    }, 2000); // Ensure URDF data is loaded and delay to setup the event listener
 });

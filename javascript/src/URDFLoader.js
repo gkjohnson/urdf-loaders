@@ -329,7 +329,7 @@ export default
                 obj.multiplier = parseFloat(mimicTag.getAttribute('multiplier') || 1.0);
                 obj.offset = parseFloat(mimicTag.getAttribute('offset') || 0.0);
 
-                console.log('MIMIC: ', obj);
+                //console.log('MIMIC: ', obj);
             } else {
                 obj = new URDFJoint();
             }

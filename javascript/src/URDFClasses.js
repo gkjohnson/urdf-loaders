@@ -133,7 +133,7 @@ class URDFJoint extends URDFBase {
         values = values.map(v => v === null ? null : parseFloat(v));
         // console.log('Parsed values:', values);
         if (!this.origPosition || !this.origQuaternion) {
-            console.log('Initializing original position and quaternion');
+            //console.log('Initializing original position and quaternion');
             this.origPosition = this.position.clone();
             this.origQuaternion = this.quaternion.clone();
         }
@@ -217,7 +217,7 @@ class URDFJoint extends URDFBase {
     }
 
     addDependentMimicJoint(mimicJoint) {
-        console.log('Adding dependent mimic joint:', mimicJoint);
+        //console.log('Adding dependent mimic joint:', mimicJoint);
         if (!this.dependentMimicJoints.includes(mimicJoint)) {
             this.dependentMimicJoints.push(mimicJoint);
         }
