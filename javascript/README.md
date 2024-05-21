@@ -1,19 +1,37 @@
-# urdf-loader
+[![Group 2](https://github.com/robit-man/dropbear-neck-assembly/assets/36677806/bd13c6f5-7a3f-4262-9891-4259f17abbe0)](https://t.me/fractionalrobots)
 
-[![npm version](https://img.shields.io/npm/v/urdf-loader.svg?style=flat-square)](https://www.npmjs.com/package/urdf-loader)
-[![build](https://img.shields.io/github/actions/workflow/status/gkjohnson/urdf-loaders/node.js.yml?style=flat-square&label=build&branch=master)](https://github.com/gkjohnson/urdf-loaders/actions)
 
-Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model.
+# URDF-ThreeJS Modifier
+Fork of [gkjohnson/urdf-loaders](https://github.com/gkjohnson/urdf-loaders) with only the JS component, and (soon) incorporating deeper sim2real control of systems connected over serial / websockets.
 
-[Basic loader example here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/bundle/simple.html)
+![2024-05-20-10-34-37](https://github.com/robit-man/URDF-Threejs-Modifier/assets/36677806/969cd7b6-95dc-4ecb-a1fb-85f700afcbde)
 
-[VR example here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/bundle/vr.html)
+# Project Overview
 
-[Drag and drop web component tool here!](https://gkjohnson.github.io/urdf-loaders/javascript/example/bundle/index.html)
+We want to create a similar experience to [the project modelbot](https://github.com/AdoHaha/modelrobot), but include additional elements for easy integration into live robot control, by developing an api for interface over serial or websockets for low level control hardware, such that a user can view and bi-directionally manipulate the states of the real system, and digital twin.
 
-![Example](/javascript/docs/javascript-example.gif)
+As projects progress, changes are made to robots that will affect RL policies, overall kinematics, and to be able to quickly modify and test will be valuable over a webapp.
 
-# Use
+# To Be Developed:
+
+- ~~URDF Export after modification~~
+- ~~Degrees as input for YPR, and bi-directional conversion from RAD in urdf and Quaternion in threejs~~
+- URDF Mesh Manipulation in multiple modalities
+- Support drop of URDF only and use existing meshes that have been uploaded prior
+- Support for VR input to control appendages
+- Close-Loop kinematics from URDF
+- AmmoJS Physics for sim2real
+- https://gpu.rocks/#/ for matrix math speedup in simulation and animation
+- Multi-modal Communication Protocol for interaction with low-level hardware
+- Handling of sensor data (imu, encoders) and appropriate application to joints and links
+- Refined description of the above components, integrations libraries to support mentioned goals
+
+# Dev
+
+1. `npm install`
+2. `~~npm run start -s~~` 
+3. `npm i --legacy-peer-deps && npm run start`
+4. visit `localhost:9080/example`
 
 #### Basic Use
 
@@ -579,10 +597,3 @@ Visit `localhost:9080/javascript/example/dev-bundle/` to view the page.
 # LICENSE
 
 The software is available under the [Apache V2.0 license](../LICENSE).
-
-Copyright © 2020 California Institute of Technology. ALL RIGHTS
-RESERVED. United States Government Sponsorship Acknowledged.
-Neither the name of Caltech nor its operating division, the
-Jet Propulsion Laboratory, nor the names of its contributors may be
-used to endorse or promote products derived from this software
-without specific prior written permission.
