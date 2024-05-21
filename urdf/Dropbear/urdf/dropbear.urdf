@@ -1,0 +1,207 @@
+<?xml version="1.0"?><robot name="biped_robot">
+
+    <!-- Torso Link -->
+    <link name="torso">
+        <visual>
+            <origin xyz="5 26 -2.35" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/torso.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    
+    <joint name="torso_to_hips_joint" type="fixed">
+        <parent link="torso"/>
+        <child link="hipRollAssembly"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-45.0" upper="45.0"/>
+    </joint>
+
+    <!-- Hip Roll Assembly -->
+    <link name="hipRollAssembly">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/hipRollAssembly.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    
+    <!-- Right Hip Roll Motor -->
+    <link name="rightHipRollMotor">
+        <visual>
+            <origin xyz="0 0 1" rpy="-0.17453292519943295 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/rightHipRollMotor.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="hipRollAssembly_to_rightHipRollMotor" type="revolute">
+        <parent link="hipRollAssembly"/>
+        <child link="rightHipRollMotor"/>
+        <origin xyz="1.1 0 3" rpy="0.17453292519943295 0 0"/>
+        <axis xyz="1.0 0 0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+    </joint>
+
+    <!-- Right Hip Yaw Bracket -->
+    <link name="hipYawBracket">
+        <visual>
+            <origin xyz="0 -2 0.2" rpy="-0.17453292519943295 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/hipYawBracket.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightHipRollMotor_to_hipYawBracket" type="revolute">
+        <parent link="rightHipRollMotor"/>
+        <child link="hipYawBracket"/>
+        <origin xyz="1 -2 0" rpy="0 0 0"/>
+        <axis xyz="0 1.0 0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+    </joint>
+
+    <!-- Right Hip Pitch Knee Motors -->
+    <link name="rightHipPitchKneeMotors">
+        <visual>
+            <origin xyz="-1.6 -2.45 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/rightHipPitchKneeMotors.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="hipYawBracket_to_rightHipPitchKneeMotors" type="revolute">
+        <parent link="hipYawBracket"/>
+        <child link="rightHipPitchKneeMotors"/>
+        <origin xyz="0 -3 3" rpy="0 0 -0.06981317007977318"/>
+        <axis xyz="0 0 1.0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+    </joint>
+
+    <!-- Right Hip Pitch Knee Front Bracket -->
+    <link name="rightHipPitchKneeFrontBracket">
+        <visual>
+            <origin xyz="5.8 1.3 -14" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/rightHipPitchKneeFrontBracket.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightHipPitchKneeMotors_to_rightHipPitchKneeFrontBracket" type="revolute">
+        <parent link="rightHipPitchKneeMotors"/>
+        <child link="rightHipPitchKneeFrontBracket"/>
+        <origin xyz="2.48 -0.8 3.6" rpy="0 0 0"/>
+        <axis xyz="0 0 1.0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+    </joint>
+
+    <!-- Right Hip Pitch Knee Rear Bracket -->
+    <link name="rightHipPitchKneeRearBracket">
+        <visual>
+            <origin xyz="0.6 -6.7 2" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/rightHipPitchKneeRearBracket.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightHipPitchKneeMotors_to_rightHipPitchKneeRearBracket" type="mimic">
+        <parent link="rightHipPitchKneeMotors"/>
+        <child link="rightHipPitchKneeRearBracket"/>
+        <origin xyz="-4 -5 3" rpy="0 0 0"/>
+        <axis xyz="0 0 1.0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+        <mimic joint="rightHipPitchKneeMotors_to_rightHipPitchKneeFrontBracket" multiplier="1.2" offset="0"/>
+    </joint>
+
+    <!-- Right Knee Primary Hanger -->
+    <link name="rightKneePrimaryHangar">
+        <visual>
+            <origin xyz="-1.6 -1.3 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/kneePrimaryHangar.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightHipPitchKneeFrontBracket_to_rightKneePrimaryHangar" type="mimic">
+        <parent link="rightHipPitchKneeFrontBracket"/>
+        <child link="rightKneePrimaryHangar"/>
+        <origin xyz="-0.1 -16 -0.75" rpy="0 0 0"/>
+        <axis xyz="0 0 1.0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+        <mimic joint="rightHipPitchKneeMotors_to_rightHipPitchKneeFrontBracket" multiplier="-1.5" offset="0"/>
+
+    </joint>
+
+    <!-- Right Knee Secondary Hanger -->
+    <link name="rightKneeSecondaryHangar">
+        <visual>
+            <origin xyz="1.7 -2.4 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/kneeSecondaryHangar.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightHipPitchKneeFrontBracket_to_rightKneeSecondaryHangar" type="mimic">
+        <parent link="rightHipPitchKneeFrontBracket"/>
+        <child link="rightKneeSecondaryHangar"/>
+        <origin xyz="-3.2 -16.7 -0.8" rpy="0 0 0.17453292519943295"/>
+        <axis xyz="0 0 1.0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+        <mimic joint="rightHipPitchKneeMotors_to_rightHipPitchKneeFrontBracket" multiplier="-2.5" offset="0"/>
+    </joint>
+
+    <!-- Right Calf -->
+    <link name="rightCalf">
+        <visual>
+            <origin xyz="1.5 -10 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/rightCalf.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightKneePrimaryHangar_to_rightCalf" type="mimic">
+        <parent link="rightKneePrimaryHangar"/>
+        <child link="rightCalf"/>
+        <origin xyz="-3.65 -5 1.5" rpy="0 0 0"/>
+        <axis xyz="0 0 1.0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+
+        <mimic joint="rightHipPitchKneeMotors_to_rightHipPitchKneeFrontBracket" multiplier="-1" offset="0"/>
+    </joint>
+
+    <!-- Right Ankle -->
+    <link name="ankle">
+        <visual>
+            <origin xyz="0 -2 -1" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/ankle.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="rightCalf_to_ankle" type="revolute">
+        <parent link="rightCalf"/>
+        <child link="ankle"/>
+        <origin xyz="3.5 -21.5 2" rpy="0.17453292519943295 1.5707963267948966 0"/>
+        <axis xyz="1.0 0 0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+    </joint>
+
+    <!-- Right Foot -->
+    <link name="foot">
+        <visual>
+            <origin xyz="0 23.5 -0.5" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="../meshes/foot.stl" scale="0.05 0.05 0.05"/>
+            </geometry>
+        </visual>
+    </link>
+    <joint name="ankle_to_foot" type="revolute">
+        <parent link="ankle"/>
+        <child link="foot"/>
+        <origin xyz="0 -2 1.2" rpy="0 -1.5707963267948966 0"/>
+        <axis xyz="1.0 0 0"/>
+        <limit lower="-6.283185307179586" upper="6.283185307179586" effort="0" velocity="0"/>
+    </joint>
+
+</robot>

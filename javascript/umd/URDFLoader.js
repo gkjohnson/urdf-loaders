@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/loaders/STLLoader.js'), require('three/examples/jsm/loaders/ColladaLoader.js')) :
     typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/loaders/STLLoader.js', 'three/examples/jsm/loaders/ColladaLoader.js'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
-}(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
+})(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
 
     function _interopNamespace(e) {
         if (e && e.__esModule) return e;
@@ -13,18 +13,18 @@
                     var d = Object.getOwnPropertyDescriptor(e, k);
                     Object.defineProperty(n, k, d.get ? d : {
                         enumerable: true,
-                        get: function () {
-                            return e[k];
-                        }
+                        get: function () { return e[k]; }
                     });
                 }
             });
         }
-        n['default'] = e;
+        n["default"] = e;
         return Object.freeze(n);
     }
 
     var THREE__namespace = /*#__PURE__*/_interopNamespace(THREE);
+
+    const _tempAxis = new THREE.Vector3();
 
     class URDFBase extends THREE.Object3D {
 
@@ -171,9 +171,14 @@
         }
 
         /* Public Functions */
+        /**
+         * @param {...number|null} values The joint value components to set, optionally null for no-op
+         * @returns {boolean} Whether the invocation of this function resulted in an actual change to the joint value
+         */
         setJointValue(...values) {
 
-            values = values.map(v => parseFloat(v));
+            // Parse all incoming values into numbers except null, which we treat as a no-op for that value component.
+            values = values.map(v => v === null ? null : parseFloat(v));
 
             if (!this.origPosition || !this.origQuaternion) {
 
@@ -243,7 +248,8 @@
                     }
 
                     this.position.copy(this.origPosition);
-                    this.position.addScaledVector(this.axis, pos);
+                    _tempAxis.copy(this.axis).applyEuler(this.rotation);
+                    this.position.addScaledVector(_tempAxis, pos);
 
                     if (this.jointValue[0] !== pos) {
 
@@ -364,6 +370,11 @@
                 }
 
             });
+
+            // Repair mimic joint references once we've re-accumulated all our joint data
+            for (const joint in this.joints) {
+                this.joints[joint].mimicJoints = this.joints[joint].mimicJoints.map((mimicJoint) => this.joints[mimicJoint.name]);
+            }
 
             this.frames = {
                 ...this.colliders,
@@ -887,7 +898,7 @@
                                 .split(/\s/g)
                                 .map(v => parseFloat(v));
 
-                        material.color.setRGB(rgba[0], rgba[1], rgba[2]).convertSRGBToLinear();
+                        material.color.setRGB(rgba[0], rgba[1], rgba[2]);
                         material.opacity = rgba[3];
                         material.transparent = rgba[3] < 1;
                         material.depthWrite = !material.transparent;
@@ -902,7 +913,7 @@
                             const loader = new THREE__namespace.TextureLoader(manager);
                             const filePath = resolvePath(filename);
                             material.map = loader.load(filePath);
-                            material.map.encoding = THREE__namespace.sRGBEncoding;
+                            material.map.colorSpace = THREE__namespace.SRGBColorSpace;
 
                         }
 
@@ -1079,5 +1090,5 @@
 
     return URDFLoader;
 
-})));
+}));
 //# sourceMappingURL=URDFLoader.js.map

@@ -1,4 +1,4 @@
-import { Object3D, Vector3 } from 'three';
+import { Object3D, Vector3, Quaternion  } from 'three';
 
 const _tempAxis = new Vector3();
 
@@ -63,195 +63,165 @@ class URDFLink extends URDFBase {
 
 class URDFJoint extends URDFBase {
 
+
+
     get jointType() {
-
+        // console.log('Accessing jointType:', this._jointType);
         return this._jointType;
-
     }
 
     set jointType(v) {
-
+        // console.log('Setting jointType from', this.jointType, 'to', v);
         if (this.jointType === v) return;
         this._jointType = v;
         this.matrixWorldNeedsUpdate = true;
         switch (v) {
-
             case 'fixed':
                 this.jointValue = [];
                 break;
-
             case 'continuous':
             case 'revolute':
             case 'prismatic':
                 this.jointValue = new Array(1).fill(0);
                 break;
-
             case 'planar':
                 this.jointValue = new Array(2).fill(0);
                 break;
-
             case 'floating':
                 this.jointValue = new Array(6).fill(0);
                 break;
-
         }
-
     }
 
     get angle() {
-
+        // console.log('Getting angle:', this.jointValue[0]);
         return this.jointValue[0];
-
     }
 
     constructor(...args) {
-
         super(...args);
-
         this.isURDFJoint = true;
         this.type = 'URDFJoint';
-
         this.jointValue = null;
         this.jointType = 'fixed';
         this.axis = new Vector3(1, 0, 0);
         this.limit = { lower: 0, upper: 0 };
         this.ignoreLimits = false;
-
         this.origPosition = null;
         this.origQuaternion = null;
-
         this.mimicJoints = [];
-
+        this.dependentMimicJoints = [];
     }
 
-    /* Overrides */
     copy(source, recursive) {
-
         super.copy(source, recursive);
-
+        // console.log('Copying properties from source', source);
         this.jointType = source.jointType;
         this.axis = source.axis.clone();
         this.limit.lower = source.limit.lower;
         this.limit.upper = source.limit.upper;
-        this.ignoreLimits = false;
-
+        this.ignoreLimits = source.ignoreLimits;
         this.jointValue = [...source.jointValue];
-
         this.origPosition = source.origPosition ? source.origPosition.clone() : null;
         this.origQuaternion = source.origQuaternion ? source.origQuaternion.clone() : null;
-
         this.mimicJoints = [...source.mimicJoints];
-
-        return this;
-
+        this.dependentMimicJoints = source.dependentMimicJoints.map(joint => joint.clone());
     }
 
-    /* Public Functions */
-    /**
-     * @param {...number|null} values The joint value components to set, optionally null for no-op
-     * @returns {boolean} Whether the invocation of this function resulted in an actual change to the joint value
-     */
     setJointValue(...values) {
-
-        // Parse all incoming values into numbers except null, which we treat as a no-op for that value component.
+        // console.log('Initial values received:', values);
         values = values.map(v => v === null ? null : parseFloat(v));
-
+        // console.log('Parsed values:', values);
         if (!this.origPosition || !this.origQuaternion) {
-
+            console.log('Initializing original position and quaternion');
             this.origPosition = this.position.clone();
             this.origQuaternion = this.quaternion.clone();
-
         }
 
+        // console.log(this.dependentMimicJoints[0]);
         let didUpdate = false;
+        this.dependentMimicJoints.forEach(mimicJoint => {
+            const mimicValues = values.map(value => value * mimicJoint.multiplier + mimicJoint.offset);
 
-        this.mimicJoints.forEach(joint => {
-
-            didUpdate = joint.updateFromMimickedJoint(...values) || didUpdate;
-
+            const angle = mimicValues[0]; // the angle in radians
+        
+            // Determine which axis is dominant for the rotation
+            const axis = mimicJoint.axis;
+            let axisVector = new Vector3();
+            if (axis.x !== 0) axisVector.set(1, 0, 0);
+            else if (axis.y !== 0) axisVector.set(0, 1, 0);
+            else if (axis.z !== 0) axisVector.set(0, 0, 1);
+        
+            // Convert the angle to a quaternion based on the dominant axis
+            const quaternion = new Quaternion().setFromAxisAngle(axisVector, angle);
+        
+            // Assign the computed quaternion to the mimic joint
+            mimicJoint.quaternion.copy(quaternion);
+        
+            // console.log('Updated Quaternion:', mimicJoint.quaternion);
+        
+            // Assuming setJointValue should now simply accept the quaternion for direct manipulation
+            didUpdate = mimicJoint.setJointValue(mimicJoint.quaternion) || didUpdate;
         });
+        
 
         switch (this.jointType) {
-
-            case 'fixed': {
-
-                return didUpdate;
-
-            }
+            case 'fixed':
+                break;
             case 'continuous':
-            case 'revolute': {
-
+            case 'revolute':
                 let angle = values[0];
-                if (angle == null) return didUpdate;
-                if (angle === this.jointValue[0]) return didUpdate;
-
+                // console.log('Current angle:', angle);
                 if (!this.ignoreLimits && this.jointType === 'revolute') {
-
                     angle = Math.min(this.limit.upper, angle);
                     angle = Math.max(this.limit.lower, angle);
-
+                    // console.log('Angle adjusted within limits:', angle);
                 }
-
-                this.quaternion
-                    .setFromAxisAngle(this.axis, angle)
-                    .premultiply(this.origQuaternion);
-
+                this.quaternion.setFromAxisAngle(this.axis, angle).premultiply(this.origQuaternion);
                 if (this.jointValue[0] !== angle) {
-
                     this.jointValue[0] = angle;
                     this.matrixWorldNeedsUpdate = true;
-                    return true;
-
-                } else {
-
-                    return didUpdate;
-
+                    didUpdate = true;
+                    // console.log('Angle updated to:', angle);
                 }
-
-            }
-
-            case 'prismatic': {
-
+                break;
+            case 'prismatic':
                 let pos = values[0];
-                if (pos == null) return didUpdate;
-                if (pos === this.jointValue[0]) return didUpdate;
-
+                console.log('Current position:', pos);
                 if (!this.ignoreLimits) {
-
                     pos = Math.min(this.limit.upper, pos);
                     pos = Math.max(this.limit.lower, pos);
-
+                    // console.log('Position adjusted within limits:', pos);
                 }
-
                 this.position.copy(this.origPosition);
                 _tempAxis.copy(this.axis).applyEuler(this.rotation);
                 this.position.addScaledVector(_tempAxis, pos);
-
                 if (this.jointValue[0] !== pos) {
-
                     this.jointValue[0] = pos;
                     this.matrixWorldNeedsUpdate = true;
-                    return true;
-
-                } else {
-
-                    return didUpdate;
-
+                    didUpdate = true;
+                    // console.log('Position updated to:', pos);
                 }
-
-            }
-
+                break;
             case 'floating':
             case 'planar':
-                // TODO: Support these joint types
-                console.warn(`'${ this.jointType }' joint not yet supported`);
-
+                console.warn(`'${this.jointType}' joint not yet supported`);
         }
 
-        return didUpdate;
+        // console.log('Did update:', didUpdate);
 
+        // console.log(this.urdfName);
+        // console.log(this.rotation);
+
+        return didUpdate;
     }
 
+    addDependentMimicJoint(mimicJoint) {
+        console.log('Adding dependent mimic joint:', mimicJoint);
+        if (!this.dependentMimicJoints.includes(mimicJoint)) {
+            this.dependentMimicJoints.push(mimicJoint);
+        }
+    }
 }
 
 class URDFMimicJoint extends URDFJoint {

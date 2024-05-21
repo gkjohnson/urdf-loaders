@@ -161,7 +161,9 @@ viewer.addEventListener('urdf-processed', () => {
             <span title="${ joint.name }">${ joint.name }</span>
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.0001" />
+            <input type="text" placeholder="${ joint.mimicJoint }" />
             `;
+
             li.setAttribute('joint-type', joint.jointType);
             li.setAttribute('joint-name', joint.name);
 
@@ -170,12 +172,16 @@ viewer.addEventListener('urdf-processed', () => {
             // update the joint display
             const slider = li.querySelector('input[type="range"]');
             const input = li.querySelector('input[type="number"]');
+            const listener = li.querySelector('input[type="text"]');
             li.update = () => {
                 const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : RAD2DEG;
                 let angle = joint.angle;
 
                 if (joint.jointType === 'revolute' || joint.jointType === 'continuous') {
                     angle *= degMultiplier;
+                }
+                if (joint.jointType === 'mimic') {
+                    listener.ariaPlaceholder = joint.mimicJoint;
                 }
 
                 if (Math.abs(angle) > 1) {
@@ -207,8 +213,19 @@ viewer.addEventListener('urdf-processed', () => {
             switch (joint.jointType) {
 
                 case 'continuous':
+                case 'fixed':
+                    listener.remove();
+                    input.remove();
+                    slider.remove();
+                    break;
+                case 'mimic':
+                    li.update = () => {};
+                    input.remove();
+                    slider.remove();
+                    break;
                 case 'prismatic':
                 case 'revolute':
+                    listener.remove();
                     break;
                 default:
                     li.update = () => {};
@@ -236,7 +253,9 @@ viewer.addEventListener('urdf-processed', () => {
 
 });
 
+
 document.addEventListener('WebComponentsReady', () => {
+    const urdfOptions = document.getElementById('urdf-options');
 
     viewer.loadMeshFunc = (path, manager, done) => {
 
@@ -284,11 +303,27 @@ document.addEventListener('WebComponentsReady', () => {
         }
 
     };
+    urdfOptions.addEventListener('click', (event) => {
+        if (event.target.tagName.toLowerCase() === 'li' && event.target.hasAttribute('urdf')) {
+            const urdf = event.target.getAttribute('urdf');
+            const up = event.target.getAttribute('up') || '';
+            viewer.urdf = urdf;
+            viewer.up = up;
+
+            // Apply the selected color or any other necessary changes
+            const color = event.target.getAttribute('color');
+            setColor(color);
+
+            // Any other necessary updates
+            updateList();
+        }
+    });
 
     document.querySelector('li[urdf]').dispatchEvent(new Event('click'));
 
     if (/javascript\/example\/bundle/i.test(window.location)) {
         viewer.package = '../../../urdf';
+        viewer.up = '';
     }
 
     registerDragEvents(viewer, () => {

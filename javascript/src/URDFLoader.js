@@ -54,7 +54,7 @@ function applyRotation(obj, rpy, additive = false) {
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
 export default
-class URDFLoader {
+    class URDFLoader {
 
     constructor(manager) {
 
@@ -105,7 +105,7 @@ class URDFLoader {
 
                 } else {
 
-                    throw new Error(`URDFLoader: Failed to load url '${ urdfPath }' with error code ${ res.status } : ${ res.statusText }.`);
+                    throw new Error(`URDFLoader: Failed to load url '${urdfPath}' with error code ${res.status} : ${res.statusText}.`);
 
                 }
 
@@ -193,7 +193,7 @@ class URDFLoader {
 
                 } else {
 
-                    console.error(`URDFLoader : ${ targetPkg } not found in provided package list.`);
+                    console.error(`URDFLoader : ${targetPkg} not found in provided package list.`);
                     return null;
 
                 }
@@ -208,17 +208,17 @@ class URDFLoader {
             let children;
             if (data instanceof Document) {
 
-                children = [ ...data.children ];
+                children = [...data.children];
 
             } else if (data instanceof Element) {
 
-                children = [ data ];
+                children = [data];
 
             } else {
 
                 const parser = new DOMParser();
                 const urdf = parser.parseFromString(data, 'text/xml');
-                children = [ ...urdf.children ];
+                children = [...urdf.children];
 
             }
 
@@ -230,7 +230,7 @@ class URDFLoader {
         // Process the <robot> node
         function processRobot(robot) {
 
-            const robotNodes = [ ...robot.children ];
+            const robotNodes = [...robot.children];
             const links = robotNodes.filter(c => c.nodeName.toLowerCase() === 'link');
             const joints = robotNodes.filter(c => c.nodeName.toLowerCase() === 'joint');
             const materials = robotNodes.filter(c => c.nodeName.toLowerCase() === 'material');
@@ -253,7 +253,7 @@ class URDFLoader {
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
-                const isRoot = robot.querySelector(`child[link="${ name }"]`) === null;
+                const isRoot = robot.querySelector(`child[link="${name}"]`) === null;
                 linkMap[name] = processLink(l, visualMap, colliderMap, isRoot ? obj : null);
 
             });
@@ -316,28 +316,22 @@ class URDFLoader {
 
             return obj;
 
-        }
-
-        // Process joint nodes and parent them
+        }// Process joint nodes and parent them
         function processJoint(joint) {
-
-            const children = [ ...joint.children ];
+            const children = [...joint.children];
             const jointType = joint.getAttribute('type');
-
             let obj;
 
             const mimicTag = children.find(n => n.nodeName.toLowerCase() === 'mimic');
             if (mimicTag) {
-
                 obj = new URDFMimicJoint();
                 obj.mimicJoint = mimicTag.getAttribute('joint');
                 obj.multiplier = parseFloat(mimicTag.getAttribute('multiplier') || 1.0);
                 obj.offset = parseFloat(mimicTag.getAttribute('offset') || 0.0);
 
+                console.log('MIMIC: ', obj);
             } else {
-
                 obj = new URDFJoint();
-
             }
 
             obj.urdfNode = joint;
@@ -352,26 +346,17 @@ class URDFLoader {
 
             // Extract the attributes
             children.forEach(n => {
-
                 const type = n.nodeName.toLowerCase();
                 if (type === 'origin') {
-
                     xyz = processTuple(n.getAttribute('xyz'));
                     rpy = processTuple(n.getAttribute('rpy'));
-
                 } else if (type === 'child') {
-
                     child = linkMap[n.getAttribute('link')];
-
                 } else if (type === 'parent') {
-
                     parent = linkMap[n.getAttribute('link')];
-
                 } else if (type === 'limit') {
-
                     obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                     obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
-
                 }
             });
 
@@ -383,17 +368,22 @@ class URDFLoader {
 
             // Set up the rotate function
             const axisNode = children.filter(n => n.nodeName.toLowerCase() === 'axis')[0];
-
             if (axisNode) {
-
                 const axisXYZ = axisNode.getAttribute('xyz').split(/\s+/g).map(num => parseFloat(num));
                 obj.axis = new THREE.Vector3(axisXYZ[0], axisXYZ[1], axisXYZ[2]);
                 obj.axis.normalize();
+            }
 
+            // If it's a mimic joint, find its master joint and link them
+            if (mimicTag) {
+                const masterJointName = mimicTag.getAttribute('joint');
+                const masterJoint = jointMap[masterJointName]; // Assuming jointMap is a map from names to joint objects
+                if (masterJoint) {
+                    masterJoint.addDependentMimicJoint(obj);
+                }
             }
 
             return obj;
-
         }
 
         // Process the <link> nodes
@@ -405,7 +395,7 @@ class URDFLoader {
 
             }
 
-            const children = [ ...link.children ];
+            const children = [...link.children];
             target.name = link.getAttribute('name');
             target.urdfName = target.name;
             target.urdfNode = link;
@@ -458,7 +448,7 @@ class URDFLoader {
 
         function processMaterial(node) {
 
-            const matNodes = [ ...node.children ];
+            const matNodes = [...node.children];
             const material = new THREE.MeshPhongMaterial();
 
             material.name = node.getAttribute('name') || '';
@@ -503,7 +493,7 @@ class URDFLoader {
         function processLinkElement(vn, materialMap = {}) {
 
             const isCollisionNode = vn.nodeName.toLowerCase() === 'collision';
-            const children = [ ...vn.children ];
+            const children = [...vn.children];
             let material = null;
 
             // get the material first
@@ -570,7 +560,10 @@ class URDFLoader {
                                     // COLLADA files the model might come in with a custom scale for unit
                                     // conversion.
                                     obj.position.set(0, 0, 0);
-                                    obj.quaternion.identity();
+                                    obj.quaternion._x = 0;
+                                    obj.quaternion._y = 0;
+                                    obj.quaternion._z = 0;
+                                    obj.quaternion._w = 0;
                                     group.add(obj);
 
                                 }
@@ -655,7 +648,7 @@ class URDFLoader {
 
         } else {
 
-            console.warn(`URDFLoader: Could not load model at ${ path }.\nNo loader available`);
+            console.warn(`URDFLoader: Could not load model at ${path}.\nNo loader available`);
 
         }
 
