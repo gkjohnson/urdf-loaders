@@ -73,8 +73,9 @@
 }
 
 * {
-    font-family: "Rajdhani", sans-serif !important;
+    font-family: "Rajdhani", sans-serif !important; scrollbar-width: none!important; 
 }
+*::-webkit-scrollbar { display: none!important;  }
 
 li {
     border-radius: 0.25rem;
@@ -310,6 +311,7 @@ ul {
     margin-bottom: unset !important;
     margin-top: 0 !important;
     /* margin-bottom: 10px; */
+    padding:8px!important;
     text-align: center;
     display: flex;
     flex-flow: column;

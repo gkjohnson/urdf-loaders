@@ -571,7 +571,7 @@ class ChartComponent extends HTMLElement {
                         type: 'time',
                         time: {
                             unit: 'millisecond',
-                            
+                            stepSize: 10, // Adjust step size to fit the typical interval between your data points
                             displayFormats: {
                                 millisecond: 'HH:mm:ss.SSS'
                             },
