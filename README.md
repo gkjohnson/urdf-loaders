@@ -39,7 +39,8 @@ As projects progress, changes are made to robots that will affect RL policies, o
 3. `npm run start`
 4. Visit [localhost:9080/javascript/example/dev-bundle/dev.html](http://localhost:9080/javascript/example/dev-bundle/dev.html)
    
-
+![image](https://github.com/robit-man/URDF-Threejs-Modifier/assets/36677806/02d95b92-0b34-4c82-bbf2-86f2d3a42204)
+`app state as of 5-22-2024`
 
 #### Basic Use
 
