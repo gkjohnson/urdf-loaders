@@ -15,7 +15,7 @@ As projects progress, changes are made to robots that will affect RL policies, o
 # Features Added:
 - Edit, Export and Apply URDF text content directly to model
 - Console Debug interface + Stats
-- Easy UI for editing Joint and Link perameters and writing to URDF file for export, or directly to model
+- Easy UI for editing Joint and Link parameters and writing to URDF file for export, or directly to model
 - Slider section Mimic joint support and master joint reference
 - Up Axis set from URDF list item
 - Resize and drag interface window
