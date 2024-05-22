@@ -201,7 +201,7 @@ viewer.addEventListener('manipulate-start', e => {
                 detail: { jointName, quaternion }
             });
             window.dispatchEvent(updateEvent);
-            console.log(`Streaming data for ${jointName}:`, quaternion);
+            //console.log(`Streaming data for ${jointName}:`, quaternion);
         }
     }, 10); // Update frequency set at 10ms
 });

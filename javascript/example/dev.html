@@ -515,13 +515,13 @@ class ChartComponent extends HTMLElement {
         this.initializeChart();
         window.addEventListener('resize', this._resizeListener);
         window.addEventListener('update-quaternion', this.handleQuaternionUpdate.bind(this));
-        console.log("Chart component connected.");
+        //console.log("Chart component connected.");
     }
 
     disconnectedCallback() {
         window.removeEventListener('resize', this._resizeListener);
         window.removeEventListener('update-quaternion', this.handleQuaternionUpdate.bind(this));
-        console.log("Chart component disconnected.");
+        //console.log("Chart component disconnected.");
     }
 
     handleQuaternionUpdate(event) {
