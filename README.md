@@ -27,10 +27,10 @@ As projects progress, changes are made to robots that will affect RL policies, o
 - Support for VR input to control appendages
 - Close-Loop kinematics from URDF
 - AmmoJS Physics for sim2real
+- Integrate IK solver from parallel repo
 - https://gpu.rocks/#/ for matrix math speedup in simulation and animation
 - Multi-modal Communication Protocol for interaction with low-level hardware
-- Handling of sensor data (imu, encoders) and appropriate application to joints and links
-- Refined description of the above components, integrations libraries to support mentioned goals
+- Integration sensor data (imu, encoders) and appropriate application to joints and links
 
 # Dev
 
