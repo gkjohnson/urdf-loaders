@@ -34,9 +34,10 @@ As projects progress, changes are made to robots that will affect RL policies, o
 
 # Dev
 
-1. `npm install`
-2. `npm run start`
-3. Visit [localhost:9080/javascript/example/dev-bundle/dev.html](http://localhost:9080/javascript/example/dev-bundle/dev.html)
+1. `cd javascript`
+2. `npm install`
+3. `npm run start`
+4. Visit [localhost:9080/javascript/example/dev-bundle/dev.html](http://localhost:9080/javascript/example/dev-bundle/dev.html)
    
 
 
