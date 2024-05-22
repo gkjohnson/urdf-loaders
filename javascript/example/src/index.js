@@ -170,10 +170,11 @@ viewer.addEventListener('joint-mouseout', e => {
 
 });
 
-let originalNoAutoRecenter;
+let originalNoAutoRecenter;let dataInterval; // Define this globally to manage the interval from different event handlers
+
 viewer.addEventListener('manipulate-start', e => {
     const jointName = e.detail; // e.detail should contain the name of the joint being manipulated
-    console.log(jointName);
+    console.log(`Manipulation started on: ${jointName}`);
     if (lastSelectedJoint && lastSelectedJoint !== jointName) {
         setTransparency(lastSelectedJoint, false); // Revert the last selected joint to opaque
     }
@@ -188,27 +189,27 @@ viewer.addEventListener('manipulate-start', e => {
     originalNoAutoRecenter = viewer.noAutoRecenter;
     viewer.noAutoRecenter = true;
 
+    // Clear any existing interval to prevent overlaps
+    clearInterval(dataInterval);
 
-     const jointData = viewer.robot.joints[jointName];
-    if (jointData) {
-        const quaternion = jointData.quaternion; // Fetch quaternion from the joint object
-        const chartContainer = document.querySelector('chart-cont');
-        console.log(quaternion);
-        if (chartContainer) {
-            const event = new CustomEvent('update-quaternion', {
+    // Set up an interval to continuously fetch and dispatch quaternion data
+    dataInterval = setInterval(() => {
+        const jointData = viewer.robot.joints[jointName];
+        if (jointData) {
+            const quaternion = jointData.quaternion;
+            const updateEvent = new CustomEvent('update-quaternion', {
                 detail: { jointName, quaternion }
             });
-            chartContainer.dispatchEvent(event);
+            window.dispatchEvent(updateEvent);
+            console.log(`Streaming data for ${jointName}:`, quaternion);
         }
-    }
+    }, 10); // Update frequency set at 10ms
 });
 
-
-
 viewer.addEventListener('manipulate-end', () => {
-
+    console.log("Manipulation ended.");
+    clearInterval(dataInterval); // Stop the data streaming when manipulation ends
     viewer.noAutoRecenter = originalNoAutoRecenter;
-
 });
 
 // create the sliders
