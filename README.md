@@ -4,7 +4,7 @@
 # URDF-ThreeJS Modifier
 Fork of [gkjohnson/urdf-loaders](https://github.com/gkjohnson/urdf-loaders) with only the JS component, and (soon) incorporating deeper sim2real control of systems connected over serial / websockets.
 
-![2024-05-20-10-34-37](https://github.com/robit-man/URDF-Threejs-Modifier/assets/36677806/969cd7b6-95dc-4ecb-a1fb-85f700afcbde)
+https://github.com/robit-man/URDF-Threejs-Modifier/assets/36677806/3a17e136-e54e-46c1-834d-7cf49be715a6
 
 # Project Overview
 
@@ -12,10 +12,16 @@ We want to create a similar experience to [the project modelbot](https://github.
 
 As projects progress, changes are made to robots that will affect RL policies, overall kinematics, and to be able to quickly modify and test will be valuable over a webapp.
 
+# Features Added:
+- Edit, Export and Apply URDF text content directly to model
+- Console Debug interface + Stats
+- Easy UI for editing Joint and Link perameters and writing to URDF file for export, or directly to model
+- Slider section Mimic joint support and master joint reference
+- Up Axis set from URDF list item
+- Resize and drag interface window
+
 # To Be Developed:
 
-- ~~URDF Export after modification~~
-- ~~Degrees as input for YPR, and bi-directional conversion from RAD in urdf and Quaternion in threejs~~
 - URDF Mesh Manipulation in multiple modalities
 - Support drop of URDF only and use existing meshes that have been uploaded prior
 - Support for VR input to control appendages
