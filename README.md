@@ -35,9 +35,11 @@ As projects progress, changes are made to robots that will affect RL policies, o
 # Dev
 
 1. `npm install`
-2. `npm run start` 
-3.[ visit `http://localhost:9080/javascript/example/dev-bundle/dev.html`
-](http://localhost:9080/javascript/example/dev-bundle/dev.html)
+2. `npm run start`
+3. Visit [localhost:9080/javascript/example/dev-bundle/dev.html](http://localhost:9080/javascript/example/dev-bundle/dev.html)
+   
+
+
 #### Basic Use
 
 Loading a URDF file from a server.
