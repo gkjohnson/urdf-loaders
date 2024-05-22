@@ -1,4 +1,4 @@
-import { Object3D, Vector3, Quaternion  } from 'three';
+import { Object3D, Vector3, Quaternion } from 'three';
 
 const _tempAxis = new Vector3();
 
@@ -63,8 +63,6 @@ class URDFLink extends URDFBase {
 
 class URDFJoint extends URDFBase {
 
-
-
     get jointType() {
         // console.log('Accessing jointType:', this._jointType);
         return this._jointType;
@@ -76,6 +74,7 @@ class URDFJoint extends URDFBase {
         this._jointType = v;
         this.matrixWorldNeedsUpdate = true;
         switch (v) {
+
             case 'fixed':
                 this.jointValue = [];
                 break;
@@ -90,6 +89,7 @@ class URDFJoint extends URDFBase {
             case 'floating':
                 this.jointValue = new Array(6).fill(0);
                 break;
+
         }
     }
 
@@ -133,7 +133,7 @@ class URDFJoint extends URDFBase {
         values = values.map(v => v === null ? null : parseFloat(v));
         // console.log('Parsed values:', values);
         if (!this.origPosition || !this.origQuaternion) {
-            //console.log('Initializing original position and quaternion');
+            // console.log('Initializing original position and quaternion');
             this.origPosition = this.position.clone();
             this.origQuaternion = this.quaternion.clone();
         }
@@ -144,28 +144,28 @@ class URDFJoint extends URDFBase {
             const mimicValues = values.map(value => value * mimicJoint.multiplier + mimicJoint.offset);
 
             const angle = mimicValues[0]; // the angle in radians
-        
+
             // Determine which axis is dominant for the rotation
             const axis = mimicJoint.axis;
-            let axisVector = new Vector3();
+            const axisVector = new Vector3();
             if (axis.x !== 0) axisVector.set(1, 0, 0);
             else if (axis.y !== 0) axisVector.set(0, 1, 0);
             else if (axis.z !== 0) axisVector.set(0, 0, 1);
-        
+
             // Convert the angle to a quaternion based on the dominant axis
             const quaternion = new Quaternion().setFromAxisAngle(axisVector, angle);
-        
+
             // Assign the computed quaternion to the mimic joint
             mimicJoint.quaternion.copy(quaternion);
-        
+
             // console.log('Updated Quaternion:', mimicJoint.quaternion);
-        
+
             // Assuming setJointValue should now simply accept the quaternion for direct manipulation
             didUpdate = mimicJoint.setJointValue(mimicJoint.quaternion) || didUpdate;
         });
-        
 
         switch (this.jointType) {
+
             case 'fixed':
                 break;
             case 'continuous':
@@ -205,7 +205,8 @@ class URDFJoint extends URDFBase {
                 break;
             case 'floating':
             case 'planar':
-                console.warn(`'${this.jointType}' joint not yet supported`);
+                console.warn(`'${ this.jointType }' joint not yet supported`);
+
         }
 
         // console.log('Did update:', didUpdate);
@@ -217,11 +218,12 @@ class URDFJoint extends URDFBase {
     }
 
     addDependentMimicJoint(mimicJoint) {
-        //console.log('Adding dependent mimic joint:', mimicJoint);
+        // console.log('Adding dependent mimic joint:', mimicJoint);
         if (!this.dependentMimicJoints.includes(mimicJoint)) {
             this.dependentMimicJoints.push(mimicJoint);
         }
     }
+
 }
 
 class URDFMimicJoint extends URDFJoint {

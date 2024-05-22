@@ -9,6 +9,10 @@
 
 }
 
+.active ul {
+    margin-bottom: -12px;
+}
+
 #statsWindow {
     width: 80px;
     height: 48px;
@@ -68,7 +72,7 @@
 }
 
 * {
-    font-family: "Rajdhani", sans-serif!important;
+    font-family: "Rajdhani", sans-serif !important;
 }
 
 li {
@@ -85,7 +89,7 @@ input[type="text"] {
 
 select {
     border-radius: 0.25rem;
-    font-family: "Rajdhani", sans-serif!important;
+    font-family: "Rajdhani", sans-serif !important;
 }
 
 option {
@@ -139,8 +143,7 @@ ul::-webkit-scrollbar {
     display: none;
 }
 
-#sliderSection {
-}
+#sliderSection {}
 
 #joint-selection-save,
 #generic-selection,
@@ -242,6 +245,7 @@ ul {
     flex-flow: column;
     gap: 16px;
     margin: unset !important;
+    position:relative;
 }
 
 .debug-stack {

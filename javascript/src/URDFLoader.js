@@ -54,7 +54,7 @@ function applyRotation(obj, rpy, additive = false) {
 /* URDFLoader Class */
 // Loads and reads a URDF file into a THREEjs Object3D format
 export default
-    class URDFLoader {
+class URDFLoader {
 
     constructor(manager) {
 
@@ -105,7 +105,7 @@ export default
 
                 } else {
 
-                    throw new Error(`URDFLoader: Failed to load url '${urdfPath}' with error code ${res.status} : ${res.statusText}.`);
+                    throw new Error(`URDFLoader: Failed to load url '${ urdfPath }' with error code ${ res.status } : ${ res.statusText }.`);
 
                 }
 
@@ -193,7 +193,7 @@ export default
 
                 } else {
 
-                    console.error(`URDFLoader : ${targetPkg} not found in provided package list.`);
+                    console.error(`URDFLoader : ${ targetPkg } not found in provided package list.`);
                     return null;
 
                 }
@@ -253,7 +253,7 @@ export default
             links.forEach(l => {
 
                 const name = l.getAttribute('name');
-                const isRoot = robot.querySelector(`child[link="${name}"]`) === null;
+                const isRoot = robot.querySelector(`child[link="${ name }"]`) === null;
                 linkMap[name] = processLink(l, visualMap, colliderMap, isRoot ? obj : null);
 
             });
@@ -329,7 +329,7 @@ export default
                 obj.multiplier = parseFloat(mimicTag.getAttribute('multiplier') || 1.0);
                 obj.offset = parseFloat(mimicTag.getAttribute('offset') || 0.0);
 
-                //console.log('MIMIC: ', obj);
+                // console.log('MIMIC: ', obj);
             } else {
                 obj = new URDFJoint();
             }
@@ -648,7 +648,7 @@ export default
 
         } else {
 
-            console.warn(`URDFLoader: Could not load model at ${path}.\nNo loader available`);
+            console.warn(`URDFLoader: Could not load model at ${ path }.\nNo loader available`);
 
         }
 
