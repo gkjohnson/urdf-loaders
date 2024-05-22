@@ -6,6 +6,7 @@
     padding-top: 8px;
     min-height: 200px;
     width: 100% !important;
+    margin-top:unset!important;
 
 }
 
@@ -260,10 +261,31 @@ ul {
     padding: 0px;
     background: #0000;
     gap: 8px;
-    margin-top: 0px;
+    margin-top: -1rem;
 }
 
 .debug-stack button {
+    background: #555;
+    color: #fffa;
+    text-align: left;
+}
+
+.chart-stack {
+    width: 0px;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 0px dashed #fffa;
+    margin-bottom: 0px !important;
+    display: flex;
+    flex-flow: column;
+    height: 0px;
+    padding: 0px;
+    background: #0000;
+    gap: 8px;
+    margin-top: -1rem;
+}
+
+.chart-stack button {
     background: #555;
     color: #fffa;
     text-align: left;
@@ -284,9 +306,28 @@ ul {
     text-transform: uppercase;
 
 }
+#toggle-chart {
+    margin-bottom: unset !important;
+    margin-top: 0 !important;
+    /* margin-bottom: 10px; */
+    text-align: center;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    font-weight: bold;
+    min-height: 24px;
+    min-width: 24px;
+    font-size: 2rem;
+    text-transform: uppercase;
+
+}
 
 #toggle-debug:hover {
     background-color: #ea0;
+}
+
+#toggle-chart:hover {
+    background-color: rgb(0, 182, 238);
 }
 
 #toggle-controls::before {
@@ -763,6 +804,15 @@ input:focus {
     height: 24px;
     background-image: radial-gradient(#0002, transparent, transparent);
 }
+
+#toggle-chart{
+    background-image: url(chart.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size:1.5rem;
+    height:36px;
+    width: 100% !important;
+    font-weight: normal;}
 
 #controls #buttoncol>#toggle-controls:before {
     transition: all 0.2s ease;

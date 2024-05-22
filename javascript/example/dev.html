@@ -12,6 +12,123 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet" />
     <link href="./dev.css" type="text/css" rel="stylesheet" />
     <script src="./src/redirect.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <script>
+        class ChartComponent extends HTMLElement {
+    constructor() {
+        super();
+        this.chart = null;
+        this._resizeListener = () => this.resizeChart();
+    }
+
+    connectedCallback() {
+        this.renderChart();
+        window.addEventListener('resize', this._resizeListener);
+        this.startDataListener();
+        console.log("Chart component connected and data listener started.");
+    }
+
+    disconnectedCallback() {
+        window.removeEventListener('resize', this._resizeListener);
+        this.stopDataListener();
+        console.log("Chart component disconnected and data listener stopped.");
+    }
+
+    resizeChart() {
+        if (this.chart) {
+            this.chart.resize();
+            console.log("Chart resized.");
+        }
+    }
+
+    startDataListener() {
+        this.dataInterval = setInterval(() => {
+            const newData = this.fetchQuaternionData();
+            if (newData) {
+                console.log("New data fetched:", newData);
+                this.updateChart(newData);
+            } else {
+                console.log("Failed to fetch new data.");
+            }
+        }, 1000);
+    }
+
+    stopDataListener() {
+        clearInterval(this.dataInterval);
+        console.log("Data listener stopped.");
+    }
+
+    fetchQuaternionData() {
+        // Simulating data fetching
+        return {
+            x: Math.random(),
+            y: Math.random(),
+            z: Math.random(),
+            w: Math.random(),
+            jointName: "Joint1"
+        };
+    }
+
+    updateChart(data) {
+        const { jointName, x, y, z, w } = data;
+        this.chart.data.labels.push(jointName);
+        this.chart.data.datasets[0].data.push(x);
+        this.chart.data.datasets[1].data.push(y);
+        this.chart.data.datasets[2].data.push(z);
+        this.chart.data.datasets[3].data.push(w);
+
+        if (this.chart.data.labels.length > 50) {
+            this.chart.data.labels.shift();
+            this.chart.data.datasets.forEach(dataset => dataset.data.shift());
+        }
+
+        this.chart.update();
+        console.log(`Chart updated with new data for ${jointName}. Current data length: ${this.chart.data.labels.length}`);
+    }
+
+    renderChart() {
+        const canvas = document.createElement('canvas');
+        this.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Quaternion X', data: [], borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgba(255, 99, 132, 0.2)' },
+                    { label: 'Quaternion Y', data: [], borderColor: 'rgb(54, 162, 235)', backgroundColor: 'rgba(54, 162, 235, 0.2)' },
+                    { label: 'Quaternion Z', data: [], borderColor: 'rgb(75, 192, 192)', backgroundColor: 'rgba(75, 192, 192, 0.2)' },
+                    { label: 'Quaternion W', data: [], borderColor: 'rgb(153, 102, 255)', backgroundColor: 'rgba(153, 102, 255, 0.2)' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'time', time: { unit: 'second' } },
+                    y: { beginAtZero: false }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'black'  // Ensuring visibility on all backgrounds
+                        }
+                    }
+                }
+            }
+        });
+        console.log("Chart rendered and ready.");
+    }
+}
+
+customElements.define('chart-cont', ChartComponent);
+
+
+
+    </script>
 
 </head>
 
@@ -103,8 +220,7 @@
                     <div class="urdf-editor">
                         <textarea id="urdf-editor"></textarea>
                         <div class="smallbuttons">
-                            <button class="smallbutton" id="apply-urdf-btn"><img
-                                    src="./upload.svg" alt=""></button>
+                            <button class="smallbutton" id="apply-urdf-btn"><img src="./upload.svg" alt=""></button>
                             <button class="smallbutton" id="save-urdf-btn"><img src="./download.svg" alt=""></button>
                         </div>
                     </div>
@@ -144,7 +260,7 @@
                 </div>
                 <div id="buttoncol">
                     <div id="toggle-controls"></div>
-                    
+
                     <button id="toggle-debug" onclick="toggleWrap2('debugtoggle')"></button>
 
                     <div class="debug-stack" id="debugtoggle">
@@ -156,6 +272,7 @@
                                 <button onClick="console.log(viewer);">Log Viewer</button>
                                 <button onClick="populateJointNames(), populateLinkNames()">Cycle List</button>
                                 <button id="reload-btn">Reload</button>
+                                <button id="chart-active">Chart</button>
                                 <button>Phys</button>
                                 <button for="colorPicker" class="color-select">
                                     <div class="color-wrapper"><input type="color" id="colorPicker" name="color"
@@ -178,6 +295,13 @@
                             <div id="do-animate" class="toggle checked">Animate Joints</div>
                         </div>
                     </div>
+
+                    <button id="toggle-chart" onclick="toggleWrap2('charttoggle')"></button>
+
+                    <div class="chart-stack" id="charttoggle">
+                        <chart-cont style="height: 100%;min-width:200px;min-height:200px; width: 100%; background: #fff5;" min="0" max="100" values="[10, 20, 30, 40, 50]"></chart-cont>
+                    </div>
+
                     <div id="window-scale">
                         <div id="windowplus">+</div>
                         <div id="windowminus">-</div>
@@ -192,11 +316,14 @@
 
 
     <script>
+
+
         /* eslint-disable */
         /* globals viewer */
         /* eslint-disable */
         /* globals viewer */
         viewer = document.querySelector('urdf-viewer');
+        console.log(viewer);
 
         // Ensure this function is available globally if needed elsewhere
         window.editURDF = editURDF;

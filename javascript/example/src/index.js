@@ -173,6 +173,7 @@ viewer.addEventListener('joint-mouseout', e => {
 let originalNoAutoRecenter;
 viewer.addEventListener('manipulate-start', e => {
     const jointName = e.detail; // e.detail should contain the name of the joint being manipulated
+    console.log(jointName);
     if (lastSelectedJoint && lastSelectedJoint !== jointName) {
         setTransparency(lastSelectedJoint, false); // Revert the last selected joint to opaque
     }
@@ -186,7 +187,23 @@ viewer.addEventListener('manipulate-start', e => {
     }
     originalNoAutoRecenter = viewer.noAutoRecenter;
     viewer.noAutoRecenter = true;
+
+
+     const jointData = viewer.robot.joints[jointName];
+    if (jointData) {
+        const quaternion = jointData.quaternion; // Fetch quaternion from the joint object
+        const chartContainer = document.querySelector('chart-cont');
+        console.log(quaternion);
+        if (chartContainer) {
+            const event = new CustomEvent('update-quaternion', {
+                detail: { jointName, quaternion }
+            });
+            chartContainer.dispatchEvent(event);
+        }
+    }
 });
+
+
 
 viewer.addEventListener('manipulate-end', () => {
 
