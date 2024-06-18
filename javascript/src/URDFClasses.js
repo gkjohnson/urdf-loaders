@@ -1,6 +1,12 @@
-import { Object3D, Vector3 } from 'three';
+import { Euler, Object3D, Vector3, Quaternion, Matrix4 } from 'three';
 
 const _tempAxis = new Vector3();
+const _tempEuler = new Euler();
+const _tempTransform = new Matrix4();
+const _tempOrigTransform = new Matrix4();
+const _tempQuat = new Quaternion();
+const _tempScale = new Vector3(1.0, 1.0, 1.0);
+const _tempPosition = new Vector3();
 
 class URDFBase extends Object3D {
 
@@ -87,7 +93,9 @@ class URDFJoint extends URDFBase {
                 break;
 
             case 'planar':
-                this.jointValue = new Array(2).fill(0);
+                // Planar joints are, 3dof: position XY and rotation Z.
+                this.jointValue = new Array(3).fill(0);
+                this.axis = new Vector3(0, 0, 1);
                 break;
 
             case 'floating':
@@ -148,6 +156,7 @@ class URDFJoint extends URDFBase {
 
     /* Public Functions */
     /**
+     * Set the value or values of this joint
      * @param {...number|null} values The joint value components to set, optionally null for no-op
      * @returns {boolean} Whether the invocation of this function resulted in an actual change to the joint value
      */
@@ -241,10 +250,63 @@ class URDFJoint extends URDFBase {
 
             }
 
-            case 'floating':
-            case 'planar':
-                // TODO: Support these joint types
-                console.warn(`'${ this.jointType }' joint not yet supported`);
+            case 'floating': {
+
+                // no-op if all values are identical to existing value or are null
+                if (this.jointValue.every((value, index) => values[index] === value || values[index] === null)) return didUpdate;
+                // Floating joints have six degrees of freedom: X, Y, Z, R, P, Y.
+                this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
+                this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
+                this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
+                this.jointValue[3] = values[3] !== null ? values[3] : this.jointValue[3];
+                this.jointValue[4] = values[4] !== null ? values[4] : this.jointValue[4];
+                this.jointValue[5] = values[5] !== null ? values[5] : this.jointValue[5];
+
+                // Compose transform of joint origin and transform due to joint values
+                _tempOrigTransform.compose(this.origPosition, this.origQuaternion, _tempScale);
+                _tempQuat.setFromEuler(
+                    _tempEuler.set(
+                        this.jointValue[3],
+                        this.jointValue[4],
+                        this.jointValue[5],
+                        'XYZ',
+                    ),
+                );
+                _tempPosition.set(this.jointValue[0], this.jointValue[1], this.jointValue[2]);
+                _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
+
+                // Calcualte new transform
+                _tempOrigTransform.premultiply(_tempTransform);
+                this.position.setFromMatrixPosition(_tempOrigTransform);
+                this.rotation.setFromRotationMatrix(_tempOrigTransform);
+
+                this.matrixWorldNeedsUpdate = true;
+                return true;
+            }
+
+            case 'planar': {
+
+                // no-op if all values are identical to existing value or are null
+                if (this.jointValue.every((value, index) => values[index] === value || values[index] === null)) return didUpdate;
+
+                this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
+                this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
+                this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
+
+                // Compose transform of joint origin and transform due to joint values
+                _tempOrigTransform.compose(this.origPosition, this.origQuaternion, _tempScale);
+                _tempQuat.setFromAxisAngle(this.axis, this.jointValue[2]);
+                _tempPosition.set(this.jointValue[0], this.jointValue[1], 0.0);
+                _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
+
+                // Calcualte new transform
+                _tempOrigTransform.premultiply(_tempTransform);
+                this.position.setFromMatrixPosition(_tempOrigTransform);
+                this.rotation.setFromRotationMatrix(_tempOrigTransform);
+
+                this.matrixWorldNeedsUpdate = true;
+                return true;
+            }
 
         }
 

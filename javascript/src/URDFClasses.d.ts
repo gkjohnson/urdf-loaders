@@ -59,7 +59,7 @@ export interface URDFRobot extends URDFLink {
     visual: { [ key: string ]: URDFVisual };
     frames: { [ key: string ]: Object3D };
 
-    setJointValue(jointName: String, value0: Number, value1?: Number, value2?: Number): boolean;
+    setJointValue(jointName: String, ...values: number[]): boolean;
     setJointValues(values: { [ key: string ]: Number | Number[] }): boolean;
     getFrame(name: String): Object3D;
 
