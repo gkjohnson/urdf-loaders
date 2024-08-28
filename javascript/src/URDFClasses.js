@@ -298,7 +298,7 @@ class URDFJoint extends URDFBase {
                 _tempPosition.set(this.jointValue[0], this.jointValue[1], 0.0);
                 _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
 
-                // Calcualte new transform
+                // Calculate new transform
                 _tempOrigTransform.premultiply(_tempTransform);
                 this.position.setFromMatrixPosition(_tempOrigTransform);
                 this.rotation.setFromRotationMatrix(_tempOrigTransform);
