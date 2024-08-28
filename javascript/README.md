@@ -116,9 +116,6 @@ robot.setJointValue( jointName, jointAngle );
 robot.joints[ jointName ].setJointValue( jointAngle );
 ```
 
-## Limitations
-- Only `prismatic`, `continuous`, `revolute`, and `fixed` joints are supported.
-
 # API
 
 ## URDFOptions
