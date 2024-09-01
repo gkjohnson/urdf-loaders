@@ -23,6 +23,7 @@ export default class URDFLoader {
     loadMeshCb: MeshLoadFunc;
 
     constructor(manager?: LoadingManager);
+    loadAsync(urdf: string): Promise<URDFRobot>;
     load(
         url: string,
         onLoad: (robot: URDFRobot) => void,
