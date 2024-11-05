@@ -60,6 +60,7 @@ class URDFLoader {
 
         this.manager = manager || THREE.DefaultLoadingManager;
         this.loadMeshCb = this.defaultMeshLoader.bind(this);
+        this.loadMaterialCb = this.defaultMaterialLoader.bind(this);
         this.parseVisual = true;
         this.parseCollision = false;
         this.packages = '';
@@ -459,9 +460,9 @@ class URDFLoader {
         function processMaterial(node) {
 
             const matNodes = [ ...node.children ];
-            const material = new THREE.MeshPhongMaterial();
+            const parameters = {};
 
-            material.name = node.getAttribute('name') || '';
+            parameters.name = node.getAttribute('name') || '';
             matNodes.forEach(n => {
 
                 const type = n.nodeName.toLowerCase();
@@ -473,10 +474,10 @@ class URDFLoader {
                             .split(/\s/g)
                             .map(v => parseFloat(v));
 
-                    material.color.setRGB(rgba[0], rgba[1], rgba[2]);
-                    material.opacity = rgba[3];
-                    material.transparent = rgba[3] < 1;
-                    material.depthWrite = !material.transparent;
+                    parameters.color = new THREE.Color(rgba[0], rgba[1], rgba[2]);
+                    parameters.opacity = rgba[3];
+                    parameters.transparent = rgba[3] < 1;
+                    parameters.depthWrite = !parameters.transparent;
 
                 } else if (type === 'texture') {
 
@@ -487,15 +488,15 @@ class URDFLoader {
 
                         const loader = new THREE.TextureLoader(manager);
                         const filePath = resolvePath(filename);
-                        material.map = loader.load(filePath);
-                        material.map.colorSpace = THREE.SRGBColorSpace;
+                        parameters.map = loader.load(filePath);
+                        parameters.map.colorSpace = THREE.SRGBColorSpace;
 
                     }
 
                 }
             });
 
-            return material;
+            return this.loadMaterialCb(parameters);
 
         }
 
@@ -523,7 +524,7 @@ class URDFLoader {
 
             } else {
 
-                material = new THREE.MeshPhongMaterial();
+                material = this.loadMaterialCb();
 
             }
 
@@ -644,7 +645,8 @@ class URDFLoader {
 
             const loader = new STLLoader(manager);
             loader.load(path, geom => {
-                const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
+                const material = this.loadMaterialCb();
+                const mesh = new THREE.Mesh(geom, material);
                 done(mesh);
             });
 
@@ -659,6 +661,10 @@ class URDFLoader {
 
         }
 
+    }
+
+    defaultMaterialLoader(parameters) {
+        return new THREE.MeshPhongMaterial(parameters);
     }
 
 };

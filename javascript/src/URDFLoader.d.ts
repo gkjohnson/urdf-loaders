@@ -1,4 +1,4 @@
-import { LoadingManager, Object3D } from 'three';
+import { LoadingManager, Object3D, Material, MaterialParameters } from 'three';
 import { URDFRobot } from './URDFClasses';
 
 interface MeshLoadDoneFunc {
@@ -9,10 +9,15 @@ interface MeshLoadFunc{
     (url: string, manager: LoadingManager, onLoad: MeshLoadDoneFunc): void;
 }
 
+interface MaterialLoadFunc {
+    <T extends MaterialParameters>(parameters?: T): Material;
+}
+
 export default class URDFLoader {
 
     manager: LoadingManager;
     defaultMeshLoader: MeshLoadFunc;
+    defaultMaterialLoader: MaterialLoadFunc;
 
     // options
     fetchOptions: Object;
@@ -21,6 +26,7 @@ export default class URDFLoader {
     parseCollision: boolean;
     packages: string | { [key: string]: string } | ((targetPkg: string) => string);
     loadMeshCb: MeshLoadFunc;
+    loadMaterialCb: MaterialLoadFunc;
 
     constructor(manager?: LoadingManager);
     loadAsync(urdf: string): Promise<URDFRobot>;
