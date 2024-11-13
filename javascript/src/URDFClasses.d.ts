@@ -14,10 +14,19 @@ export interface URDFVisual extends Object3D {
 
 }
 
+interface URDFInertial {
+
+    origin: { xyz: Vector3 | null, rpy: Vector3 | null } | null;
+    mass: Number | null;
+    inertia: { ixx: Number, ixy: Number, ixz: Number, iyy: Number, iyz: Number, izz: Number } | null;
+
+}
+
 export interface URDFLink extends Object3D {
 
     isURDFLink: true;
     urdfNode: Element | null;
+    inertial: URDFInertial | null;
 
 }
 
@@ -30,7 +39,7 @@ export interface URDFJoint extends Object3D {
     jointType: 'fixed' | 'continuous' | 'revolute' | 'planar' | 'prismatic' | 'floating';
     angle: Number;
     jointValue: Number[];
-    limit: { lower: Number, upper: Number }; // TODO: add more
+    limit: { lower: Number, upper: Number, effort: Number | null, velocity: Number | null };
     ignoreLimits: Boolean;
     mimicJoints: URDFMimicJoint[];
 

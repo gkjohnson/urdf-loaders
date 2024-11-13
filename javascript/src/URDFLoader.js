@@ -37,6 +37,14 @@ function processTuple(val) {
 
 }
 
+// take a vector "x y z" and process it into
+// a THREE.Vector3
+function processVector(val) {
+
+    return new THREE.Vector3(...processTuple(val));
+
+}
+
 // applies a rotation a threejs object in URDF order
 function applyRotation(obj, rpy, additive = false) {
 
@@ -371,6 +379,8 @@ class URDFLoader {
 
                     obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                     obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
+                    obj.limit.effort = parseFloat(n.getAttribute('effort') || obj.limit.effort);
+                    obj.limit.velocity = parseFloat(n.getAttribute('velocity') || obj.limit.velocity);
 
                 }
             });
@@ -409,6 +419,36 @@ class URDFLoader {
             target.name = link.getAttribute('name');
             target.urdfName = target.name;
             target.urdfNode = link;
+
+            // Extract the attributes
+            children.forEach(n => {
+
+                const type = n.nodeName.toLowerCase();
+                if (type === 'inertial') {
+                    const subNodes = [ ...n.children ];
+                    const origin = subNodes.find(sn => sn.nodeName.toLowerCase() === 'origin');
+                    const xyz = origin ? origin.getAttribute('xyz') : null;
+                    const rpy = origin ? origin.getAttribute('rpy') : null;
+                    const mass = subNodes.find(sn => sn.nodeName.toLowerCase() === 'mass');
+                    const inertia = subNodes.find(sn => sn.nodeName.toLowerCase() === 'inertia');
+                    target.inertial = origin || mass || inertia ? {
+                        origin: xyz || rpy ? {
+                            xyz: xyz ? processVector(xyz) : null,
+                            rpy: rpy ? processVector(rpy) : null,
+                        } : null,
+                        mass: mass ? parseFloat(mass.getAttribute('value') || 0) : null,
+                        inertia: inertia ? {
+                            ixx: parseFloat(inertia.getAttribute('ixx') || 0),
+                            ixy: parseFloat(inertia.getAttribute('ixy') || 0),
+                            ixz: parseFloat(inertia.getAttribute('ixz') || 0),
+                            iyy: parseFloat(inertia.getAttribute('iyy') || 0),
+                            iyz: parseFloat(inertia.getAttribute('iyz') || 0),
+                            izz: parseFloat(inertia.getAttribute('izz') || 0),
+                        } : null,
+                    } : null;
+
+                }
+            });
 
             if (parseVisual) {
 
