@@ -38,6 +38,7 @@ class URDFCollider extends URDFBase {
         super(...args);
         this.isURDFCollider = true;
         this.type = 'URDFCollider';
+        this.meshPath = null;
 
     }
 
@@ -50,6 +51,7 @@ class URDFVisual extends URDFBase {
         super(...args);
         this.isURDFVisual = true;
         this.type = 'URDFVisual';
+        this.meshPath = null;
 
     }
 
@@ -62,6 +64,8 @@ class URDFLink extends URDFBase {
         super(...args);
         this.isURDFLink = true;
         this.type = 'URDFLink';
+
+        this.inertial = null;
 
     }
 
@@ -122,7 +126,7 @@ class URDFJoint extends URDFBase {
         this.jointValue = null;
         this.jointType = 'fixed';
         this.axis = new Vector3(1, 0, 0);
-        this.limit = { lower: 0, upper: 0 };
+        this.limit = { lower: 0, upper: 0, effort: null, velocity: null };
         this.ignoreLimits = false;
 
         this.origPosition = null;
@@ -141,6 +145,8 @@ class URDFJoint extends URDFBase {
         this.axis = source.axis.clone();
         this.limit.lower = source.limit.lower;
         this.limit.upper = source.limit.upper;
+        this.limit.effort = source.limit.effort;
+        this.limit.velocity = source.limit.velocity;
         this.ignoreLimits = false;
 
         this.jointValue = [...source.jointValue];

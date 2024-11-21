@@ -1,4 +1,5 @@
 import { JSDOM } from 'jsdom';
+import { Vector3 } from 'three';
 import URDFLoader from '../src/URDFLoader.js';
 
 const jsdom = new JSDOM();
@@ -33,6 +34,77 @@ describe('URDFRobot', () => {
         expect(robot.setJointValues({ JOINT1: 1, JOINT2: 2 })).toBeTruthy();
         expect(robot.joints.JOINT1.angle).toEqual(1);
         expect(robot.joints.JOINT2.angle).toEqual(2);
+    });
+
+    it('should correctly parse joint efforts and velocities.', () => {
+        const loader = new URDFLoader();
+        const robot = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1"/>
+                <link name="LINK2"/>
+                <link name="LINK3"/>
+                <joint name="JOINT1" type="continuous">
+                    <axis xyz="0 0 -1" />
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                    <limit effort="150" lower="-3.14" upper="3.14" velocity="5.20" />
+                </joint>
+                <joint name="JOINT2" type="continuous">
+                    <axis xyz="0 0 -1" />
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                </joint>
+            </robot>
+        `);
+
+        expect(robot.joints.JOINT1.limit.effort).toEqual(150);
+        expect(robot.joints.JOINT1.limit.lower).toEqual(-3.14);
+        expect(robot.joints.JOINT1.limit.upper).toEqual(3.14);
+        expect(robot.joints.JOINT1.limit.velocity).toEqual(5.20);
+
+        expect(robot.joints.JOINT2.limit.effort).toEqual(null);
+        expect(robot.joints.JOINT2.limit.lower).toEqual(0);
+        expect(robot.joints.JOINT2.limit.upper).toEqual(0);
+        expect(robot.joints.JOINT2.limit.velocity).toEqual(null);
+    });
+
+    it('should correctly parse joint inertial data.', () => {
+        const loader = new URDFLoader();
+        const robot = loader.parse(`
+            <robot name="TEST">
+                <link name="LINK1">
+                    <inertial>
+                        <origin rpy="0 0 -1.5707963267948966" xyz="0.14635000035763 0 0"/>
+                        <mass value="2.5076"/>
+                        <inertia ixx="0.00443333156" ixy="0.0" ixz="0.0" iyy="0.00443333156" iyz="0.0" izz="0.0072" />
+                    </inertial>
+                </link>
+                <link name="LINK2"/>
+                <link name="LINK3"/>
+                <joint name="JOINT1" type="continuous">
+                    <axis xyz="0 0 -1" />
+                    <parent link="LINK1"/>
+                    <child link="LINK2"/>
+                </joint>
+                <joint name="JOINT2" type="continuous">
+                    <axis xyz="0 0 -1" />
+                    <parent link="LINK2"/>
+                    <child link="LINK3"/>
+                </joint>
+            </robot>
+        `);
+
+        expect(robot.links.LINK1.inertial.origin.rpy).toEqual(new Vector3(0, 0, -1.5707963267948966));
+        expect(robot.links.LINK1.inertial.origin.xyz).toEqual(new Vector3(0.14635000035763, 0, 0));
+        expect(robot.links.LINK1.inertial.mass).toEqual(2.5076);
+        expect(robot.links.LINK1.inertial.inertia.ixx).toEqual(0.00443333156);
+        expect(robot.links.LINK1.inertial.inertia.iyy).toEqual(0.00443333156);
+        expect(robot.links.LINK1.inertial.inertia.izz).toEqual(0.0072);
+        expect(robot.links.LINK1.inertial.inertia.ixy).toEqual(0);
+        expect(robot.links.LINK1.inertial.inertia.ixz).toEqual(0);
+        expect(robot.links.LINK1.inertial.inertia.iyz).toEqual(0);
+
+        expect(robot.links.LINK2.inertial).toEqual(null);
     });
 
     it('should parse material colors and name.', () => {
