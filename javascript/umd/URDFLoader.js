@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/loaders/STLLoader.js'), require('three/examples/jsm/loaders/ColladaLoader.js')) :
-    typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/loaders/STLLoader.js', 'three/examples/jsm/loaders/ColladaLoader.js'], factory) :
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/loaders/ColladaLoader.js'), require('three/examples/jsm/loaders/STLLoader.js')) :
+    typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/loaders/ColladaLoader.js', 'three/examples/jsm/loaders/STLLoader.js'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
-}(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
+})(this, (function (THREE, ColladaLoader_js, STLLoader_js) { 'use strict';
 
     function _interopNamespace(e) {
         if (e && e.__esModule) return e;
@@ -13,18 +13,24 @@
                     var d = Object.getOwnPropertyDescriptor(e, k);
                     Object.defineProperty(n, k, d.get ? d : {
                         enumerable: true,
-                        get: function () {
-                            return e[k];
-                        }
+                        get: function () { return e[k]; }
                     });
                 }
             });
         }
-        n['default'] = e;
+        n["default"] = e;
         return Object.freeze(n);
     }
 
     var THREE__namespace = /*#__PURE__*/_interopNamespace(THREE);
+
+    const _tempAxis = new THREE.Vector3();
+    const _tempEuler = new THREE.Euler();
+    const _tempTransform = new THREE.Matrix4();
+    const _tempOrigTransform = new THREE.Matrix4();
+    const _tempQuat = new THREE.Quaternion();
+    const _tempScale = new THREE.Vector3(1.0, 1.0, 1.0);
+    const _tempPosition = new THREE.Vector3();
 
     class URDFBase extends THREE.Object3D {
 
@@ -56,6 +62,7 @@
             super(...args);
             this.isURDFCollider = true;
             this.type = 'URDFCollider';
+            this.meshPath = null;
 
         }
 
@@ -68,6 +75,7 @@
             super(...args);
             this.isURDFVisual = true;
             this.type = 'URDFVisual';
+            this.meshPath = null;
 
         }
 
@@ -80,6 +88,8 @@
             super(...args);
             this.isURDFLink = true;
             this.type = 'URDFLink';
+
+            this.inertial = null;
 
         }
 
@@ -111,7 +121,9 @@
                     break;
 
                 case 'planar':
-                    this.jointValue = new Array(2).fill(0);
+                    // Planar joints are, 3dof: position XY and rotation Z.
+                    this.jointValue = new Array(3).fill(0);
+                    this.axis = new THREE.Vector3(0, 0, 1);
                     break;
 
                 case 'floating':
@@ -138,7 +150,7 @@
             this.jointValue = null;
             this.jointType = 'fixed';
             this.axis = new THREE.Vector3(1, 0, 0);
-            this.limit = { lower: 0, upper: 0 };
+            this.limit = { lower: 0, upper: 0, effort: null, velocity: null };
             this.ignoreLimits = false;
 
             this.origPosition = null;
@@ -157,6 +169,8 @@
             this.axis = source.axis.clone();
             this.limit.lower = source.limit.lower;
             this.limit.upper = source.limit.upper;
+            this.limit.effort = source.limit.effort;
+            this.limit.velocity = source.limit.velocity;
             this.ignoreLimits = false;
 
             this.jointValue = [...source.jointValue];
@@ -171,9 +185,14 @@
         }
 
         /* Public Functions */
+        /**
+         * @param {...number|null} values The joint value components to set, optionally null for no-op
+         * @returns {boolean} Whether the invocation of this function resulted in an actual change to the joint value
+         */
         setJointValue(...values) {
 
-            values = values.map(v => parseFloat(v));
+            // Parse all incoming values into numbers except null, which we treat as a no-op for that value component.
+            values = values.map(v => v === null ? null : parseFloat(v));
 
             if (!this.origPosition || !this.origQuaternion) {
 
@@ -243,7 +262,8 @@
                     }
 
                     this.position.copy(this.origPosition);
-                    this.position.addScaledVector(this.axis, pos);
+                    _tempAxis.copy(this.axis).applyEuler(this.rotation);
+                    this.position.addScaledVector(_tempAxis, pos);
 
                     if (this.jointValue[0] !== pos) {
 
@@ -259,10 +279,63 @@
 
                 }
 
-                case 'floating':
-                case 'planar':
-                    // TODO: Support these joint types
-                    console.warn(`'${ this.jointType }' joint not yet supported`);
+                case 'floating': {
+
+                    // no-op if all values are identical to existing value or are null
+                    if (this.jointValue.every((value, index) => values[index] === value || values[index] === null)) return didUpdate;
+                    // Floating joints have six degrees of freedom: X, Y, Z, R, P, Y.
+                    this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
+                    this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
+                    this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
+                    this.jointValue[3] = values[3] !== null ? values[3] : this.jointValue[3];
+                    this.jointValue[4] = values[4] !== null ? values[4] : this.jointValue[4];
+                    this.jointValue[5] = values[5] !== null ? values[5] : this.jointValue[5];
+
+                    // Compose transform of joint origin and transform due to joint values
+                    _tempOrigTransform.compose(this.origPosition, this.origQuaternion, _tempScale);
+                    _tempQuat.setFromEuler(
+                        _tempEuler.set(
+                            this.jointValue[3],
+                            this.jointValue[4],
+                            this.jointValue[5],
+                            'XYZ',
+                        ),
+                    );
+                    _tempPosition.set(this.jointValue[0], this.jointValue[1], this.jointValue[2]);
+                    _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
+
+                    // Calcualte new transform
+                    _tempOrigTransform.premultiply(_tempTransform);
+                    this.position.setFromMatrixPosition(_tempOrigTransform);
+                    this.rotation.setFromRotationMatrix(_tempOrigTransform);
+
+                    this.matrixWorldNeedsUpdate = true;
+                    return true;
+                }
+
+                case 'planar': {
+
+                    // no-op if all values are identical to existing value or are null
+                    if (this.jointValue.every((value, index) => values[index] === value || values[index] === null)) return didUpdate;
+
+                    this.jointValue[0] = values[0] !== null ? values[0] : this.jointValue[0];
+                    this.jointValue[1] = values[1] !== null ? values[1] : this.jointValue[1];
+                    this.jointValue[2] = values[2] !== null ? values[2] : this.jointValue[2];
+
+                    // Compose transform of joint origin and transform due to joint values
+                    _tempOrigTransform.compose(this.origPosition, this.origQuaternion, _tempScale);
+                    _tempQuat.setFromAxisAngle(this.axis, this.jointValue[2]);
+                    _tempPosition.set(this.jointValue[0], this.jointValue[1], 0.0);
+                    _tempTransform.compose(_tempPosition, _tempQuat, _tempScale);
+
+                    // Calculate new transform
+                    _tempOrigTransform.premultiply(_tempTransform);
+                    this.position.setFromMatrixPosition(_tempOrigTransform);
+                    this.rotation.setFromRotationMatrix(_tempOrigTransform);
+
+                    this.matrixWorldNeedsUpdate = true;
+                    return true;
+                }
 
             }
 
@@ -365,6 +438,11 @@
 
             });
 
+            // Repair mimic joint references once we've re-accumulated all our joint data
+            for (const joint in this.joints) {
+                this.joints[joint].mimicJoints = this.joints[joint].mimicJoints.map((mimicJoint) => this.joints[mimicJoint.name]);
+            }
+
             this.frames = {
                 ...this.colliders,
                 ...this.visual,
@@ -449,6 +527,14 @@
 
         if (!val) return [0, 0, 0];
         return val.trim().split(/\s+/g).map(num => parseFloat(num));
+
+    }
+
+    // take a vector "x y z" and process it into
+    // a THREE.Vector3
+    function processVector(val) {
+
+        return new THREE__namespace.Vector3(...processTuple(val));
 
     }
 
@@ -785,6 +871,8 @@
 
                         obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                         obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
+                        obj.limit.effort = parseFloat(n.getAttribute('effort') || obj.limit.effort);
+                        obj.limit.velocity = parseFloat(n.getAttribute('velocity') || obj.limit.velocity);
 
                     }
                 });
@@ -823,6 +911,36 @@
                 target.name = link.getAttribute('name');
                 target.urdfName = target.name;
                 target.urdfNode = link;
+
+                // Extract the attributes
+                children.forEach(n => {
+
+                    const type = n.nodeName.toLowerCase();
+                    if (type === 'inertial') {
+                        const subNodes = [ ...n.children ];
+                        const origin = subNodes.find(sn => sn.nodeName.toLowerCase() === 'origin');
+                        const xyz = origin ? origin.getAttribute('xyz') : null;
+                        const rpy = origin ? origin.getAttribute('rpy') : null;
+                        const mass = subNodes.find(sn => sn.nodeName.toLowerCase() === 'mass');
+                        const inertia = subNodes.find(sn => sn.nodeName.toLowerCase() === 'inertia');
+                        target.inertial = origin || mass || inertia ? {
+                            origin: xyz || rpy ? {
+                                xyz: xyz ? processVector(xyz) : null,
+                                rpy: rpy ? processVector(rpy) : null,
+                            } : null,
+                            mass: mass ? parseFloat(mass.getAttribute('value') || 0) : null,
+                            inertia: inertia ? {
+                                ixx: parseFloat(inertia.getAttribute('ixx') || 0),
+                                ixy: parseFloat(inertia.getAttribute('ixy') || 0),
+                                ixz: parseFloat(inertia.getAttribute('ixz') || 0),
+                                iyy: parseFloat(inertia.getAttribute('iyy') || 0),
+                                iyz: parseFloat(inertia.getAttribute('iyz') || 0),
+                                izz: parseFloat(inertia.getAttribute('izz') || 0),
+                            } : null,
+                        } : null;
+
+                    }
+                });
 
                 if (parseVisual) {
 
@@ -887,7 +1005,7 @@
                                 .split(/\s/g)
                                 .map(v => parseFloat(v));
 
-                        material.color.setRGB(rgba[0], rgba[1], rgba[2]).convertSRGBToLinear();
+                        material.color.setRGB(rgba[0], rgba[1], rgba[2]);
                         material.opacity = rgba[3];
                         material.transparent = rgba[3] < 1;
                         material.depthWrite = !material.transparent;
@@ -902,7 +1020,7 @@
                             const loader = new THREE__namespace.TextureLoader(manager);
                             const filePath = resolvePath(filename);
                             material.map = loader.load(filePath);
-                            material.map.encoding = THREE__namespace.sRGBEncoding;
+                            material.map.colorSpace = THREE__namespace.SRGBColorSpace;
 
                         }
 
@@ -958,6 +1076,7 @@
                             // file path is null if a package directory is not provided.
                             if (filePath !== null) {
 
+                                group.meshPath = filePath;
                                 const scaleAttr = n.children[0].getAttribute('scale');
                                 if (scaleAttr) {
 
@@ -1079,5 +1198,5 @@
 
     return URDFLoader;
 
-})));
+}));
 //# sourceMappingURL=URDFLoader.js.map

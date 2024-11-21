@@ -4,6 +4,7 @@ export interface URDFCollider extends Object3D {
 
     isURDFCollider: true;
     urdfNode: Element | null;
+    meshPath: string | null;
 
 }
 
@@ -11,6 +12,7 @@ export interface URDFVisual extends Object3D {
 
     isURDFVisual: true;
     urdfNode: Element | null;
+    meshPath: string | null;
 
 }
 

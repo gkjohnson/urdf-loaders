@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('./urdf-viewer-element.js')) :
     typeof define === 'function' && define.amd ? define(['three', './urdf-viewer-element'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFManipulator = factory(global.THREE, global.URDFViewer));
-}(this, (function (THREE, URDFViewer) { 'use strict';
+})(this, (function (THREE, URDFViewer) { 'use strict';
 
     function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -15,14 +15,12 @@
                     var d = Object.getOwnPropertyDescriptor(e, k);
                     Object.defineProperty(n, k, d.get ? d : {
                         enumerable: true,
-                        get: function () {
-                            return e[k];
-                        }
+                        get: function () { return e[k]; }
                     });
                 }
             });
         }
-        n['default'] = e;
+        n["default"] = e;
         return Object.freeze(n);
     }
 
@@ -365,7 +363,7 @@
     // joint-mouseout: Fired when a joint is no longer hovered over
     // manipulate-start: Fires when a joint is manipulated
     // manipulate-end: Fires when a joint is done being manipulated
-    class URDFManipulator extends URDFViewer__default['default'] {
+    class URDFManipulator extends URDFViewer__default["default"] {
 
         static get observedAttributes() {
 
@@ -510,5 +508,5 @@
 
     return URDFManipulator;
 
-})));
+}));
 //# sourceMappingURL=urdf-manipulator-element.js.map

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
-import { URDFRobot, URDFJoint, URDFLink, URDFCollider, URDFVisual, URDFMimicJoint } from './URDFClasses.js';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { URDFCollider, URDFJoint, URDFLink, URDFMimicJoint, URDFRobot, URDFVisual } from './URDFClasses.js';
 
 /*
 Reference coordinate frames for THREE.js and ROS.
@@ -584,6 +584,7 @@ class URDFLoader {
                         // file path is null if a package directory is not provided.
                         if (filePath !== null) {
 
+                            group.meshPath = filePath;
                             const scaleAttr = n.children[0].getAttribute('scale');
                             if (scaleAttr) {
 

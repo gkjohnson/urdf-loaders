@@ -38,6 +38,7 @@ class URDFCollider extends URDFBase {
         super(...args);
         this.isURDFCollider = true;
         this.type = 'URDFCollider';
+        this.meshPath = null;
 
     }
 
@@ -50,6 +51,7 @@ class URDFVisual extends URDFBase {
         super(...args);
         this.isURDFVisual = true;
         this.type = 'URDFVisual';
+        this.meshPath = null;
 
     }
 
