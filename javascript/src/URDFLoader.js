@@ -112,11 +112,7 @@ class URDFLoader {
             })
             .then(data => {
 
-                if (this.workingPath === '') {
-
-                    this.workingPath = workingPath;
-
-                }
+                this.workingPath = workingPath;
 
                 const model = this.parse(data);
                 onComplete(model);
