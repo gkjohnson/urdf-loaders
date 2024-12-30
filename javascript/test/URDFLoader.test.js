@@ -204,6 +204,31 @@ describe('Options', () => {
 
         });
 
+        it('should use correct default workingPath to load meshes', async() => {
+
+            const loader = new URDFLoader();
+            loader.loadMeshCb = (path, manager, done) => {
+
+                const mesh = new Mesh();
+                expect(path).toContain('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf');
+                done(mesh);
+
+            };
+
+            await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+
+            loader.loadMeshCb = (path, manager, done) => {
+
+                const mesh = new Mesh();
+                expect(path).toContain('/val_description/model/meshes');
+                done(mesh);
+
+            };
+
+            await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf');
+
+        });
+
     });
 
     describe('packages', () => {
