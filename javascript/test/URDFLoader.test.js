@@ -2,7 +2,6 @@ import { JSDOM } from 'jsdom';
 import { Mesh, Color } from 'three';
 import fetch from 'node-fetch';
 import URDFLoader from '../src/URDFLoader.js';
-import {exp} from "three/examples/jsm/nodes/math/MathNode.js";
 
 const jsdom = new JSDOM();
 const window = jsdom.window;
