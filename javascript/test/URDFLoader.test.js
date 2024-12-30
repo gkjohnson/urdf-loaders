@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom';
 import { Mesh, Color } from 'three';
 import fetch from 'node-fetch';
 import URDFLoader from '../src/URDFLoader.js';
+import {exp} from "three/examples/jsm/nodes/math/MathNode.js";
 
 const jsdom = new JSDOM();
 const window = jsdom.window;
@@ -204,9 +205,21 @@ describe('Options', () => {
 
         });
 
-        it('should use correct default workingPath to load meshes', async() => {
+        it('should use correct workingPath to load meshes', async() => {
 
             const loader = new URDFLoader();
+
+            loader.workingPath = 'https://raw.githubusercontent.com/mock-working-path';
+            loader.loadMeshCb = (path, manager, done) => {
+
+                const mesh = new Mesh();
+                expect(path).toContain('https://raw.githubusercontent.com/mock-working-path');
+                done(mesh);
+
+            };
+            await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+
+            loader.workingPath = '';
             loader.loadMeshCb = (path, manager, done) => {
 
                 const mesh = new Mesh();
@@ -214,19 +227,9 @@ describe('Options', () => {
                 done(mesh);
 
             };
-
             await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
 
-            loader.loadMeshCb = (path, manager, done) => {
-
-                const mesh = new Mesh();
-                expect(path).toContain('/val_description/model/meshes');
-                done(mesh);
-
-            };
-
-            await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/val_description/model/robots/valkyrie_A.urdf');
-
+            expect(loader.workingPath).toBe('');
         });
 
     });
