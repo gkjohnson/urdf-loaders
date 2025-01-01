@@ -1,6 +1,6 @@
 {
   "name": "urdf-loader",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "description": "URDF Loader for THREE.js and webcomponent viewer",
   "main": "src/URDFLoader.js",
   "type": "module",
