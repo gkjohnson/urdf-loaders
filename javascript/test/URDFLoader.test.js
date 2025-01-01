@@ -204,6 +204,33 @@ describe('Options', () => {
 
         });
 
+        it('should use correct workingPath to load meshes', async() => {
+
+            const loader = new URDFLoader();
+
+            loader.workingPath = 'https://raw.githubusercontent.com/mock-working-path';
+            loader.loadMeshCb = (path, manager, done) => {
+
+                const mesh = new Mesh();
+                expect(path).toContain('https://raw.githubusercontent.com/mock-working-path');
+                done(mesh);
+
+            };
+            await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+
+            loader.workingPath = '';
+            loader.loadMeshCb = (path, manager, done) => {
+
+                const mesh = new Mesh();
+                expect(path).toContain('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf');
+                done(mesh);
+
+            };
+            await loader.loadAsync('https://raw.githubusercontent.com/gkjohnson/urdf-loaders/master/urdf/TriATHLETE_Climbing/urdf/TriATHLETE.URDF');
+
+            expect(loader.workingPath).toBe('');
+        });
+
     });
 
     describe('packages', () => {

@@ -112,13 +112,7 @@ class URDFLoader {
             })
             .then(data => {
 
-                if (this.workingPath === '') {
-
-                    this.workingPath = workingPath;
-
-                }
-
-                const model = this.parse(data);
+                const model = this.parse(data, this.workingPath || workingPath);
                 onComplete(model);
                 manager.itemEnd(urdfPath);
 
@@ -141,13 +135,12 @@ class URDFLoader {
 
     }
 
-    parse(content) {
+    parse(content, workingPath = this.workingPath) {
 
         const packages = this.packages;
         const loadMeshCb = this.loadMeshCb;
         const parseVisual = this.parseVisual;
         const parseCollision = this.parseCollision;
-        const workingPath = this.workingPath;
         const manager = this.manager;
         const linkMap = {};
         const jointMap = {};

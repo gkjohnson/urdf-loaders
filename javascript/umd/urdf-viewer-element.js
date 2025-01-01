@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('three'), require('three/examples/jsm/controls/OrbitControls.js'), require('./URDFLoader.js')) :
     typeof define === 'function' && define.amd ? define(['three', 'three/examples/jsm/controls/OrbitControls.js', './URDFLoader'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFViewer = factory(global.THREE, global.THREE, global.URDFLoader));
-}(this, (function (THREE, OrbitControls_js, URDFLoader) { 'use strict';
+})(this, (function (THREE, OrbitControls_js, URDFLoader) { 'use strict';
 
     function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -15,14 +15,12 @@
                     var d = Object.getOwnPropertyDescriptor(e, k);
                     Object.defineProperty(n, k, d.get ? d : {
                         enumerable: true,
-                        get: function () {
-                            return e[k];
-                        }
+                        get: function () { return e[k]; }
                     });
                 }
             });
         }
-        n['default'] = e;
+        n["default"] = e;
         return Object.freeze(n);
     }
 
@@ -64,7 +62,7 @@
         get displayShadow() { return this.hasAttribute('display-shadow') || false; }
         set displayShadow(val) { val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow'); }
 
-        get ambientColor() { return this.getAttribute('ambient-color') || '#455A64'; }
+        get ambientColor() { return this.getAttribute('ambient-color') || '#8ea0a8'; }
         set ambientColor(val) { val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color'); }
 
         get autoRedraw() { return this.hasAttribute('auto-redraw') || false; }
@@ -122,13 +120,13 @@
             const scene = new THREE__namespace.Scene();
 
             const ambientLight = new THREE__namespace.HemisphereLight(this.ambientColor, '#000');
-            ambientLight.groundColor.lerp(ambientLight.color, 0.5);
+            ambientLight.groundColor.lerp(ambientLight.color, 0.5 * Math.PI);
             ambientLight.intensity = 0.5;
             ambientLight.position.set(0, 1, 0);
             scene.add(ambientLight);
 
             // Light setup
-            const dirLight = new THREE__namespace.DirectionalLight(0xffffff);
+            const dirLight = new THREE__namespace.DirectionalLight(0xffffff, Math.PI);
             dirLight.position.set(4, 10, 1);
             dirLight.shadow.mapSize.width = 2048;
             dirLight.shadow.mapSize.height = 2048;
@@ -143,7 +141,7 @@
             renderer.setClearAlpha(0);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE__namespace.PCFSoftShadowMap;
-            renderer.outputEncoding = THREE__namespace.sRGBEncoding;
+            renderer.outputColorSpace = THREE__namespace.SRGBColorSpace;
 
             // Camera setup
             const camera = new THREE__namespace.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -154,8 +152,8 @@
             scene.add(world);
 
             const plane = new THREE__namespace.Mesh(
-                new THREE__namespace.PlaneBufferGeometry(40, 40),
-                new THREE__namespace.ShadowMaterial({ side: THREE__namespace.DoubleSide, transparent: true, opacity: 0.5 }),
+                new THREE__namespace.PlaneGeometry(40, 40),
+                new THREE__namespace.ShadowMaterial({ side: THREE__namespace.DoubleSide, transparent: true, opacity: 0.25 }),
             );
             plane.rotation.x = -Math.PI / 2;
             plane.position.y = -0.5;
@@ -478,7 +476,7 @@
 
                                             if (m.map) {
 
-                                                m.map.encoding = THREE__namespace.GammaEncoding;
+                                                m.map.colorSpace = THREE__namespace.SRGBColorSpace;
 
                                             }
 
@@ -547,7 +545,7 @@
 
                 }
 
-                const loader = new URDFLoader__default['default'](manager);
+                const loader = new URDFLoader__default["default"](manager);
                 loader.packages = pkg;
                 loader.loadMeshCb = this.loadMeshFunc;
                 loader.fetchOptions = { mode: 'cors', credentials: 'same-origin' };
@@ -642,5 +640,5 @@
 
     return URDFViewer;
 
-})));
+}));
 //# sourceMappingURL=urdf-viewer-element.js.map
