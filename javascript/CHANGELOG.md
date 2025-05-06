@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.12.5] - 2025.05.06
+### Fixed
+- URDFControls: Adjust mouse controls to support non-fullscreen elements.
+
 ## [0.12.4] - 2025.01.01
 ### Fixed
 - The loader will use the correct working path if used multiple times.
