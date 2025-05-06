@@ -235,11 +235,11 @@ export class PointerURDFDragControls extends URDFDragControls {
         const mouse = new Vector2();
 
         function updateMouse(e) {
-            
+
             const rect = domElement.getBoundingClientRect();
             mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-            
+
         }
 
         this._mouseDown = e => {
