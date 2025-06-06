@@ -28,10 +28,10 @@ export interface URDFJoint extends Object3D {
     urdfNode: Element | null;
     axis: Vector3;
     jointType: 'fixed' | 'continuous' | 'revolute' | 'planar' | 'prismatic' | 'floating';
-    angle: Number;
-    jointValue: Number[];
-    limit: { lower: Number, upper: Number }; // TODO: add more
-    ignoreLimits: Boolean;
+    angle: number;
+    jointValue: number[];
+    limit: { lower: number, upper: number }; // TODO: add more
+    ignoreLimits: boolean;
     mimicJoints: URDFMimicJoint[];
 
     setJointValue(...values: (number | null)[]): boolean;
@@ -40,9 +40,9 @@ export interface URDFJoint extends Object3D {
 
 export interface URDFMimicJoint extends URDFJoint {
 
-    mimicJoint : String;
-    offset: Number;
-    multiplier: Number;
+    mimicJoint: string;
+    offset: number;
+    multiplier: number;
 
 }
 
@@ -59,8 +59,8 @@ export interface URDFRobot extends URDFLink {
     visual: { [ key: string ]: URDFVisual };
     frames: { [ key: string ]: Object3D };
 
-    setJointValue(jointName: String, ...values: number[]): boolean;
-    setJointValues(values: { [ key: string ]: Number | Number[] }): boolean;
-    getFrame(name: String): Object3D;
+    setJointValue(jointName: string, ...values: number[]): boolean;
+    setJointValues(values: { [ key: string ]: number | number[] }): boolean;
+    getFrame(name: string): Object3D;
 
 }
