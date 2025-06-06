@@ -15,7 +15,7 @@ export default class URDFLoader {
     defaultMeshLoader: MeshLoadFunc;
 
     // options
-    fetchOptions: Object;
+    fetchOptions: RequestInit;
     workingPath: string;
     parseVisual: boolean;
     parseCollision: boolean;
