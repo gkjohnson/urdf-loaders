@@ -348,7 +348,7 @@ const updateList = () => {
             const urdf = e.target.getAttribute('urdf');
             const color = e.target.getAttribute('color');
 
-            viewer.up = '-Z';
+            viewer.up = '+Z';
             document.getElementById('up-select').value = viewer.up;
             viewer.urdf = urdf;
             animToggle.classList.add('checked');

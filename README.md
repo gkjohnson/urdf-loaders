@@ -6,9 +6,21 @@ URDF loading code in both [C# for Unity](./unity/Assets/URDFLoader/) and [Javasc
 
 ![Example](./unity/Assets/docs/asset%20store/all-urdfs.png)
 
+
+
 ### Flipped Models
 
 The `_flipped` variants of the URDF ATHLETE models invert the revolute joint axes to model ATHLETE in a configuration with the legs attached to the bottom of the chassis.
+
+# Husarion UGV Example
+
+Run `urdf-loader` and `husarion-ugv-xacro-server`:
+
+```bash
+docker compose -f docker/compose.yaml up
+```
+
+Go to the browser and search `http://localhost:9080/javascript/example/dev-bundle/`
 
 # LICENSE
 

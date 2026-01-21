@@ -148,6 +148,10 @@ class URDFLoader {
 
         // Resolves the path of mesh files
         function resolvePath(path) {
+            // Handle absolute or global paths (starting with /)
+            if (path.startsWith('/')) {
+                return path;
+            }
 
             if (!/^package:\/\//.test(path)) {
 

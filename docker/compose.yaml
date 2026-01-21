@@ -1,0 +1,31 @@
+services:
+  urdf_loader:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.urdf_loader
+    ports:
+      - "9080:9080"
+    volumes:
+      - ../javascript:/app/javascript
+      - ../urdf:/app/urdf
+      - shared-data:/app/ros2_ws
+      - shared-opt-data:/app/opt/ros/jazzy
+
+  xacro_server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.xacro_server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../javascript:/app/javascript
+      - ../urdf:/app/urdf
+      - shared-data:/ros2_ws
+      - shared-opt-data:/opt/ros/jazzy
+    command: >
+       node example/yaml-server.cjs
+
+
+volumes:
+  shared-data:
+  shared-opt-data:

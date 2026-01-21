@@ -1,0 +1,11 @@
+FROM husarion/husarion-ugv-gazebo:jazzy-ros2-devel
+
+
+RUN apt-get update && apt-get install -y nodejs npm ros-jazzy-xacro && \
+    npm install -g express cors
+
+COPY ./javascript /app/javascript
+WORKDIR /app/javascript
+
+CMD ["node", "example/yaml-server.cjs"]
+

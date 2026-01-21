@@ -15,10 +15,70 @@
 
         <div id="menu">
             <ul id="urdf-options">
+                <li urdf="../../../urdf/husarion_ugv/urdf/panther.urdf" color="#ce0e2d">Husarion UGV Panther</li>
+                <li urdf="../../../urdf/husarion_ugv/urdf/lynx.urdf" color="#ce0e2d">Husarion UGV Lynx</li>
                 <li urdf="../../../urdf/T12/urdf/T12_flipped.URDF" color="#E91E63">ATHLETE</li>
                 <li urdf="../../../urdf/TriATHLETE/urdf/TriATHLETE_flipped.URDF" color="#009688">TriATHLETE</li>
                 <li urdf="../../../urdf/TriATHLETE_Climbing/urdf/TriATHLETE_flipped.URDF" color="#FFB300">TriATHLETE Climbing</li>
             </ul>
+
+            <br />
+            <textarea id="yaml-editor" name="yaml-editor" rows="20" cols="40" ></textarea>
+            <br />
+            <button id="regenerate-urdf-btn" onclick="saveYAMLFile()">Regenerate URDF from YAML</button>
+            <script>
+                // Load the YAML file content into the textarea at startup
+                fetch("/javascript/example/husarion_ugv_componenets.yaml")
+                    .then(res => res.text())
+                    .then(data => {
+                        document.getElementById('yaml-editor').value = data;
+                });
+
+
+
+                function saveYAMLFile() {
+                    const yamlContent = document.getElementById('yaml-editor').value;
+
+                    fetch('http://localhost:3000/save-yaml', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/yaml'
+                        },
+                        body: yamlContent
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                window.shouldReloadUrdf = true;
+                            } else {
+                                alert('Failed to save YAML file on server.');
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error: ' + error);
+                        });
+
+                }
+            </script>
+            <script>
+                // check every second if the URDF needs to be reloaded
+                setInterval(() => {
+                    const urdfViewer = document.querySelector('urdf-viewer');
+                    if (urdfViewer && urdfViewer.urdf) {
+                        const currentUrdf = urdfViewer.urdf;
+                        // Only reload if a flag is set after saving YAML
+                        if (window.shouldReloadUrdf) {
+                            urdfViewer.urdf = ''; // Force reload by clearing first
+                            setTimeout(() => {
+                                urdfViewer.urdf = currentUrdf;
+                                window.shouldReloadUrdf = false;
+                            }, 100);
+                        }
+                        setTimeout(() => {
+                            urdfViewer.urdf = currentUrdf;
+                        }, 100);
+                    }
+                }, 1000);
+            </script>
 
             <div id="controls" class="hidden">
                 <div id="toggle-controls"></div>

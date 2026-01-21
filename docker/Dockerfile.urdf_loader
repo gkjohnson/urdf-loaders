@@ -1,0 +1,22 @@
+FROM node:20
+
+# Ustaw katalog roboczy
+WORKDIR /app
+
+# Skopiuj pliki projektu
+COPY ./javascript /app/javascript
+
+# Przejdź do katalogu javascript
+WORKDIR /app/javascript
+
+# Instalacja zależności
+RUN npm install
+
+# Budowanie (jeśli jest potrzebne, np. npm run build)
+# RUN npm run build
+
+# Domyślny port
+EXPOSE 9080
+
+# Uruchomienie serwera deweloperskiego
+CMD ["npm", "start"]
