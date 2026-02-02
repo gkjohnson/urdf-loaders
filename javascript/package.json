@@ -5,9 +5,9 @@
   "main": "src/URDFLoader.js",
   "type": "module",
   "scripts": {
-    "start": "concurrently \"parcel watch ./example/*.html --out-dir ./example/dev-bundle/ --public-url . --no-cache\" \"cd .. && static-server\"",
+    "start": "concurrently \"rollup -w -c\" \"vite --config ./vite.config.js\"",
     "build": "rollup -c",
-    "build-examples": "parcel build ./example/*.html --out-dir ./example/bundle/ --public-url . --no-cache --no-source-maps --no-content-hash",
+    "build-examples": "vite build --config ./vite.config.js",
     "test": "vitest run",
     "lint": "eslint \"./src/*.js\" \"./test/*.js\" && tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build"
@@ -49,9 +49,8 @@
     "globals": "^15.14.0",
     "jsdom": "^17.0.0",
     "node-fetch": "^3.0.0",
-    "parcel-bundler": "^1.12.5",
+    "vite": "^6.2.2",
     "rollup": "^4.32.0",
-    "static-server": "^3.0.0",
     "three": "^0.164.1",
     "typescript": "^5.7.3",
     "vitest": "^3.0.4"
