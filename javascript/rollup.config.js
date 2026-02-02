@@ -16,8 +16,8 @@ export default [
     // libraries
     ...Object.entries(files).map(([name, file]) => {
 
-        const inputPath = path.join(__dirname, `./src/${ file }`);
-        const outputPath = path.join(__dirname, `./umd/${ file }`);
+        const inputPath = path.join(import.meta.dirname, `./src/${ file }`);
+        const outputPath = path.join(import.meta.dirname, `./umd/${ file }`);
 
         return {
 
