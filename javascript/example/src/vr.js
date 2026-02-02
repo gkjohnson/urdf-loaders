@@ -7,7 +7,6 @@ import {
     ShadowMaterial,
     DirectionalLight,
     PCFSoftShadowMap,
-    sRGBEncoding,
     Color,
     AmbientLight,
     Box3,
@@ -54,7 +53,6 @@ function init() {
     workspace.add(camera);
 
     renderer = new WebGLRenderer({ antialias: true });
-    renderer.outputEncoding = sRGBEncoding;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
