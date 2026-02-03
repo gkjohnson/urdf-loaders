@@ -112,13 +112,13 @@ function init() {
     renderer.setAnimationLoop(render);
     document.body.appendChild(VRButton.createButton(renderer));
 
-    const directionalLight = new DirectionalLight(0xffffff, 1.0);
+    const directionalLight = new DirectionalLight(0xffffff, 3.0);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.setScalar(2048);
     directionalLight.position.set(5, 30, 5);
     scene.add(directionalLight);
 
-    const ambientLight = new AmbientLight(0xffb74d, 0.5);
+    const ambientLight = new AmbientLight(0xffb74d, 1.0);
     scene.add(ambientLight);
 
     ground = new Mesh(new PlaneGeometry(), new ShadowMaterial({ opacity: 0.1 }));
