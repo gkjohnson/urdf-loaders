@@ -334,7 +334,19 @@ class URDFViewer extends HTMLElement {
 
     setJointValues(values) {
 
-        for (const name in values) this.setJointValue(name, values[name]);
+        for (const name in values) {
+
+            if (Array.isArray(values[name])) {
+
+                this.setJointValue(name, ...values[name]);
+
+            } else {
+
+                this.setJointValue(name, values[name]);
+
+            }
+
+        }
 
     }
 

@@ -306,7 +306,19 @@ const updateAngles = () => {
 
     // reset everything to 0 first
     const resetJointValues = viewer.angles;
-    for (const name in resetJointValues) resetJointValues[name] = 0;
+    for (const name in resetJointValues) {
+
+        if (Array.isArray(resetJointValues[name])) {
+
+            resetJointValues[name].fill(0);
+
+        } else {
+
+            resetJointValues[name] = 0;
+
+        }
+
+    }
     viewer.setJointValues(resetJointValues);
 
     // animate the legs

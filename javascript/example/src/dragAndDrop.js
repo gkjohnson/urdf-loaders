@@ -161,9 +161,10 @@ export function registerDragEvents(viewer, callback) {
                 const availableModels = fileNames.filter(n => /urdf$/i.test(n));
                 // remove existing entries from #urdf-options
                 const urdfOptionsContainer = document.querySelector('#urdf-options');
-                while (urdfOptionsContainer.firstChild){
+                while (urdfOptionsContainer.firstChild) {
                     urdfOptionsContainer.removeChild(urdfOptionsContainer.firstChild);
                 }
+
                 // create new entries in #urdf-options
                 availableModels.forEach(model => {
                     const li = document.createElement('li');
