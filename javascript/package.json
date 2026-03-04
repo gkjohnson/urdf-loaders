@@ -47,7 +47,7 @@
     "concurrently": "^6.2.1",
     "eslint": "^9.19.0",
     "globals": "^15.14.0",
-    "jsdom": "^17.0.0",
+    "jsdom": "^28.1.0",
     "node-fetch": "^3.0.0",
     "vite": "^6.2.2",
     "rollup": "^4.32.0",
