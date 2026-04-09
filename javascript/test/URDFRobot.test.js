@@ -1,5 +1,4 @@
 import { JSDOM } from 'jsdom';
-import { Vector3 } from 'three';
 import URDFLoader from '../src/URDFLoader.js';
 
 const jsdom = new JSDOM();
@@ -62,10 +61,10 @@ describe('URDFRobot', () => {
         expect(robot.joints.JOINT1.limit.upper).toEqual(3.14);
         expect(robot.joints.JOINT1.limit.velocity).toEqual(5.20);
 
-        expect(robot.joints.JOINT2.limit.effort).toEqual(null);
+        expect(robot.joints.JOINT2.limit.effort).toEqual(0);
         expect(robot.joints.JOINT2.limit.lower).toEqual(0);
         expect(robot.joints.JOINT2.limit.upper).toEqual(0);
-        expect(robot.joints.JOINT2.limit.velocity).toEqual(null);
+        expect(robot.joints.JOINT2.limit.velocity).toEqual(0);
     });
 
     it('should correctly parse joint inertial data.', () => {
@@ -94,8 +93,8 @@ describe('URDFRobot', () => {
             </robot>
         `);
 
-        expect(robot.links.LINK1.inertial.origin.rpy).toEqual(new Vector3(0, 0, -1.5707963267948966));
-        expect(robot.links.LINK1.inertial.origin.xyz).toEqual(new Vector3(0.14635000035763, 0, 0));
+        expect(robot.links.LINK1.inertial.origin.rpy).toEqual([0, 0, -1.5707963267948966]);
+        expect(robot.links.LINK1.inertial.origin.xyz).toEqual([0.14635000035763, 0, 0]);
         expect(robot.links.LINK1.inertial.mass).toEqual(2.5076);
         expect(robot.links.LINK1.inertial.inertia.ixx).toEqual(0.00443333156);
         expect(robot.links.LINK1.inertial.inertia.iyy).toEqual(0.00443333156);
@@ -104,7 +103,11 @@ describe('URDFRobot', () => {
         expect(robot.links.LINK1.inertial.inertia.ixz).toEqual(0);
         expect(robot.links.LINK1.inertial.inertia.iyz).toEqual(0);
 
-        expect(robot.links.LINK2.inertial).toEqual(null);
+        // LINK2 has no <inertial> tag — should still have default values
+        expect(robot.links.LINK2.inertial.mass).toEqual(0);
+        expect(robot.links.LINK2.inertial.origin.xyz).toEqual([0, 0, 0]);
+        expect(robot.links.LINK2.inertial.origin.rpy).toEqual([0, 0, 0]);
+        expect(robot.links.LINK2.inertial.inertia.ixx).toEqual(0);
     });
 
     it('should parse material colors and name.', () => {

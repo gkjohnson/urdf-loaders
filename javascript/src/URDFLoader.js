@@ -37,14 +37,6 @@ function processTuple(val) {
 
 }
 
-// take a vector "x y z" and process it into
-// a THREE.Vector3
-function processVector(val) {
-
-    return new THREE.Vector3(...processTuple(val));
-
-}
-
 // applies a rotation a threejs object in URDF order
 function applyRotation(obj, rpy, additive = false) {
 
@@ -413,35 +405,36 @@ class URDFLoader {
             target.urdfName = target.name;
             target.urdfNode = link;
 
-            // Extract the attributes
-            children.forEach(n => {
+            // Parse inertial properties
+            const inertialNode = children.find(n => n.nodeName.toLowerCase() === 'inertial');
+            if (inertialNode) {
 
-                const type = n.nodeName.toLowerCase();
-                if (type === 'inertial') {
-                    const subNodes = [ ...n.children ];
-                    const origin = subNodes.find(sn => sn.nodeName.toLowerCase() === 'origin');
-                    const xyz = origin ? origin.getAttribute('xyz') : null;
-                    const rpy = origin ? origin.getAttribute('rpy') : null;
-                    const mass = subNodes.find(sn => sn.nodeName.toLowerCase() === 'mass');
-                    const inertia = subNodes.find(sn => sn.nodeName.toLowerCase() === 'inertia');
-                    target.inertial = origin || mass || inertia ? {
-                        origin: xyz || rpy ? {
-                            xyz: xyz ? processVector(xyz) : null,
-                            rpy: rpy ? processVector(rpy) : null,
-                        } : null,
-                        mass: mass ? parseFloat(mass.getAttribute('value') || 0) : null,
-                        inertia: inertia ? {
-                            ixx: parseFloat(inertia.getAttribute('ixx') || 0),
-                            ixy: parseFloat(inertia.getAttribute('ixy') || 0),
-                            ixz: parseFloat(inertia.getAttribute('ixz') || 0),
-                            iyy: parseFloat(inertia.getAttribute('iyy') || 0),
-                            iyz: parseFloat(inertia.getAttribute('iyz') || 0),
-                            izz: parseFloat(inertia.getAttribute('izz') || 0),
-                        } : null,
-                    } : null;
+                [ ...inertialNode.children ].forEach(n => {
 
-                }
-            });
+                    const type = n.nodeName.toLowerCase();
+                    if (type === 'origin') {
+
+                        target.inertial.origin.xyz = processTuple(n.getAttribute('xyz'));
+                        target.inertial.origin.rpy = processTuple(n.getAttribute('rpy'));
+
+                    } else if (type === 'mass') {
+
+                        target.inertial.mass = parseFloat(n.getAttribute('value')) || 0;
+
+                    } else if (type === 'inertia') {
+
+                        target.inertial.inertia.ixx = parseFloat(n.getAttribute('ixx')) || 0;
+                        target.inertial.inertia.ixy = parseFloat(n.getAttribute('ixy')) || 0;
+                        target.inertial.inertia.ixz = parseFloat(n.getAttribute('ixz')) || 0;
+                        target.inertial.inertia.iyy = parseFloat(n.getAttribute('iyy')) || 0;
+                        target.inertial.inertia.iyz = parseFloat(n.getAttribute('iyz')) || 0;
+                        target.inertial.inertia.izz = parseFloat(n.getAttribute('izz')) || 0;
+
+                    }
+
+                });
+
+            }
 
             if (parseVisual) {
 
