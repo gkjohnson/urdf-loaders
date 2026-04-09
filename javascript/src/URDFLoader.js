@@ -445,7 +445,53 @@ class URDFLoader {
 
             }
 
+            // Parse inertial properties
+            const inertialNode = children.find(n => n.nodeName.toLowerCase() === 'inertial');
+            if (inertialNode) {
+
+                target.inertial = processInertial(inertialNode);
+
+            }
+
             return target;
+
+        }
+
+        function processInertial(node) {
+
+            const children = [ ...node.children ];
+            const inertial = {
+                mass: 0,
+                origin: { xyz: [0, 0, 0], rpy: [0, 0, 0] },
+                inertia: { ixx: 0, ixy: 0, ixz: 0, iyy: 0, iyz: 0, izz: 0 },
+            };
+
+            children.forEach(n => {
+
+                const type = n.nodeName.toLowerCase();
+                if (type === 'mass') {
+
+                    inertial.mass = parseFloat(n.getAttribute('value')) || 0;
+
+                } else if (type === 'origin') {
+
+                    inertial.origin.xyz = processTuple(n.getAttribute('xyz'));
+                    inertial.origin.rpy = processTuple(n.getAttribute('rpy'));
+
+                } else if (type === 'inertia') {
+
+                    inertial.inertia.ixx = parseFloat(n.getAttribute('ixx')) || 0;
+                    inertial.inertia.ixy = parseFloat(n.getAttribute('ixy')) || 0;
+                    inertial.inertia.ixz = parseFloat(n.getAttribute('ixz')) || 0;
+                    inertial.inertia.iyy = parseFloat(n.getAttribute('iyy')) || 0;
+                    inertial.inertia.iyz = parseFloat(n.getAttribute('iyz')) || 0;
+                    inertial.inertia.izz = parseFloat(n.getAttribute('izz')) || 0;
+
+                }
+
+            });
+
+            return inertial;
 
         }
 

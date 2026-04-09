@@ -62,6 +62,32 @@ class URDFLink extends URDFBase {
         super(...args);
         this.isURDFLink = true;
         this.type = 'URDFLink';
+        this.inertial = null;
+
+    }
+
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+
+        if (source.inertial) {
+
+            this.inertial = {
+                mass: source.inertial.mass,
+                origin: {
+                    xyz: [...source.inertial.origin.xyz],
+                    rpy: [...source.inertial.origin.rpy],
+                },
+                inertia: { ...source.inertial.inertia },
+            };
+
+        } else {
+
+            this.inertial = null;
+
+        }
+
+        return this;
 
     }
 

@@ -19,9 +19,21 @@ export class URDFVisual extends URDFBase {
 
 }
 
+export interface URDFInertial {
+
+    mass: number;
+    origin: { xyz: number[], rpy: number[] };
+    inertia: {
+        ixx: number; ixy: number; ixz: number;
+        iyy: number; iyz: number; izz: number;
+    };
+
+}
+
 export class URDFLink extends URDFBase {
 
     isURDFLink: true;
+    inertial: URDFInertial | null;
 
 }
 
