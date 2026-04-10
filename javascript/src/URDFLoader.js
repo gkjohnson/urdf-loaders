@@ -639,12 +639,12 @@ class URDFLoader {
             loader.load(path, geom => {
                 const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
                 done(mesh);
-            });
+            }, null, err => done(null, err));
 
         } else if (/\.dae$/i.test(path)) {
 
             const loader = new ColladaLoader(manager);
-            loader.load(path, dae => done(dae.scene));
+            loader.load(path, dae => done(dae.scene), null, err => done(null, err));
 
         } else {
 
