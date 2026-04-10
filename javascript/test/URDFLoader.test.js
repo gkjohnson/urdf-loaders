@@ -460,8 +460,9 @@ describe('Material Tags', () => {
             </robot>
         `);
 
-        const visual = res.children[0].children[0]; // URDFVisual
-        const group = visual.children[0];            // the Group from loadMeshCb
+        const visual = res.children[0].children[0];
+        const group = visual.children[0];
+
         group.traverse(child => {
 
             if (child instanceof Mesh) {
