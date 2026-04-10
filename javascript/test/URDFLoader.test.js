@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { Mesh, Color } from 'three';
+import { Mesh, Group, Color } from 'three';
 import fetch from 'node-fetch';
 import URDFLoader from '../src/URDFLoader.js';
 
@@ -429,6 +429,49 @@ describe('Material Tags', () => {
         expect(material.transparent).toEqual(false);
         expect(material.depthWrite).toEqual(true);
         expect(material.opacity).toEqual(1.0);
+
+    });
+
+    it('should apply URDF material to child meshes when loadMeshCb returns a Group.', () => {
+
+        const loader = new URDFLoader();
+        loader.loadMeshCb = (path, manager, done) => {
+
+            const group = new Group();
+            group.add(new Mesh());
+            group.add(new Mesh());
+            done(group);
+
+        };
+
+        const res = loader.parse(`
+            <robot name="TEST">
+                <material name="Cyan">
+                    <color rgba="0 1.0 1.0 1.0"/>
+                </material>
+                <link name="LINK">
+                    <visual>
+                        <geometry>
+                            <mesh filename="package://meshes/link.obj" />
+                        </geometry>
+                        <material name="Cyan"/>
+                    </visual>
+                </link>
+            </robot>
+        `);
+
+        const visual = res.children[0].children[0]; // URDFVisual
+        const group = visual.children[0];            // the Group from loadMeshCb
+        group.traverse(child => {
+
+            if (child instanceof Mesh) {
+
+                expect(child.material.name).toEqual('Cyan');
+                expect(child.material.color).toEqual(new Color(0, 1, 1).convertSRGBToLinear());
+
+            }
+
+        });
 
     });
 
