@@ -364,6 +364,8 @@ class URDFLoader {
 
                     obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                     obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
+                    obj.limit.effort = parseFloat(n.getAttribute('effort') || obj.limit.effort);
+                    obj.limit.velocity = parseFloat(n.getAttribute('velocity') || obj.limit.velocity);
 
                 }
             });
@@ -402,6 +404,37 @@ class URDFLoader {
             target.name = link.getAttribute('name');
             target.urdfName = target.name;
             target.urdfNode = link;
+
+            // Parse inertial properties
+            const inertialNode = children.find(n => n.nodeName.toLowerCase() === 'inertial');
+            if (inertialNode) {
+
+                [ ...inertialNode.children ].forEach(n => {
+
+                    const type = n.nodeName.toLowerCase();
+                    if (type === 'origin') {
+
+                        target.inertial.origin.xyz = processTuple(n.getAttribute('xyz'));
+                        target.inertial.origin.rpy = processTuple(n.getAttribute('rpy'));
+
+                    } else if (type === 'mass') {
+
+                        target.inertial.mass = parseFloat(n.getAttribute('value')) || 0;
+
+                    } else if (type === 'inertia') {
+
+                        target.inertial.inertia.ixx = parseFloat(n.getAttribute('ixx')) || 0;
+                        target.inertial.inertia.ixy = parseFloat(n.getAttribute('ixy')) || 0;
+                        target.inertial.inertia.ixz = parseFloat(n.getAttribute('ixz')) || 0;
+                        target.inertial.inertia.iyy = parseFloat(n.getAttribute('iyy')) || 0;
+                        target.inertial.inertia.iyz = parseFloat(n.getAttribute('iyz')) || 0;
+                        target.inertial.inertia.izz = parseFloat(n.getAttribute('izz')) || 0;
+
+                    }
+
+                });
+
+            }
 
             if (parseVisual) {
 

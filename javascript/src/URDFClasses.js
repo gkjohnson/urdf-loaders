@@ -63,6 +63,29 @@ class URDFLink extends URDFBase {
         this.isURDFLink = true;
         this.type = 'URDFLink';
 
+        this.inertial = {
+            mass: 0,
+            origin: { xyz: [0, 0, 0], rpy: [0, 0, 0] },
+            inertia: { ixx: 0, ixy: 0, ixz: 0, iyy: 0, iyz: 0, izz: 0 },
+        };
+
+    }
+
+    copy(source, recursive) {
+
+        super.copy(source, recursive);
+
+        this.inertial = {
+            mass: source.inertial.mass,
+            origin: {
+                xyz: [...source.inertial.origin.xyz],
+                rpy: [...source.inertial.origin.rpy],
+            },
+            inertia: { ...source.inertial.inertia },
+        };
+
+        return this;
+
     }
 
 }
@@ -122,7 +145,7 @@ class URDFJoint extends URDFBase {
         this.jointValue = null;
         this.jointType = 'fixed';
         this.axis = new Vector3(1, 0, 0);
-        this.limit = { lower: 0, upper: 0 };
+        this.limit = { lower: 0, upper: 0, effort: 0, velocity: 0 };
         this.ignoreLimits = false;
 
         this.origPosition = null;
@@ -141,6 +164,8 @@ class URDFJoint extends URDFBase {
         this.axis = source.axis.clone();
         this.limit.lower = source.limit.lower;
         this.limit.upper = source.limit.upper;
+        this.limit.effort = source.limit.effort;
+        this.limit.velocity = source.limit.velocity;
         this.ignoreLimits = false;
 
         this.jointValue = [...source.jointValue];
