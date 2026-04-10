@@ -173,7 +173,7 @@ class URDFLoader {
 
                 }
 
-            } else if (packages instanceof Function) {
+            } else if (typeof packages === 'function') {
 
                 return packages(targetPkg) + '/' + relPath;
 
