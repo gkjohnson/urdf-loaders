@@ -4,8 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFLoader = factory(global.THREE, global.THREE, global.THREE));
 })(this, (function (THREE, STLLoader_js, ColladaLoader_js) { 'use strict';
 
-    function _interopNamespace(e) {
-        if (e && e.__esModule) return e;
+    function _interopNamespaceDefault(e) {
         var n = Object.create(null);
         if (e) {
             Object.keys(e).forEach(function (k) {
@@ -18,11 +17,11 @@
                 }
             });
         }
-        n["default"] = e;
+        n.default = e;
         return Object.freeze(n);
     }
 
-    var THREE__namespace = /*#__PURE__*/_interopNamespace(THREE);
+    var THREE__namespace = /*#__PURE__*/_interopNamespaceDefault(THREE);
 
     const _tempAxis = new THREE.Vector3();
     const _tempEuler = new THREE.Euler();
@@ -87,6 +86,29 @@
             this.isURDFLink = true;
             this.type = 'URDFLink';
 
+            this.inertial = {
+                mass: 0,
+                origin: { xyz: [0, 0, 0], rpy: [0, 0, 0] },
+                inertia: { ixx: 0, ixy: 0, ixz: 0, iyy: 0, iyz: 0, izz: 0 },
+            };
+
+        }
+
+        copy(source, recursive) {
+
+            super.copy(source, recursive);
+
+            this.inertial = {
+                mass: source.inertial.mass,
+                origin: {
+                    xyz: [...source.inertial.origin.xyz],
+                    rpy: [...source.inertial.origin.rpy],
+                },
+                inertia: { ...source.inertial.inertia },
+            };
+
+            return this;
+
         }
 
     }
@@ -146,7 +168,7 @@
             this.jointValue = null;
             this.jointType = 'fixed';
             this.axis = new THREE.Vector3(1, 0, 0);
-            this.limit = { lower: 0, upper: 0 };
+            this.limit = { lower: 0, upper: 0, effort: 0, velocity: 0 };
             this.ignoreLimits = false;
 
             this.origPosition = null;
@@ -165,6 +187,8 @@
             this.axis = source.axis.clone();
             this.limit.lower = source.limit.lower;
             this.limit.upper = source.limit.upper;
+            this.limit.effort = source.limit.effort;
+            this.limit.velocity = source.limit.velocity;
             this.ignoreLimits = false;
 
             this.jointValue = [...source.jointValue];
@@ -353,7 +377,20 @@
 
         updateFromMimickedJoint(...values) {
 
-            const modifiedValues = values.map(x => x * this.multiplier + this.offset);
+            const modifiedValues = values.map(x => {
+
+                if (x === null) {
+
+                    return null;
+
+                } else {
+
+                    return x * this.multiplier + this.offset;
+
+                }
+
+            });
+
             return super.setJointValue(...modifiedValues);
 
         }
@@ -504,7 +541,7 @@
      ／
     Z
 
-    ROS URDf
+    ROS URDF
            Z
            |   X
            | ／
@@ -659,7 +696,7 @@
 
                     }
 
-                } else if (packages instanceof Function) {
+                } else if (typeof packages === 'function') {
 
                     return packages(targetPkg) + '/' + relPath;
 
@@ -850,6 +887,8 @@
 
                         obj.limit.lower = parseFloat(n.getAttribute('lower') || obj.limit.lower);
                         obj.limit.upper = parseFloat(n.getAttribute('upper') || obj.limit.upper);
+                        obj.limit.effort = parseFloat(n.getAttribute('effort') || obj.limit.effort);
+                        obj.limit.velocity = parseFloat(n.getAttribute('velocity') || obj.limit.velocity);
 
                     }
                 });
@@ -888,6 +927,37 @@
                 target.name = link.getAttribute('name');
                 target.urdfName = target.name;
                 target.urdfNode = link;
+
+                // Parse inertial properties
+                const inertialNode = children.find(n => n.nodeName.toLowerCase() === 'inertial');
+                if (inertialNode) {
+
+                    [ ...inertialNode.children ].forEach(n => {
+
+                        const type = n.nodeName.toLowerCase();
+                        if (type === 'origin') {
+
+                            target.inertial.origin.xyz = processTuple(n.getAttribute('xyz'));
+                            target.inertial.origin.rpy = processTuple(n.getAttribute('rpy'));
+
+                        } else if (type === 'mass') {
+
+                            target.inertial.mass = parseFloat(n.getAttribute('value')) || 0;
+
+                        } else if (type === 'inertia') {
+
+                            target.inertial.inertia.ixx = parseFloat(n.getAttribute('ixx')) || 0;
+                            target.inertial.inertia.ixy = parseFloat(n.getAttribute('ixy')) || 0;
+                            target.inertial.inertia.ixz = parseFloat(n.getAttribute('ixz')) || 0;
+                            target.inertial.inertia.iyy = parseFloat(n.getAttribute('iyy')) || 0;
+                            target.inertial.inertia.iyz = parseFloat(n.getAttribute('iyz')) || 0;
+                            target.inertial.inertia.izz = parseFloat(n.getAttribute('izz')) || 0;
+
+                        }
+
+                    });
+
+                }
 
                 if (parseVisual) {
 
@@ -1125,12 +1195,12 @@
                 loader.load(path, geom => {
                     const mesh = new THREE__namespace.Mesh(geom, new THREE__namespace.MeshPhongMaterial());
                     done(mesh);
-                });
+                }, null, err => done(null, err));
 
             } else if (/\.dae$/i.test(path)) {
 
                 const loader = new ColladaLoader_js.ColladaLoader(manager);
-                loader.load(path, dae => done(dae.scene));
+                loader.load(path, dae => done(dae.scene), null, err => done(null, err));
 
             } else {
 

@@ -4,10 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.URDFManipulator = factory(global.THREE, global.URDFViewer));
 })(this, (function (THREE, URDFViewer) { 'use strict';
 
-    function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-    function _interopNamespace(e) {
-        if (e && e.__esModule) return e;
+    function _interopNamespaceDefault(e) {
         var n = Object.create(null);
         if (e) {
             Object.keys(e).forEach(function (k) {
@@ -20,12 +17,11 @@
                 }
             });
         }
-        n["default"] = e;
+        n.default = e;
         return Object.freeze(n);
     }
 
-    var THREE__namespace = /*#__PURE__*/_interopNamespace(THREE);
-    var URDFViewer__default = /*#__PURE__*/_interopDefaultLegacy(URDFViewer);
+    var THREE__namespace = /*#__PURE__*/_interopNamespaceDefault(THREE);
 
     // Find the nearest parent that is a joint
     function isJoint(j) {
@@ -263,8 +259,9 @@
 
             function updateMouse(e) {
 
-                mouse.x = ((e.pageX - domElement.offsetLeft) / domElement.offsetWidth) * 2 - 1;
-                mouse.y = -((e.pageY - domElement.offsetTop) / domElement.offsetHeight) * 2 + 1;
+                const rect = domElement.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
             }
 
@@ -363,7 +360,7 @@
     // joint-mouseout: Fired when a joint is no longer hovered over
     // manipulate-start: Fires when a joint is manipulated
     // manipulate-end: Fires when a joint is done being manipulated
-    class URDFManipulator extends URDFViewer__default["default"] {
+    class URDFManipulator extends URDFViewer {
 
         static get observedAttributes() {
 
