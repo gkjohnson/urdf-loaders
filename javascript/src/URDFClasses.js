@@ -329,7 +329,20 @@ class URDFMimicJoint extends URDFJoint {
 
     updateFromMimickedJoint(...values) {
 
-        const modifiedValues = values.map(x => x * this.multiplier + this.offset);
+        const modifiedValues = values.map(x => {
+
+            if (x === null) {
+
+                return null;
+
+            } else {
+
+                return x * this.multiplier + this.offset;
+
+            }
+
+        });
+
         return super.setJointValue(...modifiedValues);
 
     }
