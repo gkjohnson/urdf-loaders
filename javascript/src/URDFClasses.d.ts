@@ -19,9 +19,21 @@ export class URDFVisual extends URDFBase {
 
 }
 
+export interface URDFInertial {
+
+    mass: number;
+    origin: { xyz: number[], rpy: number[] };
+    inertia: {
+        ixx: number; ixy: number; ixz: number;
+        iyy: number; iyz: number; izz: number;
+    };
+
+}
+
 export class URDFLink extends URDFBase {
 
     isURDFLink: true;
+    inertial: URDFInertial;
 
 }
 
@@ -34,7 +46,7 @@ export class URDFJoint extends URDFBase {
     jointType: 'fixed' | 'continuous' | 'revolute' | 'planar' | 'prismatic' | 'floating';
     angle: number;
     jointValue: number[];
-    limit: { lower: number, upper: number }; // TODO: add more
+    limit: { lower: number, upper: number, effort: number, velocity: number };
     ignoreLimits: boolean;
     mimicJoints: URDFMimicJoint[];
 

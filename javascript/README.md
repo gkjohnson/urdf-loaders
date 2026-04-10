@@ -266,10 +266,10 @@ The type of joint. Can only be the URDF types of joints.
 ### .limit
 
 ```js
-.limit : { lower : number, upper : number }
+.limit : { lower : number, upper : number, effort : number, velocity : number }
 ```
 
-An object containing the `lower` and `upper` constraints for the joint.
+An object containing the `lower` and `upper` position constraints, as well as the `effort` and `velocity` limits for the joint. All fields default to zero if not specified in the URDF.
 
 ### .axis
 
@@ -356,6 +356,14 @@ name : string
 ```
 
 The name of the link.
+
+### .inertial
+
+```js
+inertial : { mass : number, origin : { xyz : number[], rpy : number[] }, inertia : { ixx, ixy, ixz, iyy, iyz, izz : number } }
+```
+
+The inertial properties of the link parsed from the `<inertial>` element. All fields default to zero if not specified in the URDF.
 
 ## URDFRobot
 
