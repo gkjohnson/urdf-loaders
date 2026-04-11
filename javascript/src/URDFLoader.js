@@ -586,15 +586,23 @@ class URDFLoader {
 
                                 } else if (obj) {
 
-                                    obj.traverse(child => {
+                                    if (obj instanceof THREE.Mesh) {
 
-                                        if (child instanceof THREE.Mesh) {
+                                        obj.material = material;
 
-                                            child.material = material;
+                                    } else {
 
-                                        }
+                                        obj.traverse(child => {
 
-                                    });
+                                            if (child instanceof THREE.Mesh && !child.material.name) {
+
+                                                child.material = material;
+
+                                            }
+
+                                        });
+
+                                    }
 
                                     // We don't expect non identity rotations or positions. In the case of
                                     // COLLADA files the model might come in with a custom scale for unit

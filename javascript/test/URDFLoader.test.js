@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { Mesh, Group, Color } from 'three';
+import { Mesh, MeshPhongMaterial, Group, Color } from 'three';
 import fetch from 'node-fetch';
 import URDFLoader from '../src/URDFLoader.js';
 
@@ -432,7 +432,7 @@ describe('Material Tags', () => {
 
     });
 
-    it('should apply URDF material to child meshes when loadMeshCb returns a Group.', () => {
+    it('should apply URDF material to child meshes without named materials when loadMeshCb returns a Group.', () => {
 
         const loader = new URDFLoader();
         loader.loadMeshCb = (path, manager, done) => {
@@ -469,6 +469,53 @@ describe('Material Tags', () => {
 
                 expect(child.material.name).toEqual('Cyan');
                 expect(child.material.color).toEqual(new Color(0, 1, 1).convertSRGBToLinear());
+
+            }
+
+        });
+
+    });
+
+    it('should preserve named embedded materials when loadMeshCb returns a Group.', () => {
+
+        const loader = new URDFLoader();
+        loader.loadMeshCb = (path, manager, done) => {
+
+            const embeddedMaterial = new MeshPhongMaterial({ color: 0xff0000 });
+            embeddedMaterial.name = 'EmbeddedRed';
+
+            const group = new Group();
+            group.add(new Mesh(undefined, embeddedMaterial));
+            group.add(new Mesh(undefined, embeddedMaterial));
+            done(group);
+
+        };
+
+        const res = loader.parse(`
+            <robot name="TEST">
+                <material name="Cyan">
+                    <color rgba="0 1.0 1.0 1.0"/>
+                </material>
+                <link name="LINK">
+                    <visual>
+                        <geometry>
+                            <mesh filename="package://meshes/link.dae" />
+                        </geometry>
+                        <material name="Cyan"/>
+                    </visual>
+                </link>
+            </robot>
+        `);
+
+        const visual = res.children[0].children[0];
+        const group = visual.children[0];
+
+        group.traverse(child => {
+
+            if (child instanceof Mesh) {
+
+                expect(child.material.name).toEqual('EmbeddedRed');
+                expect(child.material.color).toEqual(new Color(0xff0000));
 
             }
 
