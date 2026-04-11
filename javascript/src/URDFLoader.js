@@ -590,6 +590,18 @@ class URDFLoader {
 
                                         obj.material = material;
 
+                                    } else {
+
+                                        obj.traverse(child => {
+
+                                            if (child instanceof THREE.Mesh && !child.material.name) {
+
+                                                child.material = material;
+
+                                            }
+
+                                        });
+
                                     }
 
                                     // We don't expect non identity rotations or positions. In the case of
