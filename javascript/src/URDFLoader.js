@@ -588,7 +588,7 @@ class URDFLoader {
 
                                     obj.traverse(child => {
 
-                                        if (child instanceof THREE.Mesh && !child.material.name) {
+                                        if (child instanceof THREE.Mesh) {
 
                                             child.material = material;
 
