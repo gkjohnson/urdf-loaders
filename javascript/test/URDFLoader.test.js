@@ -642,3 +642,18 @@ describe('Parsing Mimic Tags', () => {
     });
 
 });
+
+describe('Parsing', () => {
+
+    it('should throw an error if <robot> node is missing', () => {
+
+        const loader = new URDFLoader();
+        expect(() => {
+
+            loader.parse('<not-a-robot></not-a-robot>');
+
+        }).toThrow('URDFLoader: No <robot> node found in URDF.');
+
+    });
+
+});

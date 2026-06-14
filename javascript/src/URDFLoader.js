@@ -215,7 +215,12 @@ class URDFLoader {
 
             }
 
-            const robotNode = children.filter(c => c.nodeName === 'robot').pop();
+            const robotNode = children.filter(c => c.nodeName.toLowerCase() === 'robot').pop();
+            if (!robotNode) {
+
+                throw new Error('URDFLoader: No <robot> node found in URDF.');
+
+            }
             return processRobot(robotNode);
 
         }
