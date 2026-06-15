@@ -1,4 +1,4 @@
-/** @import { Object3D, LoadingManager } from 'three' */
+/** @import { Object3D, LoadingManager, Material } from 'three' */
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
