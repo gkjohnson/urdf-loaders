@@ -129,7 +129,7 @@ function init() {
 
     const manager = new LoadingManager();
     const loader = new URDFLoader(manager);
-    loader.loadMeshCb = function(path, manager, onComplete) {
+    loader.loadMeshCb = function(path, manager, material, onComplete) {
         const ext = path.split(/\./g).pop().toLowerCase();
 
         switch (ext) {
@@ -143,7 +143,7 @@ function init() {
                 );
                 break;
             default:
-                loader.defaultMeshLoader(path, manager, onComplete);
+                loader.defaultMeshLoader(path, manager, material, onComplete);
 
         }
 
