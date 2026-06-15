@@ -194,7 +194,7 @@ class URDFJoint extends URDFBase {
         this.axis = new Vector3(1, 0, 0);
 
         /**
-         * An object containing the lower and upper position constraints, as well as the effort and velocity limits for the joint. All fields default to zero if not specified in the URDF.
+         * An object containing the `lower` and `upper` position constraints, as well as the `effort` and `velocity` limits for the joint. All fields default to zero if not specified in the URDF.
          * @type {Object}
          * @property {number} [lower=0]
          * @property {number} [upper=0]
@@ -250,6 +250,8 @@ class URDFJoint extends URDFBase {
      * joint type. If the joint value specifies an angle it must be in radians. If the value
      * specifies a distance, it must be in meters. Passing null for any component of the value will
      * skip updating that particular component.
+     *
+     * Returns true if the joint or any of its mimicking joints changed.
      * @param {...number|null} values The joint value components to set, optionally null for no-op
      * @returns {boolean} Returns true if the joint or any of its mimicking joints changed.
      */
@@ -593,7 +595,7 @@ class URDFRobot extends URDFLink {
     }
 
     /**
-     * Sets the joint value of the joint with the given name.
+     * Sets the joint value of the joint with the given name. Returns true if the joint changed.
      * @param {string} name The name of the joint to set
      * @param {...number} angle The value(s) to set
      * @returns {boolean} Returns true if the joint changed.
@@ -611,7 +613,7 @@ class URDFRobot extends URDFLink {
     }
 
     /**
-     * Sets the joint values for all the joints in the dictionary indexed by joint name.
+     * Sets the joint values for all the joints in the dictionary indexed by joint name. Returns true if a joint changed.
      * @param {Object} jointValueDictionary A dictionary of joint names to values
      * @returns {boolean} Returns true if a joint changed.
      */

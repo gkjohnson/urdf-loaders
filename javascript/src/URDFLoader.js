@@ -92,14 +92,13 @@ function applyRotation(obj, rpy, additive = false) {
  * List of options available on the URDFLoader class.
  * @typedef {Object} URDFOptions
  * @property {string|Object|PackageResolver} [packages=''] The path representing the `package://` directory(s) to load `package://` relative files. If the argument is a string it is used to replace the `package://` prefix. To specify multiple packages use an object mapping package names to paths. If set to a function it takes the package name and returns the package path.
- * @property {MeshLoadFunc} [loadMeshCb=null] An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`.
+ * @property {MeshLoadFunc} [loadMeshCb=null] An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
  * @property {Object} [fetchOptions=null] An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
  * @property {string} [workingPath=''] The path to load geometry relative to. Defaults to the path relative to the loaded URDF file.
  * @property {boolean} [parseVisual=true] An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
  * @property {boolean} [parseCollision=false] An optional value that can be used to enable / disable loading meshes for links from the `collision` nodes. Defaults to false.
  */
 
-/* URDFLoader Class */
 /**
  * Loads and builds the specified URDF robot in THREE.js.
  */

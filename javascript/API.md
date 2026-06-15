@@ -20,7 +20,7 @@ The path representing the `package://` directory(s) to load `package://` relativ
 loadMeshCb = null: ( pathToModel: string, manager: LoadingManager, onComplete: ( obj: Object3D, err: Error ) => void ) => void
 ```
 
-An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`.
+An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
 
 ### .fetchOptions
 
@@ -108,7 +108,7 @@ limit: {
 }
 ```
 
-An object containing the lower and upper position constraints, as well as the effort and velocity limits for the joint. All fields default to zero if not specified in the URDF.
+An object containing the `lower` and `upper` position constraints, as well as the `effort` and `velocity` limits for the joint. All fields default to zero if not specified in the URDF.
 
 
 ### .ignoreLimits
@@ -139,6 +139,8 @@ Sets the joint value(s) for the given joint. The interpretation of the value dep
 joint type. If the joint value specifies an angle it must be in radians. If the value
 specifies a distance, it must be in meters. Passing null for any component of the value will
 skip updating that particular component.
+
+Returns true if the joint or any of its mimicking joints changed.
 
 
 ## URDFMimicJoint
@@ -282,7 +284,7 @@ A dictionary of all the named frames in the robot including links, joints, colli
 setJointValue( name: string, ...angle: number ): boolean
 ```
 
-Sets the joint value of the joint with the given name.
+Sets the joint value of the joint with the given name. Returns true if the joint changed.
 
 
 ### .setJointValues
@@ -291,7 +293,7 @@ Sets the joint value of the joint with the given name.
 setJointValues( jointValueDictionary: Object ): boolean
 ```
 
-Sets the joint values for all the joints in the dictionary indexed by joint name.
+Sets the joint values for all the joints in the dictionary indexed by joint name. Returns true if a joint changed.
 
 
 ## URDFLoader
