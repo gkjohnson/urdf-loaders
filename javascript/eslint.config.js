@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import vitest from '@vitest/eslint-plugin';
 import globals from 'globals';
+import jsdoc from 'eslint-plugin-jsdoc';
 
 export default [
     // files to ignore
@@ -192,6 +193,41 @@ export default [
             'wrap-iife': ['error', 'any', { functionPrototypeMethods: true }],
             'yield-star-spacing': ['error', 'both'],
             'yoda': ['error', 'never'],
+        },
+    },
+
+    // jsdoc rules
+    {
+        name: 'jsdoc rules',
+        files: ['**/*.js'],
+        plugins: {
+            jsdoc,
+        },
+        settings: {
+            jsdoc: {
+                preferredTypes: {
+                    Any: 'any',
+                    Boolean: 'boolean',
+                    Number: 'number',
+                    object: 'Object',
+                    String: 'string',
+                },
+                tagNamePreference: {
+                    return: 'returns',
+                    augments: 'extends',
+                    classdesc: false,
+                },
+            },
+        },
+        rules: {
+            'jsdoc/check-tag-names': ['error', { definedTags: ['warn', 'note', 'section'] }],
+            'jsdoc/check-types': 'error',
+            'jsdoc/no-undefined-types': 'error',
+            'jsdoc/require-param-type': 'error',
+            'jsdoc/require-returns-type': 'error',
+            'jsdoc/require-returns': 'off',
+            'jsdoc/require-param-description': 'off',
+            'jsdoc/require-returns-description': 'off',
         },
     },
 

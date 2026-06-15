@@ -47,6 +47,7 @@
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "concurrently": "^6.2.1",
     "eslint": "^9.19.0",
+    "eslint-plugin-jsdoc": "^63.0.2",
     "globals": "^15.14.0",
     "jsdoc": "^4.0.5",
     "jsdom": "^28.1.0",
