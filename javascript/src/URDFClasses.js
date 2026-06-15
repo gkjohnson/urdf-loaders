@@ -55,6 +55,10 @@ class URDFVisual extends URDFBase {
 
 }
 
+/**
+ * An object representing a robot link.
+ * @extends Object3D
+ */
 class URDFLink extends URDFBase {
 
     constructor(...args) {
@@ -63,6 +67,25 @@ class URDFLink extends URDFBase {
         this.isURDFLink = true;
         this.type = 'URDFLink';
 
+        /**
+         * The name of the link.
+         * @type {string}
+         */
+        this.name = '';
+
+        /**
+         * The inertial properties of the link parsed from the `<inertial>` element. All fields default to zero if not specified in the URDF.
+         * @type {Object}
+         * @property {number} [mass=0]
+         * @property {number[]} [origin.xyz]
+         * @property {number[]} [origin.rpy]
+         * @property {number} [inertia.ixx=0]
+         * @property {number} [inertia.ixy=0]
+         * @property {number} [inertia.ixz=0]
+         * @property {number} [inertia.iyy=0]
+         * @property {number} [inertia.iyz=0]
+         * @property {number} [inertia.izz=0]
+         */
         this.inertial = {
             mass: 0,
             origin: { xyz: [0, 0, 0], rpy: [0, 0, 0] },
@@ -90,8 +113,16 @@ class URDFLink extends URDFBase {
 
 }
 
+/**
+ * An object representing a robot joint.
+ * @extends Object3D
+ */
 class URDFJoint extends URDFBase {
 
+    /**
+     * The type of joint. Can only be the URDF types of joints.
+     * @type {string}
+     */
     get jointType() {
 
         return this._jointType;
@@ -129,6 +160,11 @@ class URDFJoint extends URDFBase {
 
     }
 
+    /**
+     * The current position or angle for joint.
+     * @type {number}
+     * @readonly
+     */
     get angle() {
 
         return this.jointValue[0];
@@ -142,15 +178,44 @@ class URDFJoint extends URDFBase {
         this.isURDFJoint = true;
         this.type = 'URDFJoint';
 
+        /**
+         * The name of the joint.
+         * @type {string}
+         */
+        this.name = '';
+
         this.jointValue = null;
         this.jointType = 'fixed';
+
+        /**
+         * The axis described for the joint.
+         * @type {Vector3}
+         */
         this.axis = new Vector3(1, 0, 0);
+
+        /**
+         * An object containing the `lower` and `upper` position constraints, as well as the `effort` and `velocity` limits for the joint. All fields default to zero if not specified in the URDF.
+         * @type {Object}
+         * @property {number} [lower=0]
+         * @property {number} [upper=0]
+         * @property {number} [effort=0]
+         * @property {number} [velocity=0]
+         */
         this.limit = { lower: 0, upper: 0, effort: 0, velocity: 0 };
+
+        /**
+         * Whether or not to ignore the joint limits when setting a the joint position.
+         * @type {boolean}
+         */
         this.ignoreLimits = false;
 
         this.origPosition = null;
         this.origQuaternion = null;
 
+        /**
+         * A list of joints which mimic this joint. These joints are updated whenever this joint is.
+         * @type {URDFMimicJoint[]}
+         */
         this.mimicJoints = [];
 
     }
@@ -181,8 +246,14 @@ class URDFJoint extends URDFBase {
 
     /* Public Functions */
     /**
+     * Sets the joint value(s) for the given joint. The interpretation of the value depends on the
+     * joint type. If the joint value specifies an angle it must be in radians. If the value
+     * specifies a distance, it must be in meters. Passing null for any component of the value will
+     * skip updating that particular component.
+     *
+     * Returns true if the joint or any of its mimicking joints changed.
      * @param {...number|null} values The joint value components to set, optionally null for no-op
-     * @returns {boolean} Whether the invocation of this function resulted in an actual change to the joint value
+     * @returns {boolean} Returns true if the joint or any of its mimicking joints changed.
      */
     setJointValue(...values) {
 
@@ -340,14 +411,36 @@ class URDFJoint extends URDFBase {
 
 }
 
+/**
+ * An object representing a robot joint which mimics another existing joint. The value of this
+ * joint can be computed as `value = multiplier * other_joint_value + offset`.
+ * @extends URDFJoint
+ */
 class URDFMimicJoint extends URDFJoint {
 
     constructor(...args) {
 
         super(...args);
         this.type = 'URDFMimicJoint';
+
+        /**
+         * The name of the joint which this joint mimics.
+         * @type {string}
+         */
         this.mimicJoint = null;
+
+        /**
+         * Specifies the offset to add in the formula above. Defaults to 0 (radians for revolute joints, meters for prismatic joints).
+         * @type {number}
+         * @default 0
+         */
         this.offset = 0;
+
+        /**
+         * Specifies the multiplicative factor in the formula above. Defaults to 1.0.
+         * @type {number}
+         * @default 1
+         */
         this.multiplier = 1;
 
     }
@@ -387,6 +480,10 @@ class URDFMimicJoint extends URDFJoint {
 
 }
 
+/**
+ * Object that describes the URDF Robot.
+ * @extends URDFLink
+ */
 class URDFRobot extends URDFLink {
 
     constructor(...args) {
@@ -396,12 +493,41 @@ class URDFRobot extends URDFLink {
         this.urdfNode = null;
 
         this.urdfRobotNode = null;
+
+        /**
+         * The name of the robot described in the `<robot>` tag.
+         * @type {string}
+         */
         this.robotName = null;
 
+        /**
+         * A dictionary of `linkName : URDFLink` with all links in the robot.
+         * @type {Object.<string, URDFLink>}
+         */
         this.links = null;
+
+        /**
+         * A dictionary of `jointName : URDFJoint` with all joints in the robot.
+         * @type {Object.<string, URDFJoint>}
+         */
         this.joints = null;
+
+        /**
+         * A dictionary of `colliderName : Object3D` with all collision nodes in the robot.
+         * @type {Object.<string, Object3D>}
+         */
         this.colliders = null;
+
+        /**
+         * A dictionary of `visualName : Object3D` with all visual nodes in the robot.
+         * @type {Object.<string, Object3D>}
+         */
         this.visual = null;
+
+        /**
+         * A dictionary of all the named frames in the robot including links, joints, colliders, and visual.
+         * @type {Object.<string, Object3D>}
+         */
         this.frames = null;
 
     }
@@ -468,6 +594,12 @@ class URDFRobot extends URDFLink {
 
     }
 
+    /**
+     * Sets the joint value of the joint with the given name. Returns true if the joint changed.
+     * @param {string} name The name of the joint to set
+     * @param {...number} angle The value(s) to set
+     * @returns {boolean} Returns true if the joint changed.
+     */
     setJointValue(jointName, ...angle) {
 
         const joint = this.joints[jointName];
@@ -480,6 +612,11 @@ class URDFRobot extends URDFLink {
         return false;
     }
 
+    /**
+     * Sets the joint values for all the joints in the dictionary indexed by joint name. Returns true if a joint changed.
+     * @param {Object} jointValueDictionary A dictionary of joint names to values
+     * @returns {boolean} Returns true if a joint changed.
+     */
     setJointValues(values) {
 
         let didChange = false;
