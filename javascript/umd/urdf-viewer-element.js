@@ -29,13 +29,35 @@
     // urdf-viewer element
     // Loads and displays a 3D view of a URDF-formatted robot
 
-    // Events
-    // urdf-change: Fires when the URDF has finished loading and getting processed
-    // urdf-processed: Fires when the URDF has finished loading and getting processed
-    // geometry-loaded: Fires when all the geometry has been fully loaded
-    // ignore-limits-change: Fires when the 'ignore-limits' attribute changes
-    // angle-change: Fires when an angle changes
+    /**
+     * A custom HTML element that loads and displays a URDF robot model in a THREE.js scene.
+     *
+     * @fires URDFViewer#urdf-change
+     * @fires URDFViewer#ignore-limits-change
+     * @fires URDFViewer#urdf-processed
+     * @fires URDFViewer#geometry-loaded
+     */
     class URDFViewer extends HTMLElement {
+
+        /**
+         * Fires when the URDF has changed and a new one is starting to load.
+         * @event URDFViewer#urdf-change
+         */
+
+        /**
+         * Fires when the `ignore-limits` attribute changes.
+         * @event URDFViewer#ignore-limits-change
+         */
+
+        /**
+         * Fires when the URDF has finished loading and getting processed.
+         * @event URDFViewer#urdf-processed
+         */
+
+        /**
+         * Fires when all the geometry has been fully loaded.
+         * @event URDFViewer#geometry-loaded
+         */
 
         static get observedAttributes() {
 
@@ -43,33 +65,69 @@
 
         }
 
+        /**
+         * Corresponds to the `package` parameter in `URDFLoader.load`.
+         * @type {string}
+         */
         get package() { return this.getAttribute('package') || ''; }
         set package(val) { this.setAttribute('package', val); }
 
+        /**
+         * Corresponds to the `urdfpath` parameter in `URDFLoader.load`.
+         * @type {string}
+         */
         get urdf() { return this.getAttribute('urdf') || ''; }
         set urdf(val) { this.setAttribute('urdf', val); }
 
+        /**
+         * Whether or not the display should ignore the joint limits specified in the model when updating angles.
+         * @type {boolean}
+         */
         get ignoreLimits() { return this.hasAttribute('ignore-limits') || false; }
         set ignoreLimits(val) { val ? this.setAttribute('ignore-limits', val) : this.removeAttribute('ignore-limits'); }
 
+        /**
+         * The axis to associate with "up" in THREE.js. Values can be [+-][XYZ].
+         * @type {string}
+         */
         get up() { return this.getAttribute('up') || '+Z'; }
         set up(val) { this.setAttribute('up', val); }
 
+        /**
+         * Whether or not to render the shadow under the robot.
+         * @type {boolean}
+         */
         get displayShadow() { return this.hasAttribute('display-shadow') || false; }
         set displayShadow(val) { val ? this.setAttribute('display-shadow', '') : this.removeAttribute('display-shadow'); }
 
+        /**
+         * The color of the ambient light specified with css colors.
+         * @type {string}
+         */
         get ambientColor() { return this.getAttribute('ambient-color') || '#8ea0a8'; }
         set ambientColor(val) { val ? this.setAttribute('ambient-color', val) : this.removeAttribute('ambient-color'); }
 
+        /**
+         * Automatically redraw the model every frame instead of waiting to be dirtied.
+         * @type {boolean}
+         */
         get autoRedraw() { return this.hasAttribute('auto-redraw') || false; }
         set autoRedraw(val) { val ? this.setAttribute('auto-redraw', true) : this.removeAttribute('auto-redraw'); }
 
+        /**
+         * Recenter the camera only after loading the model.
+         * @type {boolean}
+         */
         get noAutoRecenter() { return this.hasAttribute('no-auto-recenter') || false; }
         set noAutoRecenter(val) { val ? this.setAttribute('no-auto-recenter', true) : this.removeAttribute('no-auto-recenter'); }
 
         get showCollision() { return this.hasAttribute('show-collision') || false; }
         set showCollision(val) { val ? this.setAttribute('show-collision', true) : this.removeAttribute('show-collision'); }
 
+        /**
+         * Sets or gets the jointValues of the robot as a dictionary of `joint-name` to `radian` pairs.
+         * @type {Object}
+         */
         get jointValues() {
 
             const values = {};
@@ -323,11 +381,19 @@
 
         }
 
+        /**
+         * Dirty the renderer so the element will redraw next frame.
+         * @returns {void}
+         */
         redraw() {
 
             this._dirty = true;
         }
 
+        /**
+         * Recenter the camera to the model and redraw.
+         * @returns {void}
+         */
         recenter() {
 
             this._updateEnvironment();
@@ -337,12 +403,18 @@
 
         // Set the joint with jointName to
         // angle in degrees
-        setJointValue(jointName, ...values) {
+        /**
+         * Sets the given joint to the provided value(s). See URDFJoint.setJointValue.
+         * @param {string} jointName The name of the joint to set
+         * @param {...number|null} jointValues The value(s) to set
+         * @returns {void}
+         */
+        setJointValue(jointName, ...jointValues) {
 
             if (!this.robot) return;
             if (!this.robot.joints[jointName]) return;
 
-            if (this.robot.joints[jointName].setJointValue(...values)) {
+            if (this.robot.joints[jointName].setJointValue(...jointValues)) {
 
                 this.redraw();
                 this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
@@ -351,6 +423,11 @@
 
         }
 
+        /**
+         * Sets all joint names specified as keys to radian angle value.
+         * @param {Object} jointValueDictionary A dictionary of joint names to values
+         * @returns {void}
+         */
         setJointValues(values) {
 
             for (const name in values) {
@@ -644,7 +721,7 @@
 
         }
 
-    };
+    }
 
     return URDFViewer;
 
