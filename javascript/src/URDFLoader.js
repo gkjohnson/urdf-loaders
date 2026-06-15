@@ -652,19 +652,13 @@ class URDFLoader {
 
                             }
 
-                            loadMeshCb(filePath, manager, (obj, err) => {
+                            loadMeshCb(filePath, manager, material, (obj, err) => {
 
                                 if (err) {
 
                                     console.error('URDFLoader: Error loading mesh.', err);
 
                                 } else if (obj) {
-
-                                    if (obj instanceof THREE.Mesh) {
-
-                                        obj.material = material;
-
-                                    }
 
                                     // We don't expect non identity rotations or positions. In the case of
                                     // COLLADA files the model might come in with a custom scale for unit
@@ -738,13 +732,13 @@ class URDFLoader {
     }
 
     // Default mesh loading function
-    defaultMeshLoader(path, manager, done) {
+    defaultMeshLoader(path, manager, material, done) {
 
         if (/\.stl$/i.test(path)) {
 
             const loader = new STLLoader(manager);
             loader.load(path, geom => {
-                const mesh = new THREE.Mesh(geom, new THREE.MeshPhongMaterial());
+                const mesh = new THREE.Mesh(geom, material || new THREE.MeshPhongMaterial());
                 done(mesh);
             }, null, err => done(null, err));
 
