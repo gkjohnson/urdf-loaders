@@ -71,6 +71,7 @@ function applyRotation(obj, rpy, additive = false) {
  * @callback MeshLoadFunc
  * @param {string} pathToModel The url to load the model from
  * @param {LoadingManager} manager The THREE.js LoadingManager used by the URDFLoader
+ * @param {Material} material The material derived from the URDF `<material>` tag for this visual element, or a default material if none was specified
  * @param {OnMeshLoadComplete} onComplete Called with the mesh once the geometry has been loaded
  */
 
@@ -92,7 +93,7 @@ function applyRotation(obj, rpy, additive = false) {
  * List of options available on the URDFLoader class.
  * @typedef {Object} URDFOptions
  * @property {string|Object|PackageResolver} [packages=''] The path representing the `package://` directory(s) to load `package://` relative files. If the argument is a string it is used to replace the `package://` prefix. To specify multiple packages use an object mapping package names to paths. If set to a function it takes the package name and returns the package path.
- * @property {MeshLoadFunc} [loadMeshCb=null] An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
+ * @property {MeshLoadFunc} [loadMeshCb=null] An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `material` is the material derived from the URDF `<material>` tag and should be applied to meshes that have no internally declared material. `onComplete` is called with the mesh once the geometry has been loaded.
  * @property {Object} [fetchOptions=null] An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
  * @property {string} [workingPath=''] The path to load geometry relative to. Defaults to the path relative to the loaded URDF file.
  * @property {boolean} [parseVisual=true] An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.

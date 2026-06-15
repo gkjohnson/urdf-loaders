@@ -17,10 +17,10 @@ The path representing the `package://` directory(s) to load `package://` relativ
 ### .loadMeshCb
 
 ```js
-loadMeshCb = null: ( pathToModel: string, manager: LoadingManager, onComplete: ( obj: Object3D, err: Error ) => void ) => void
+loadMeshCb = null: ( pathToModel: string, manager: LoadingManager, material: Material, onComplete: ( obj: Object3D, err: Error ) => void ) => void
 ```
 
-An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `onComplete` is called with the mesh once the geometry has been loaded.
+An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `material` is the material derived from the URDF `<material>` tag and should be applied to meshes that have no internally declared material. `onComplete` is called with the mesh once the geometry has been loaded.
 
 ### .fetchOptions
 
