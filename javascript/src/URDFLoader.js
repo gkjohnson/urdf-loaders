@@ -1,3 +1,4 @@
+/** @import { Object3D, LoadingManager } from 'three' */
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader.js';
@@ -74,9 +75,23 @@ function applyRotation(obj, rpy, additive = false) {
  */
 
 /**
+ * @callback OnURDFLoad
+ * @param {URDFRobot} robot The loaded robot model
+ */
+
+/**
+ * @callback OnURDFProgress
+ */
+
+/**
+ * @callback OnURDFError
+ * @param {Error} error The error that occurred
+ */
+
+/**
  * List of options available on the URDFLoader class.
  * @typedef {Object} URDFOptions
- * @property {String|Object|PackageResolver} [packages=''] The path representing the `package://` directory(s) to load `package://` relative files. If the argument is a string it is used to replace the `package://` prefix. To specify multiple packages use an object mapping package names to paths. If set to a function it takes the package name and returns the package path.
+ * @property {string|Object|PackageResolver} [packages=''] The path representing the `package://` directory(s) to load `package://` relative files. If the argument is a string it is used to replace the `package://` prefix. To specify multiple packages use an object mapping package names to paths. If set to a function it takes the package name and returns the package path.
  * @property {MeshLoadFunc} [loadMeshCb=null] An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`.
  * @property {Object} [fetchOptions=null] An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
  * @property {string} [workingPath=''] The path to load geometry relative to. Defaults to the path relative to the loaded URDF file.
@@ -126,9 +141,9 @@ class URDFLoader {
      * Loads and builds the specified URDF robot in THREE.js. Takes a path to load the urdf file
      * from, a func to call when the robot has loaded, and a set of options.
      * @param {string} urdfpath The path to the URDF within the package OR absolute
-     * @param {function(URDFRobot): void} onComplete Callback that is passed the model once loaded
-     * @param {function} [onProgress] Called during loading
-     * @param {function(Error): void} [onError] Called if an error occurs
+     * @param {OnURDFLoad} onComplete Callback that is passed the model once loaded
+     * @param {OnURDFProgress} [onProgress] Called during loading
+     * @param {OnURDFError} [onError] Called if an error occurs
      * @returns {void}
      */
     load(urdf, onComplete, onProgress, onError) {
@@ -192,8 +207,7 @@ class URDFLoader {
      * string, as well.
      *
      * Note that geometry will not necessarily be loaded when the robot is returned.
-     * @param {string|Document|Element} content The URDF content to parse
-     * @param {string} [workingPath] The path to resolve relative file paths against
+     * @param {string|Document|Element} urdfContent The URDF content to parse
      * @returns {URDFRobot}
      */
     parse(content, workingPath = this.workingPath) {

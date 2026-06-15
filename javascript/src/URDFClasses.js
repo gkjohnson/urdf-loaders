@@ -57,7 +57,7 @@ class URDFVisual extends URDFBase {
 
 /**
  * An object representing a robot link.
- * @augments Object3D
+ * @extends Object3D
  */
 class URDFLink extends URDFBase {
 
@@ -75,7 +75,16 @@ class URDFLink extends URDFBase {
 
         /**
          * The inertial properties of the link parsed from the `<inertial>` element. All fields default to zero if not specified in the URDF.
-         * @type {{ mass: number, origin: { xyz: number[], rpy: number[] }, inertia: { ixx: number, ixy: number, ixz: number, iyy: number, iyz: number, izz: number } }}
+         * @type {Object}
+         * @property {number} [mass=0]
+         * @property {number[]} [origin.xyz]
+         * @property {number[]} [origin.rpy]
+         * @property {number} [inertia.ixx=0]
+         * @property {number} [inertia.ixy=0]
+         * @property {number} [inertia.ixz=0]
+         * @property {number} [inertia.iyy=0]
+         * @property {number} [inertia.iyz=0]
+         * @property {number} [inertia.izz=0]
          */
         this.inertial = {
             mass: 0,
@@ -106,7 +115,7 @@ class URDFLink extends URDFBase {
 
 /**
  * An object representing a robot joint.
- * @augments Object3D
+ * @extends Object3D
  */
 class URDFJoint extends URDFBase {
 
@@ -186,7 +195,11 @@ class URDFJoint extends URDFBase {
 
         /**
          * An object containing the lower and upper position constraints, as well as the effort and velocity limits for the joint. All fields default to zero if not specified in the URDF.
-         * @type {{ lower: number, upper: number, effort: number, velocity: number }}
+         * @type {Object}
+         * @property {number} [lower=0]
+         * @property {number} [upper=0]
+         * @property {number} [effort=0]
+         * @property {number} [velocity=0]
          */
         this.limit = { lower: 0, upper: 0, effort: 0, velocity: 0 };
 
@@ -399,7 +412,7 @@ class URDFJoint extends URDFBase {
 /**
  * An object representing a robot joint which mimics another existing joint. The value of this
  * joint can be computed as `value = multiplier * other_joint_value + offset`.
- * @augments URDFJoint
+ * @extends URDFJoint
  */
 class URDFMimicJoint extends URDFJoint {
 
@@ -410,20 +423,20 @@ class URDFMimicJoint extends URDFJoint {
 
         /**
          * The name of the joint which this joint mimics.
-         * @type {String}
+         * @type {string}
          */
         this.mimicJoint = null;
 
         /**
          * Specifies the offset to add in the formula above. Defaults to 0 (radians for revolute joints, meters for prismatic joints).
-         * @type {Number}
+         * @type {number}
          * @default 0
          */
         this.offset = 0;
 
         /**
          * Specifies the multiplicative factor in the formula above. Defaults to 1.0.
-         * @type {Number}
+         * @type {number}
          * @default 1
          */
         this.multiplier = 1;
@@ -467,7 +480,7 @@ class URDFMimicJoint extends URDFJoint {
 
 /**
  * Object that describes the URDF Robot.
- * @augments URDFLink
+ * @extends URDFLink
  */
 class URDFRobot extends URDFLink {
 
@@ -581,9 +594,9 @@ class URDFRobot extends URDFLink {
 
     /**
      * Sets the joint value of the joint with the given name.
-     * @param {String} name The name of the joint to set
+     * @param {string} name The name of the joint to set
      * @param {...number} angle The value(s) to set
-     * @returns {Boolean} Returns true if the joint changed.
+     * @returns {boolean} Returns true if the joint changed.
      */
     setJointValue(jointName, ...angle) {
 
@@ -600,7 +613,7 @@ class URDFRobot extends URDFLink {
     /**
      * Sets the joint values for all the joints in the dictionary indexed by joint name.
      * @param {Object} jointValueDictionary A dictionary of joint names to values
-     * @returns {Boolean} Returns true if a joint changed.
+     * @returns {boolean} Returns true if a joint changed.
      */
     setJointValues(values) {
 

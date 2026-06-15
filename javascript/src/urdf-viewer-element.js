@@ -385,16 +385,16 @@ class URDFViewer extends HTMLElement {
     // angle in degrees
     /**
      * Sets the given joint to the provided value(s). See URDFJoint.setJointValue.
-     * @param {String} jointName The name of the joint to set
+     * @param {string} jointName The name of the joint to set
      * @param {...number|null} jointValues The value(s) to set
      * @returns {void}
      */
-    setJointValue(jointName, ...values) {
+    setJointValue(jointName, ...jointValues) {
 
         if (!this.robot) return;
         if (!this.robot.joints[jointName]) return;
 
-        if (this.robot.joints[jointName].setJointValue(...values)) {
+        if (this.robot.joints[jointName].setJointValue(...jointValues)) {
 
             this.redraw();
             this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, detail: jointName }));
