@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [0.13.0] - 2026.06.15
+### Added
+- JSDoc annotations on all public API surface (URDFLoader, URDFClasses, URDFViewer).
+- `docs:build` script and generated `API.md` reference documentation.
+
 ### Changed
-- URDFLoader: Add "material" argument to "loadMeshCb"
+- URDFLoader: Add "material" argument to "loadMeshCb" as the third parameter (breaking change).
+- README: Replaced inline API documentation with a link to `API.md`.
 
 ## [0.12.7] - 2026.04.10
 ### Added
@@ -83,7 +88,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `"type": "module"` to the package.json and made the main entry file point to the es6 module.
 - Export URDF Class types as `interafaces` rather than `classes`.
 - Changed URDF Class type definitions to be exported as `interface` rather than `class`.
- 
+
 ## [0.9.5] - 2021-01-26
 ### Added
 - Support for "mimic" joints.
