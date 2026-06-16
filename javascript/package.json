@@ -8,7 +8,6 @@
     "start": "concurrently \"rollup -w -c\" \"vite --config ./vite.config.js\"",
     "build": "rollup -c",
     "build-examples": "vite build --config ./vite.config.js",
-    "docs:build": "node utils/docs/build.js",
     "test": "vitest run",
     "lint": "eslint \"./src/*.js\" \"./test/*.js\" && tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build"

@@ -1,59 +1,6 @@
 <!-- This file is generated automatically. Do not edit it directly. -->
 # urdf-loader
 
-## URDFOptions
-
-List of options available on the URDFLoader class.
-
-
-### .packages
-
-```js
-packages = '': string | Object | ( pkg: string ) => string
-```
-
-The path representing the `package://` directory(s) to load `package://` relative files. If the argument is a string it is used to replace the `package://` prefix. To specify multiple packages use an object mapping package names to paths. If set to a function it takes the package name and returns the package path.
-
-### .loadMeshCb
-
-```js
-loadMeshCb = null: ( pathToModel: string, manager: LoadingManager, material: Material, onComplete: ( obj: Object3D, err: Error ) => void ) => void
-```
-
-An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `material` is the material derived from the URDF `<material>` tag and should be applied to meshes that have no internally declared material. `onComplete` is called with the mesh once the geometry has been loaded.
-
-### .fetchOptions
-
-```js
-fetchOptions = null: Object
-```
-
-An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
-
-### .workingPath
-
-```js
-workingPath = '': string
-```
-
-The path to load geometry relative to. Defaults to the path relative to the loaded URDF file.
-
-### .parseVisual
-
-```js
-parseVisual = true: boolean
-```
-
-An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
-
-### .parseCollision
-
-```js
-parseCollision = false: boolean
-```
-
-An optional value that can be used to enable / disable loading meshes for links from the `collision` nodes. Defaults to false.
-
 ## URDFJoint
 
 _extends `Object3D`_
@@ -484,3 +431,56 @@ setJointValues( jointValueDictionary: Object ): void
 
 Sets all joint names specified as keys to radian angle value.
 
+
+## URDFOptions
+
+List of options available on the URDFLoader class.
+
+
+### .packages
+
+```js
+packages = '': string | Object | ( pkg: string ) => string
+```
+
+The path representing the `package://` directory(s) to load `package://` relative files. If the argument is a string it is used to replace the `package://` prefix. To specify multiple packages use an object mapping package names to paths. If set to a function it takes the package name and returns the package path.
+
+### .loadMeshCb
+
+```js
+loadMeshCb = null: ( pathToModel: string, manager: LoadingManager, material: Material, onComplete: ( obj: Object3D, err: Error ) => void ) => void
+```
+
+An optional function that can be used to override the default mesh loading functionality. The default loader is specified at `URDFLoader.defaultMeshLoader`. `pathToModel` is the url to load the model from. `manager` is the THREE.js `LoadingManager` used by the `URDFLoader`. `material` is the material derived from the URDF `<material>` tag and should be applied to meshes that have no internally declared material. `onComplete` is called with the mesh once the geometry has been loaded.
+
+### .fetchOptions
+
+```js
+fetchOptions = null: Object
+```
+
+An optional object with the set of options to pass to the `fetch` function call used to load the URDF file.
+
+### .workingPath
+
+```js
+workingPath = '': string
+```
+
+The path to load geometry relative to. Defaults to the path relative to the loaded URDF file.
+
+### .parseVisual
+
+```js
+parseVisual = true: boolean
+```
+
+An optional value that can be used to enable / disable loading meshes for links from the `visual` nodes. Defaults to true.
+
+### .parseCollision
+
+```js
+parseCollision = false: boolean
+```
+
+An optional value that can be used to enable / disable loading meshes for links from the `collision` nodes. Defaults to false.
