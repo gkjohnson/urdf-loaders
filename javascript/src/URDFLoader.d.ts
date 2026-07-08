@@ -1,12 +1,12 @@
-import { LoadingManager, Object3D } from 'three';
+import { LoadingManager, Material, Object3D } from 'three';
 import { URDFRobot } from './URDFClasses';
 
-interface MeshLoadDoneFunc {
+interface OnMeshLoadComplete {
     (mesh: Object3D, err?: Error): void;
 }
 
 interface MeshLoadFunc{
-    (url: string, manager: LoadingManager, onLoad: MeshLoadDoneFunc): void;
+    (url: string, manager: LoadingManager, material: Material, onLoad: OnMeshLoadComplete): void;
 }
 
 export default class URDFLoader {
