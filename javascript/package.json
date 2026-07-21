@@ -45,7 +45,7 @@
     "@vitest/eslint-plugin": "^1.1.25",
     "@webcomponents/webcomponentsjs": "^2.4.4",
     "concurrently": "^6.2.1",
-    "eslint": "^9.19.0",
+    "eslint": "^10.7.0",
     "eslint-plugin-jsdoc": "^63.0.2",
     "globals": "^15.14.0",
     "jsdoc": "^4.0.5",
