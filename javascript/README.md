@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/urdf-loader.svg?style=flat-square)](https://www.npmjs.com/package/urdf-loader)
 [![build](https://img.shields.io/github/actions/workflow/status/gkjohnson/urdf-loaders/node.js.yml?style=flat-square&label=build&branch=master)](https://github.com/gkjohnson/urdf-loaders/actions)
+[![docs](https://img.shields.io/badge/docs-API-blue?style=flat-square)](https://gkjohnson.github.io/tools/docs/urdf-loader/)
 
 Utilities for loading URDF files into THREE.js and a Web Component that loads and renders the model.
 
