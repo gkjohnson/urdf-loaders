@@ -121,6 +121,8 @@ robot.joints[ jointName ].setJointValue( jointAngle );
 
 See [API.md](./API.md) for full API documentation.
 
+The same documentation is also available on the [docs site](https://gkjohnson.github.io/tools/docs/urdf-loader/).
+
 # Running the Example
 
 Install Node.js and NPM.
